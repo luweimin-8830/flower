@@ -1,8 +1,11 @@
-const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { init: initDB, Counter } = require("./db");
+const apiRouter = require("./src/api/index.js");
+import { errorHandler,notFoundHandler } from "./src/error.js";
+import { ok,fail } from "./src/response.js";
+
 
 const logger = morgan("tiny");
 
@@ -11,10 +14,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
 app.use(logger);
+app.use("/api",apiRouter);
 
 // 首页
 app.get("/", async (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.send("Hello");
 });
 
 // 更新计数
@@ -48,6 +52,9 @@ app.get("/api/wx_openid", async (req, res) => {
     res.send(req.headers["x-wx-openid"]);
   }
 });
+
+app.use(notFoundHandler);//404
+app.use(errorHandler);//500
 
 const port = process.env.PORT || 80;
 
