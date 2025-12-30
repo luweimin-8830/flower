@@ -18,6 +18,7 @@ app.use("/api", apiRouter);
 
 // 首页
 app.get("/", async (req, res) => {
+  console.log(req)
   res.send("Hello");
 });
 
