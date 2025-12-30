@@ -1,8 +1,8 @@
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const { init: initDB, Counter } = require("./db");
-const apiRouter = require("./src/api/index.js");
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import { initDB, Counter } from "./db";
+import apiRouter from "./src/api/index.js";
 import { errorHandler,notFoundHandler } from "./src/error.js";
 import { ok,fail } from "./src/response.js";
 

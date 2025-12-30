@@ -1,4 +1,5 @@
-const { Sequelize, DataTypes } = require("sequelize");
+import { Sequelize, DataTypes } from "sequelize";
+import process from "process";
 
 // 从环境变量中读取数据库配置
 const { MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_ADDRESS = "" } = process.env;
@@ -37,6 +38,9 @@ const User = sequelize.define("User",{
   },
   age:{
     type:DataTypes.INTEGER
+  },
+  lastLogin:{
+    type: DataTypes.DATE
   }
 })
 
@@ -46,7 +50,7 @@ async function init() {
 }
 
 // 导出初始化方法和模型
-module.exports = {
+export {
   init,
   Counter,
   User,
