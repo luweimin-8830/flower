@@ -9,6 +9,8 @@ const sequelize = new Sequelize("nodejs_demo", MYSQL_USERNAME, MYSQL_PASSWORD, {
   host,
   port,
   dialect: "mysql" /* one of 'mysql' | 'mariadb' | 'postgres' | 'mssql' */,
+  logging: false,
+  timezone: '+08:00'
 });
 
 // 定义数据模型
@@ -16,9 +18,27 @@ const Counter = sequelize.define("Counter", {
   count: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 1,
+    defaultValue: 1, 
   },
 });
+
+const User = sequelize.define("User",{
+  openId: {
+    type: DataTypes.STRING,
+    allowNull: false, //不允许为空
+    unique: true //唯一
+  },
+  name:{
+    type: DataTypes.STRING
+  },
+  isAdmin:{
+    type:DataTypes.BOOLEAN,
+    defaultValue:false //默认值
+  },
+  age:{
+    type:DataTypes.INTEGER
+  }
+})
 
 // 数据库初始化方法
 async function init() {
@@ -29,4 +49,5 @@ async function init() {
 module.exports = {
   init,
   Counter,
+  User,
 };
