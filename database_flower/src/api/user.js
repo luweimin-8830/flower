@@ -1,7 +1,6 @@
 //模版页面,新接口页面直接复制此页
 import { Router } from "express";
 import { ok, fail } from "../response.js";
-import { getDb ,getModels } from "../util/tcb.js";
 import { User } from "../../db.js";
 
 const router = Router();
