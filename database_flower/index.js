@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import { initDB, Counter } from "./db";
+import { init, Counter } from "./db.js";
 import apiRouter from "./src/api/index.js";
 import { errorHandler,notFoundHandler } from "./src/error.js";
 import { ok,fail } from "./src/response.js";
@@ -34,7 +34,7 @@ app.use(errorHandler);//500
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
-  await initDB();
+  await init();
   app.listen(port, () => {
     console.log("启动成功", port);
   });

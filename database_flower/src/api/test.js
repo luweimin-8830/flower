@@ -4,8 +4,6 @@ import { ok, fail } from "../response.js";
 import { getDb ,getModels } from "../util/tcb.js";
 
 const router = Router();
-const db = getDb();
-const _ = db.command;
 
 router.post("/", async (req, res) => {
     try {
