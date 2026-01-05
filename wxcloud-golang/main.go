@@ -20,7 +20,10 @@ func main() {
 
 	r.GET("/", handler.IndexHandler)
 
-	r.POST("api/login", handler.UserLoginHandler)
+	api := r.Group("/api")
+	{
+		api.POST("/login", handler.UserLoginHandler)
+	}
 
 	log.Fatal(r.Run(":80"))
 }
