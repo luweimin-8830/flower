@@ -16,7 +16,7 @@ func CreateUserHandler(c *gin.Context) {
 	OPENID := c.GetHeader("X-WX-OPENID")
 	if OPENID == "" {
 		fmt.Println("⚠️ 警告: 未获取到 OpenID")
-		response.FailWithCode(c, 400, "未获取到OpenId")
+		response.FailWithCode(c, 401, "未获取到OpenId")
 		return
 	}
 
@@ -32,7 +32,7 @@ func UserLoginHandler(c *gin.Context) {
 	OPENID := c.GetHeader("X-WX-OPENID")
 	if OPENID == "" {
 		fmt.Println("⚠️ 警告: 未获取到 OpenID")
-		response.FailWithCode(c, 400, "未获取到OpenId")
+		response.FailWithCode(c, 401, "未获取到OpenId")
 		return
 	}
 	user, err := service.Login(OPENID)
