@@ -29,7 +29,7 @@ func PlantListHandler(c *gin.Context) {
 
 	response.Success(c,gin.H{
 		"data": list,
-		"total": total
+		"total": total,
 	})
 	
 }
