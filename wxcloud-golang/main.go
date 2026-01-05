@@ -19,7 +19,8 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/", handler.IndexHandler)
-	r.POST("/api/user", handler.CreateUserHandler)
+
+	r.POST("api/login", handler.UserLoginHandler)
 
 	log.Fatal(r.Run(":80"))
 }
