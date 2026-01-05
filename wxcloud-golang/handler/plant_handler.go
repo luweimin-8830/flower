@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"wxcloud-golang/response"
 	"wxcloud-golang/service"
 
@@ -9,7 +8,7 @@ import (
 )
 
 func PlantListHandler(c *gin.Context) {
-	var req Model.PlantListReq
+	var req model.PlantListReq
 	OPENID := c.GetHeader("X-WX-OPENID")
 	if err := c.ShouldBindQuery(&req); err != nil {
 		response.FailWithCode(c,401,"参数错误")
@@ -20,7 +19,7 @@ func PlantListHandler(c *gin.Context) {
 		return
 	}
 
-	list, total,err := service.GetPlantList(req,openId.(string))
+	list, total,err := service.GetPlantList(req,OPENID.(string))
 
 	if err != nil {
 		response.Fail(c,"获取列表失败")
