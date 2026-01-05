@@ -3,6 +3,8 @@ package handler
 import (
 	"wxcloud-golang/response"
 	"wxcloud-golang/service"
+	"wxcloud-golang/db/model"
+
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +21,7 @@ func PlantListHandler(c *gin.Context) {
 		return
 	}
 
-	list, total,err := service.GetPlantList(req,OPENID.(string))
+	list, total,err := service.GetPlantList(req,OPENID)
 
 	if err != nil {
 		response.Fail(c,"获取列表失败")
