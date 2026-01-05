@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"wxcloud-golang/db/model"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
 
-var dbInstance *gorm.DB
+var DB *gorm.DB
 
 // Init 初始化数据库
 func Init() error {
@@ -21,7 +22,7 @@ func Init() error {
 	addr := os.Getenv("MYSQL_ADDRESS")
 	dataBase := os.Getenv("MYSQL_DATABASE")
 	if dataBase == "" {
-		dataBase = "golang_demo"
+		dataBase = "flower"
 	}
 	source = fmt.Sprintf(source, user, pwd, addr, dataBase)
 	fmt.Println("start init mysql with ", source)
@@ -48,7 +49,12 @@ func Init() error {
 	// 设置了连接可复用的最大时间
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	dbInstance = db
+	if err := db.AutoMigrate(&model.User{}); err != nil {
+		fmt.Println("DB Migrate error,err=", err.Error())
+		return err
+	}
+
+	DB = db
 
 	fmt.Println("finish init mysql with ", source)
 	return nil
@@ -56,5 +62,5 @@ func Init() error {
 
 // Get ...
 func Get() *gorm.DB {
-	return dbInstance
+	return DB
 }

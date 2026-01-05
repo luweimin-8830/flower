@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
-	"wxcloudrun-golang/db"
-	"wxcloudrun-golang/service"
+
+	"wxcloud-golang/db"
+	"wxcloud-golang/handler"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -13,8 +15,11 @@ func main() {
 		panic(fmt.Sprintf("mysql init failed with %+v", err))
 	}
 
-	http.HandleFunc("/", service.IndexHandler)
-	http.HandleFunc("/api/count", service.CounterHandler)
+	// 2. 初始化 Gin 引擎
+	r := gin.Default()
 
-	log.Fatal(http.ListenAndServe(":80", nil))
+	r.GET("/", handler.Index)
+	r.POST("/api/user", handler.CreateUserHandler)
+
+	log.Fatal(r.Run(":80"))
 }
