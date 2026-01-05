@@ -5,7 +5,7 @@ import (
 	"wxcloud-golang/db/model"
 )
 
-var plantDao = new(dao.plantDao)
+var plantDao = new(dao.PlantDao)
 
 func GetPlantList(req model.PlantListReq,openId string)([]model.Plant, int64, error) {
 	//处理业务逻辑
