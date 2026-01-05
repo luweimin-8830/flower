@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func IndexHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Hello Succulent"})
+}
+
 func CreateUserHandler(c *gin.Context) {
 	OPENID := c.GetHeader("X-WX-OPENID")
 	if OPENID == "" {

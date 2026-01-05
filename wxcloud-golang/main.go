@@ -18,7 +18,7 @@ func main() {
 	// 2. 初始化 Gin 引擎
 	r := gin.Default()
 
-	r.GET("/", handler.Index)
+	r.GET("/", handler.IndexHandler)
 	r.POST("/api/user", handler.CreateUserHandler)
 
 	log.Fatal(r.Run(":80"))
