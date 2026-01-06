@@ -23,7 +23,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/login", handler.UserLoginHandler)
-		api.GET("/plantList",handler.PlantListHandler)
+		api.POST("/plantList", handler.PlantListHandler)
 	}
 
 	log.Fatal(r.Run(":80"))
