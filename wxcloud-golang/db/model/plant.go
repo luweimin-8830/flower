@@ -18,7 +18,7 @@ type Plant struct {
 }
 
 type PlantListReq struct {
-	Page     int    `form:"page" binding:"required,min=1"`
-	PageSize int    `form:"page_size"`
-	Labels   string `form:"labels"`
+	Page     int    `form:"page" json:"page" binding:"required,min=1"`
+	PageSize int    `form:"page_size" json:"page_size"`
+	Labels   string `form:"labels" json:"labels"`
 }

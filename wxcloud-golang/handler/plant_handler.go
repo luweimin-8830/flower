@@ -11,7 +11,7 @@ import (
 func PlantListHandler(c *gin.Context) {
 	var req model.PlantListReq
 	OPENID := c.GetHeader("X-WX-OPENID")
-	if err := c.ShouldBindQuery(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.FailWithCode(c, 401, "参数错误:"+err.Error())
 		return
 	}
