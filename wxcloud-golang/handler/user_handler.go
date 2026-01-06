@@ -22,7 +22,7 @@ func CreateUserHandler(c *gin.Context) {
 
 	user, err := service.AddUser(OPENID)
 	if err != nil {
-		response.FailWithCode(c, 500, "创建用户失败")
+		response.FailWithCode(c, 500, "创建用户失败:"+err.Error())
 		return
 	}
 	response.Success(c, user)
@@ -37,7 +37,7 @@ func UserLoginHandler(c *gin.Context) {
 	}
 	user, err := service.Login(OPENID)
 	if err != nil {
-		response.FailWithCode(c, 500, "登录失败")
+		response.FailWithCode(c, 500, "登录失败:"+err.Error())
 		return
 	}
 	response.Success(c, user)
