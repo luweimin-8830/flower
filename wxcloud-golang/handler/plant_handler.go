@@ -33,3 +33,23 @@ func PlantListHandler(c *gin.Context) {
 	})
 
 }
+
+func AddPlantHandler(c *gin.Context) {
+	var req model.PlantAddReq
+	OPENID := c.GetHeader("X-WX-OPENID")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误:"+err.Error())
+		return
+	}
+	if OPENID == "" {
+		response.FailWithCode(c, 401, "未获取到OpenId")
+		return
+	}
+	err := service.AddPlant(req, OPENID)
+	if err != nil {
+		response.Fail(c, "写入失败"+err.Error())
+		return
+	}
+
+	response.Success(c, "写入成功")
+}

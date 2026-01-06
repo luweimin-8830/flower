@@ -22,3 +22,12 @@ type PlantListReq struct {
 	PageSize int    `form:"page_size" json:"page_size"`
 	Labels   string `form:"labels" json:"labels"`
 }
+
+type PlantAddReq struct {
+	Name     string `json:"name" binding:"required"` // 必填
+	Cover    string `json:"cover"`
+	Desc     string `json:"desc"`
+	Labels   string `json:"labels"`
+	Tags     string `json:"tags"`
+	Birthday string `json:"birthday"`
+}
