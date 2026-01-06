@@ -1,10 +1,9 @@
 package handler
 
 import (
+	"wxcloud-golang/db/model"
 	"wxcloud-golang/response"
 	"wxcloud-golang/service"
-	"wxcloud-golang/db/model"
-
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +12,7 @@ func PlantListHandler(c *gin.Context) {
 	var req model.PlantListReq
 	OPENID := c.GetHeader("X-WX-OPENID")
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response.FailWithCode(c,401,"参数错误")
+		response.FailWithCode(c, 401, "参数错误:"+err.Error())
 		return
 	}
 	if OPENID == "" {
@@ -21,16 +20,16 @@ func PlantListHandler(c *gin.Context) {
 		return
 	}
 
-	list, total,err := service.GetPlantList(req,OPENID)
+	list, total, err := service.GetPlantList(req, OPENID)
 
 	if err != nil {
-		response.Fail(c,"获取列表失败")
+		response.Fail(c, "获取列表失败:"+err.Error())
 		return
 	}
 
-	response.Success(c,gin.H{
-		"data": list,
+	response.Success(c, gin.H{
+		"data":  list,
 		"total": total,
 	})
-	
+
 }
