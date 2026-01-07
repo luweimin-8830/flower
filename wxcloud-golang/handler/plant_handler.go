@@ -53,3 +53,17 @@ func AddPlantHandler(c *gin.Context) {
 
 	response.Success(c, "写入成功")
 }
+
+func DeletePlantHandler(c *gin.Context) {
+	var req model.PlantDeleteReq
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误:"+err.Error())
+		return
+	}
+	err := service.DeletePlant(req.ID)
+	if err != nil {
+		response.Fail(c, "删除失败"+err.Error())
+	}
+	response.Success(c, "删除成功")
+}

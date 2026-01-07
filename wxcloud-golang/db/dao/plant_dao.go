@@ -37,3 +37,8 @@ func (d *PlantDao) GetList(req model.PlantListReq, openId string) (plants []mode
 func (d *PlantDao) Create(plant *model.Plant) error {
 	return db.DB.Create(plant).Error
 }
+
+// 删除植物
+func (d *PlantDao) Delete(id uint) error {
+	return db.DB.Where("id = ?", id).Delete(&model.Plant{}).Error
+}

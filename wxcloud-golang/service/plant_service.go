@@ -41,3 +41,7 @@ func AddPlant(req model.PlantAddReq, openId string) error {
 
 	return plantDao.Create(&plant)
 }
+
+func DeletePlant(id uint) error {
+	return plantDao.Delete(id)
+}

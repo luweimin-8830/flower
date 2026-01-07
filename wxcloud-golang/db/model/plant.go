@@ -31,3 +31,7 @@ type PlantAddReq struct {
 	Tags     string `json:"tags"`
 	Birthday string `json:"birthday"`
 }
+
+type PlantDeleteReq struct {
+	ID uint `json:"id" binding:"required"`
+}
