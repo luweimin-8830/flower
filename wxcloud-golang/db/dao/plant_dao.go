@@ -20,11 +20,11 @@ func (d *PlantDao) GetList(req model.PlantListReq, openId string) ([]model.Plant
 	if size <= 0 {
 		size = 10
 	}
-	selectSQL := `plants.*,IF(plants.open_id = ?,'owner', plant_user_relation.role) as current_user_role`
+	selectSQL := `plant.*,IF(plant.open_id = ?,'owner', plant_user_relation.role) as current_user_role`
 	err := db.DB.Model(&model.Plant{}).
-		Joins("LEFT JOIN plant_user_relation ON plant_user_relation.plant_id = plants.id AND plant_user_relation.open_id = ?", openId).
-		Select(selectSQL, openId).Where("plants.open_id = ? OR plant_user_relation.open_id = ?", openId, openId).Offset((page - 1) * size).Limit(size).
-		Order("plants.updated_at DESC").Find(&plants).Error
+		Joins("LEFT JOIN plant_user_relation ON plant_user_relation.plant_id = plant.id AND plant_user_relation.open_id = ?", openId).
+		Select(selectSQL, openId).Where("plant.open_id = ? OR plant_user_relation.open_id = ?", openId, openId).Offset((page - 1) * size).Limit(size).
+		Order("plant.updated_at DESC").Find(&plants).Error
 	return plants, total, err
 }
 
