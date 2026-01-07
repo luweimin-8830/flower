@@ -25,6 +25,8 @@ func AddPlant(req model.PlantAddReq, openId string) error {
 			fmt.Printf("传入日期格式错误 %+v\n", err)
 			return err
 		}
+	} else {
+		birthday = time.Now()
 	}
 	plant := model.Plant{
 		Name:     req.Name,
