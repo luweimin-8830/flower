@@ -19,6 +19,7 @@ func GetPlantList(req model.PlantListReq, openId string) ([]model.Plant, int64, 
 func AddPlant(req model.PlantAddReq, openId string) error {
 	var birthday time.Time
 	var err error
+	fmt.Printf("传入参数 %+v\n", req)
 	if req.Birthday != "" {
 		birthday, err = time.Parse("2006-01-02", req.Birthday)
 		if err != nil {
