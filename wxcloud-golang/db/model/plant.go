@@ -35,3 +35,13 @@ type PlantAddReq struct {
 type PlantDeleteReq struct {
 	ID uint `json:"id" binding:"required"`
 }
+
+type PlantUpdateReq struct {
+	ID       uint     `json:"id" binding:"required"`
+	Name     *string  `json:"name"`
+	Cover    *string  `json:"cover"`
+	Desc     *string  `json:"desc"`
+	Labels   []string `json:"labels"`
+	Tags     []string `json:"tags"`
+	Birthday *string  `json:"birthday"`
+}

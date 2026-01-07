@@ -67,3 +67,22 @@ func DeletePlantHandler(c *gin.Context) {
 	}
 	response.Success(c, "删除成功")
 }
+
+func UpdatePlantHandler(c *gin.Context) {
+	var req model.PlantUpdateReq
+	OPENID := c.GetHeader("X-WX-OPENID")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误:"+err.Error())
+		return
+	}
+	if OPENID == "" {
+		response.FailWithCode(c, 401, "未获取到OpenId")
+		return
+	}
+
+	if err := service.UpdatePlant(req, OPENID); err != nil {
+		response.Fail(c, "更新失败"+err.Error())
+		return
+	}
+	response.Success(c, "更新成功")
+}

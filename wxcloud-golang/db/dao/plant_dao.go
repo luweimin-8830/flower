@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"errors"
 	"wxcloud-golang/db"
 	"wxcloud-golang/db/model"
 )
@@ -41,4 +42,18 @@ func (d *PlantDao) Create(plant *model.Plant) error {
 // 删除植物
 func (d *PlantDao) Delete(id uint) error {
 	return db.DB.Where("id = ?", id).Delete(&model.Plant{}).Error
+}
+
+func (d *PlantDao) Update(id uint, openId string, updates map[string]interface{}) error {
+	result := db.DB.Model(&model.Plant{}).Where("id = ? AND open_id = ?", id, openId).Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("更新失败,数据不存在或无权限")
+	}
+
+	return nil
 }
