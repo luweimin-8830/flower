@@ -20,10 +20,19 @@ func (d *PlantDao) GetList(req model.PlantListReq, openId string) ([]model.Plant
 	if size <= 0 {
 		size = 10
 	}
-	selectSQL := `plant.*,IF(plant.open_id = ?,'owner', plant_user_relation.role) as current_user_role`
-	err := db.DB.Model(&model.Plant{}).
+
+	query := db.DB.Model(&model.Plant{}).
 		Joins("LEFT JOIN plant_user_relation ON plant_user_relation.plant_id = plant.id AND plant_user_relation.open_id = ?", openId).
-		Select(selectSQL, openId).Where("plant.open_id = ? OR plant_user_relation.open_id = ?", openId, openId).Offset((page - 1) * size).Limit(size).
+		Where("plant.open_id = ? OR plant_user_relation.open_id = ?", openId, openId)
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	selectSQL := `plant.*,IF(plant.open_id = ?,'owner', plant_user_relation.role) as current_user_role`
+
+	err := query.
+		Select(selectSQL, openId).Offset((page - 1) * size).Limit(size).
 		Order("plant.updated_at DESC").Find(&plants).Error
 	return plants, total, err
 }
@@ -38,6 +47,7 @@ func (d *PlantDao) Delete(id uint) error {
 	return db.DB.Where("id = ?", id).Delete(&model.Plant{}).Error
 }
 
+// 更新植物
 func (d *PlantDao) Update(id uint, openId string, updates map[string]interface{}) error {
 	result := db.DB.Model(&model.Plant{}).Where("id = ? AND open_id = ?", id, openId).Updates(updates)
 

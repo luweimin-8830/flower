@@ -49,7 +49,7 @@ func Init() error {
 	// 设置了连接可复用的最大时间
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	if err := db.AutoMigrate(&model.User{}, &model.Plant{}, &model.PlantUserRelation{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.Plant{}, &model.PlantUserRelation{}, &model.Family{}, &model.FamilyMember{}); err != nil {
 		fmt.Println("DB Migrate error,err=", err.Error())
 		return err
 	}

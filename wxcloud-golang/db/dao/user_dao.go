@@ -32,3 +32,33 @@ func UpdateUserLastLogin(userID uint) error {
 func DeleteUser(id int) error {
 	return db.DB.Delete(&model.User{}, id).Error
 }
+
+// 创建家庭
+func CreateFamily(family *model.Family) error {
+	return db.DB.Create(family).Error
+}
+
+// 创建家庭成员
+func CreateFamilyMember(familyMember *model.FamilyMember) error {
+	return db.DB.Create(familyMember).Error
+}
+
+// 查询家庭列表
+func GetFamilyList(OPENID string) ([]model.Family, error) {
+	var family []model.Family
+
+	err := db.DB.Model(&model.Family{}).Joins("INNER JOIN family_member ON family_member.family_id = family.id").
+		Where("family_member.open_id = ?", OPENID).Find(&family).Error
+
+	return family, err
+}
+
+// 查询是否存在家庭
+func GetFamilyByOpenId(OPENID string) (*model.Family, error) {
+	var family model.Family
+
+	err := db.DB.Model(&model.Family{}).Joins("INNER JOIN family_member ON family_member.family_id = family.id").
+		Where("family_member.open_id = ?", OPENID).First(&family).Error
+
+	return &family, err
+}

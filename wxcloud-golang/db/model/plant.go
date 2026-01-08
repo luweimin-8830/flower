@@ -16,6 +16,7 @@ type Plant struct {
 	Tags            string    `json:"tags" gorm:"type:varchar(255)"`          //标签
 	Birthday        time.Time `json:"time"`                                   //到家时间
 	CurrentUserRole string    `json:"role" gorm:"-"`                          //权限
+	FamilyID        uint      `json:"familyId" gorm:"index"`
 }
 
 // 用户权限表

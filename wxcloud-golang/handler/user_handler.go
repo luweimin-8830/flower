@@ -35,10 +35,13 @@ func UserLoginHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "未获取到OpenId")
 		return
 	}
-	user, err := service.Login(OPENID)
+	user, family, err := service.Login(OPENID)
 	if err != nil {
 		response.FailWithCode(c, 500, "登录失败:"+err.Error())
 		return
 	}
-	response.Success(c, user)
+	response.Success(c, gin.H{
+		"user":   user,
+		"family": family,
+	})
 }
