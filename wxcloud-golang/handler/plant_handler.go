@@ -21,11 +21,12 @@ type CreatePlantRequest struct {
 }
 
 type UpdatePlantRequest struct {
-	ID     uint   `json:"id" binding:"required"`
-	Name   string `json:"name"`
-	Desc   string `json:"desc"`
-	Cover  string `json:"cover"`
-	TagIDs []uint `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
+	ID       uint      `json:"id" binding:"required"`
+	Name     string    `json:"name"`
+	Desc     string    `json:"desc"`
+	Cover    string    `json:"cover"`
+	Birthday time.Time `json:"birthday"`
+	TagIDs   []uint    `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
 }
 type GetPlantsRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
@@ -72,10 +73,13 @@ func UpdatePlantHandler(c *gin.Context) {
 		updateData["name"] = req.Name
 	}
 	if req.Desc != "" {
-		updateData["name"] = req.Desc
+		updateData["desc"] = req.Desc
 	}
 	if req.Cover != "" {
-		updateData["name"] = req.Cover
+		updateData["cover"] = req.Cover
+	}
+	if !req.Birthday.IsZero() {
+		updateData["birthday"] = req.Birthday
 	}
 	if err := service.UpdatePlant(uint(req.ID), updateData, req.TagIDs); err != nil {
 		response.Fail(c, "更新失败:"+err.Error())
