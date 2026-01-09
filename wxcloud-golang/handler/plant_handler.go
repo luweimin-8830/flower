@@ -11,9 +11,11 @@ import (
 )
 
 type CreatePlantRequest struct {
-	Name     string    `json:"name" binding:"required"`
-	FamilyID uint      `json:"familyId" binding:"required"`
-	TagIDs   []uint    `json:"tags"`
+	Name     string `json:"name" binding:"required"`
+	FamilyID uint   `json:"familyId" binding:"required"`
+	Tags     []struct {
+		ID uint `json:"id"`
+	} `json:"tags"`
 	Cover    string    `json:"cover"`
 	Desc     string    `json:"desc"`
 	Birthday time.Time `json:"birthday"`
@@ -26,7 +28,9 @@ type UpdatePlantRequest struct {
 	Desc     string    `json:"desc"`
 	Cover    string    `json:"cover"`
 	Birthday time.Time `json:"birthday"`
-	TagIDs   []uint    `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
+	Tags     []struct {
+		ID uint `json:"id"`
+	} `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
 }
 type GetPlantsRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
@@ -47,6 +51,12 @@ func CreatePlantHandler(c *gin.Context) {
 	if birthday.IsZero() {
 		birthday = time.Now()
 	}
+
+	var tagIDs []uint
+	for _, t := range req.Tags {
+		tagIDs = append(tagIDs, t.ID)
+	}
+
 	plant := &model.Plant{
 		Name:     req.Name,
 		FamilyID: req.FamilyID,
@@ -55,11 +65,17 @@ func CreatePlantHandler(c *gin.Context) {
 		Birthday: birthday,
 		OpenId:   OPENID,
 	}
-	if err := service.AddPlant(plant, req.TagIDs); err != nil {
+	if err := service.AddPlant(plant, tagIDs); err != nil {
 		response.Fail(c, "新建失败:"+err.Error())
 		return
 	}
-	response.Success(c, plant)
+
+	fullPlant, err := service.GetPlant(plant.ID)
+	if err != nil {
+		response.Success(c, plant)
+	}
+
+	response.Success(c, fullPlant)
 }
 
 func UpdatePlantHandler(c *gin.Context) {
@@ -81,7 +97,13 @@ func UpdatePlantHandler(c *gin.Context) {
 	if !req.Birthday.IsZero() {
 		updateData["birthday"] = req.Birthday
 	}
-	if err := service.UpdatePlant(uint(req.ID), updateData, req.TagIDs); err != nil {
+
+	var tagIDs []uint
+	for _, t := range req.Tags {
+		tagIDs = append(tagIDs, t.ID)
+	}
+
+	if err := service.UpdatePlant(uint(req.ID), updateData, tagIDs); err != nil {
 		response.Fail(c, "更新失败:"+err.Error())
 		return
 	}
