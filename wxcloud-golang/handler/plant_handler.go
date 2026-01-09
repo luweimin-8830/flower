@@ -25,7 +25,7 @@ type UpdatePlantRequest struct {
 	Name   string `json:"name"`
 	Desc   string `json:"desc"`
 	Cover  string `json:"cover"`
-	TagIDs []uint `json:"tagIds"` // 如果不传 nil，传空数组 [] 代表清空标签
+	TagIDs []uint `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
 }
 type GetPlantsRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
