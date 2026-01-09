@@ -16,7 +16,7 @@ type CreatePlantRequest struct {
 	TagIDs   []uint    `json:"tags"`
 	Cover    string    `json:"cover"`
 	Desc     string    `json:"desc"`
-	Birthday time.Time `json:"time"`
+	Birthday time.Time `json:"birthday"`
 	OpenId   string    `json:"openId"`
 }
 
@@ -42,12 +42,16 @@ func CreatePlantHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
 		return
 	}
+	birthday := req.Birthday
+	if birthday.IsZero() {
+		birthday = time.Now()
+	}
 	plant := &model.Plant{
 		Name:     req.Name,
 		FamilyID: req.FamilyID,
 		Cover:    req.Cover,
 		Desc:     req.Desc,
-		Birthday: req.Birthday,
+		Birthday: birthday,
 		OpenId:   OPENID,
 	}
 	if err := service.AddPlant(plant, req.TagIDs); err != nil {
