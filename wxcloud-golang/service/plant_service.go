@@ -1,85 +1,35 @@
 package service
 
 import (
-	"errors"
-	"fmt"
-	"time"
 	"wxcloud-golang/db/dao"
 	"wxcloud-golang/db/model"
+
+	"gorm.io/gorm"
 )
 
-var plantDao = new(dao.PlantDao)
-
-func GetPlantList(req model.PlantListReq, openId string) ([]model.Plant, int64, error) {
-	//处理业务逻辑
-
-	//调用dao
-	return plantDao.GetList(req, openId)
-}
-
-func AddPlant(req model.PlantAddReq, openId string) error {
-	var birthday time.Time
-	var err error
-	fmt.Printf("传入参数 %+v\n", req)
-	if req.Birthday != "" {
-		birthday, err = time.Parse("2006-01-02", req.Birthday)
-		if err != nil {
-			fmt.Printf("传入日期格式错误 %+v\n", err)
-			return err
+func AddPlant(plant *model.Plant, tagIDs []uint) error {
+	if len(tagIDs) > 0 {
+		var tags []model.Tag
+		for _, id := range tagIDs {
+			tags = append(tags, model.Tag{Model: gorm.Model{ID: id}})
 		}
-	} else {
-		birthday = time.Now()
+		plant.Tags = tags
 	}
-	plant := model.Plant{
-		Name:     req.Name,
-		Cover:    req.Cover,
-		Desc:     req.Desc,
-		FamilyID: req.FamilyID,
-		OpenId:   openId,
-		Birthday: birthday,
-	}
-
-	return plantDao.Create(&plant)
+	return dao.CreatePlant(plant)
 }
 
-func DeletePlant(id uint) error {
-	return plantDao.Delete(id)
+func UpdatePlant(plantID uint, updateDate map[string]interface{}, tagIDs []uint) error {
+	return dao.UpdatePlant(plantID, updateDate, tagIDs)
 }
 
-func UpdatePlant(req model.PlantUpdateReq, openId string) error {
-	updates := make(map[string]interface{})
+func GetPlants(familyID uint) ([]model.Plant, error) {
+	return dao.GetPlantByFamilyID(familyID)
+}
 
-	if req.Name != nil {
-		updates["name"] = *req.Name
-	}
-	if req.Cover != nil {
-		updates["cover"] = *req.Cover
-	}
-	if req.Desc != nil {
-		updates["desc"] = *req.Desc
-	}
-	if req.Labels != nil {
-		updates["labels"] = req.Labels
-	}
-	if req.Tags != nil {
-		updates["tags"] = req.Tags
-	}
-	if req.Birthday != nil {
-		if *req.Birthday == "" {
-			// 如果传了空字符串，意为清空生日
-			updates["birthday"] = nil
-		} else {
-			t, err := time.Parse("2006-01-02", *req.Birthday)
-			if err != nil {
-				return errors.New("日期格式错误")
-			}
-			updates["birthday"] = t
-		}
-	}
+func GetPlant(id uint) (*model.Plant, error) {
+	return dao.GetPlantByID(id)
+}
 
-	if len(updates) == 0 {
-		return nil
-	}
-
-	return plantDao.Update(req.ID, openId, updates)
+func DeletePlant(plantID uint) error {
+	return dao.DeletePlant(plantID)
 }

@@ -1,63 +1,52 @@
 package dao
 
 import (
-	"errors"
 	"wxcloud-golang/db"
 	"wxcloud-golang/db/model"
+
+	"gorm.io/gorm"
 )
 
-type PlantDao struct {
-}
-
-func (d *PlantDao) GetList(req model.PlantListReq, openId string) ([]model.Plant, int64, error) {
-	var plants []model.Plant
-	var total int64
-	page := req.Page
-	if page <= 0 {
-		page = 1
-	}
-	size := req.PageSize
-	if size <= 0 {
-		size = 10
-	}
-
-	query := db.DB.Model(&model.Plant{}).
-		Joins("LEFT JOIN plant_user_relation ON plant_user_relation.plant_id = plant.id AND plant_user_relation.open_id = ?", openId).
-		Where("plant.open_id = ? OR plant_user_relation.open_id = ?", openId, openId)
-
-	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	selectSQL := `plant.*,IF(plant.open_id = ?,'owner', plant_user_relation.role) as current_user_role`
-
-	err := query.
-		Select(selectSQL, openId).Offset((page - 1) * size).Limit(size).
-		Order("plant.updated_at DESC").Find(&plants).Error
-	return plants, total, err
-}
-
-// 创建新植物
-func (d *PlantDao) Create(plant *model.Plant) error {
+// 创建植物
+func CreatePlant(plant *model.Plant) error {
 	return db.DB.Create(plant).Error
 }
 
-// 删除植物
-func (d *PlantDao) Delete(id uint) error {
-	return db.DB.Where("id = ?", id).Delete(&model.Plant{}).Error
+func GetPlantByID(id uint) (*model.Plant, error) {
+	var plant model.Plant
+	err := db.DB.Preload("Tags").First(&plant, id).Error
+	return &plant, err
 }
 
-// 更新植物
-func (d *PlantDao) Update(id uint, openId string, updates map[string]interface{}) error {
-	result := db.DB.Model(&model.Plant{}).Where("id = ? AND open_id = ?", id, openId).Updates(updates)
+func GetPlantByFamilyID(familyID uint) ([]model.Plant, error) {
+	var plants []model.Plant
+	err := db.DB.Where("family_id = ?", familyID).Preload("Tags").Find(&plants).Error
+	return plants, err
+}
 
-	if result.Error != nil {
-		return result.Error
+func DeletePlant(id uint) error {
+	return db.DB.Delete(&model.Plant{}, id).Error
+}
+
+func UpdatePlant(plantID uint, updateDate map[string]interface{}, newTagIDs []uint) error {
+	tx := db.DB.Begin()
+	if err := tx.Model(&model.Plant{}).Where("id = ?", plantID).Updates(updateDate).Error; err != nil {
+		tx.Rollback()
+		return err
 	}
 
-	if result.RowsAffected == 0 {
-		return errors.New("更新失败,数据不存在或无权限")
-	}
+	if newTagIDs != nil {
+		var plant model.Plant
+		plant.ID = plantID
 
-	return nil
+		var newTags []model.Tag
+		for _, tagId := range newTagIDs {
+			newTags = append(newTags, model.Tag{Model: gorm.Model{ID: tagId}})
+		}
+		if err := tx.Model(&plant).Association("Tags").Replace(newTags); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
 }

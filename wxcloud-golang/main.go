@@ -23,8 +23,9 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/login", handler.UserLoginHandler)
-		api.POST("/plantList", handler.PlantListHandler)
-		api.POST("/plant/add", handler.AddPlantHandler)
+		api.POST("/plant", handler.GetPlantHandler)
+		api.POST("/plant/list", handler.GetPlantsHandler)
+		api.POST("/plant/add", handler.CreatePlantHandler)
 		api.POST("/plant/delete", handler.DeletePlantHandler)
 		api.POST("/plant/update", handler.UpdatePlantHandler)
 		api.POST("/tag/add", handler.CreateTagHandler)
