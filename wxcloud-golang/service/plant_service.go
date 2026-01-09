@@ -34,8 +34,7 @@ func AddPlant(req model.PlantAddReq, openId string) error {
 		Name:     req.Name,
 		Cover:    req.Cover,
 		Desc:     req.Desc,
-		Labels:   req.Labels,
-		Tags:     req.Tags,
+		FamilyID: req.FamilyID,
 		OpenId:   openId,
 		Birthday: birthday,
 	}

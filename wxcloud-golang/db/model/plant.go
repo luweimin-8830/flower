@@ -11,15 +11,14 @@ type Plant struct {
 	Name            string    `json:"name" gorm:"type:varchar(100);not null"` //名称
 	Cover           string    `json:"cover" gorm:"type:varchar(255)"`         //主图
 	Desc            string    `json:"desc" gorm:"type:varchar(255)"`          //备注
-	Labels          string    `json:"labels" gorm:"type:varchar(255)"`        //分类
 	OpenId          string    `json:"openId"`                                 //所属人
-	Tags            string    `json:"tags" gorm:"type:varchar(255)"`          //标签
 	Birthday        time.Time `json:"time"`                                   //到家时间
 	CurrentUserRole string    `json:"role" gorm:"-"`                          //权限
 	FamilyID        uint      `json:"familyId" gorm:"index"`
+	Tags            []Tag     `json:"tags" gorm:"many2many:plant_tags;"`
 }
 
-// 用户权限表
+// 用户权限表 弃用,待删除
 type PlantUserRelation struct {
 	gorm.Model
 	PlantID uint   `gorm:"index;not null"`
@@ -40,6 +39,7 @@ type PlantAddReq struct {
 	Labels   string `json:"labels"`
 	Tags     string `json:"tags"`
 	Birthday string `json:"birthday"`
+	FamilyID uint   `json:"familyId"`
 }
 
 type PlantDeleteReq struct {

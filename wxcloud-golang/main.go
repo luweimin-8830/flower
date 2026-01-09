@@ -27,6 +27,9 @@ func main() {
 		api.POST("/plant/add", handler.AddPlantHandler)
 		api.POST("/plant/delete", handler.DeletePlantHandler)
 		api.POST("/plant/update", handler.UpdatePlantHandler)
+		api.POST("/tag/add", handler.CreateTagHandler)
+		api.POST("/tag/delete", handler.DeleteTagHandler)
+		api.POST("/tag/update", handler.UpdateTagHandler)
 	}
 
 	log.Fatal(r.Run(":80"))
