@@ -30,6 +30,7 @@ func main() {
 		api.POST("/tag/add", handler.CreateTagHandler)
 		api.POST("/tag/delete", handler.DeleteTagHandler)
 		api.POST("/tag/update", handler.UpdateTagHandler)
+		api.POST("/tag", handler.GetTagListHandler)
 	}
 
 	log.Fatal(r.Run(":80"))

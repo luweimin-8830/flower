@@ -7,6 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type GetTagListRequest struct {
+	FamilyID uint `json:"familyId" binding:"required"`
+}
+
 type CreateTagRequest struct {
 	Name     string `json:"name" binding:"required"`
 	FamilyID uint   `json:"familyId" binding:"required"`
@@ -19,6 +23,20 @@ type DeleteTagRequest struct {
 type UpdateTagRequest struct {
 	ID   uint   `json:"id" binding:"required"`
 	Name string `json:"name" binding:"required"`
+}
+
+func GetTagListHandler(c *gin.Context) {
+	var req GetTagListRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误:"+err.Error())
+		return
+	}
+	tags, err := service.GetFamilyTag(req.FamilyID)
+	if err != nil {
+		response.Fail(c, "获取失败:"+err.Error())
+		return
+	}
+	response.Success(c, tags)
 }
 
 func CreateTagHandler(c *gin.Context) {
