@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"wxcloud-golang/db/dao"
 	"wxcloud-golang/db/model"
 
@@ -14,6 +15,7 @@ func AddPlant(plant *model.Plant, tagIDs []uint) error {
 			tags = append(tags, model.Tag{Model: gorm.Model{ID: id}})
 		}
 		plant.Tags = tags
+		fmt.Println("传入标签是：", tags)
 	}
 	return dao.CreatePlant(plant)
 }
