@@ -22,6 +22,12 @@ type CreatePlantRequest struct {
 	OpenId   string    `json:"openId"`
 }
 
+// {
+// 	"familyId":1,
+// 	"name":"植物2",
+// 	"tags":[{"id":1},{"id":2}]
+//   }
+
 type UpdatePlantRequest struct {
 	ID       uint      `json:"id" binding:"required"`
 	Name     string    `json:"name"`
@@ -32,6 +38,7 @@ type UpdatePlantRequest struct {
 		ID uint `json:"id"`
 	} `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
 }
+
 type GetPlantsRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
 }
@@ -99,8 +106,11 @@ func UpdatePlantHandler(c *gin.Context) {
 	}
 
 	var tagIDs []uint
-	for _, t := range req.Tags {
-		tagIDs = append(tagIDs, t.ID)
+	if req.Tags != nil {
+		tagIDs = make([]uint, 0)
+		for _, t := range req.Tags {
+			tagIDs = append(tagIDs, t.ID)
+		}
 	}
 
 	if err := service.UpdatePlant(uint(req.ID), updateData, tagIDs); err != nil {
