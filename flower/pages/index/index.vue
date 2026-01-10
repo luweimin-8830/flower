@@ -14,6 +14,9 @@
 		},
 		methods: {
 
+		},
+		onLoad() {
+			
 		}
 	}
 </script>
