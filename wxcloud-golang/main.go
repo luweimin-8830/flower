@@ -23,15 +23,21 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/login", handler.UserLoginHandler)
-		api.POST("/plant", handler.GetPlantHandler)
-		api.POST("/plant/list", handler.GetPlantsHandler)
-		api.POST("/plant/add", handler.CreatePlantHandler)
-		api.POST("/plant/delete", handler.DeletePlantHandler)
-		api.POST("/plant/update", handler.UpdatePlantHandler)
-		api.POST("/tag/add", handler.CreateTagHandler)
-		api.POST("/tag/delete", handler.DeleteTagHandler)
-		api.POST("/tag/update", handler.UpdateTagHandler)
-		api.POST("/tag", handler.GetTagListHandler)
+		plant := api.Group("/plant")
+		{
+			plant.POST("/", handler.GetPlantHandler)
+			plant.POST("/list", handler.GetPlantsHandler)
+			plant.POST("/add", handler.CreatePlantHandler)
+			plant.POST("/delete", handler.DeletePlantHandler)
+			plant.POST("/update", handler.UpdatePlantHandler)
+		}
+		tag := api.Group("/tag")
+		{
+			tag.POST("/", handler.GetTagListHandler)
+			tag.POST("/add", handler.CreateTagHandler)
+			tag.POST("/delete", handler.DeleteTagHandler)
+			tag.POST("/update", handler.UpdateTagHandler)
+		}
 	}
 
 	log.Fatal(r.Run(":80"))
