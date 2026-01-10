@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/my/my",
+    "pages/system/system"
+  ],
+  "window": {
+    "navigationBarTextStyle": "@navTextStyle",
+    "navigationBarTitleText": "我的花园",
+    "navigationBarBackgroundColor": "@navBackgroundColor",
+    "backgroundColor": "@backgroundColor"
+  },
+  "tabBar": {
+    "custom": true,
+    "display": "none",
+    "color": "white",
+    "selectedColor": "black",
+    "backgroundColor": "#1F2125",
+    "list": [
+      {
+        "pagePath": "pages/index/index"
+      },
+      {
+        "pagePath": "pages/my/my"
+      }
+    ]
+  },
+  "themeLocation": "theme.json",
+  "usingComponents": {}
+}
