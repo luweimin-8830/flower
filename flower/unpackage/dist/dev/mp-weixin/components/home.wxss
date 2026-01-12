@@ -1,0 +1,56 @@
+/* 水平间距 */
+/* 水平间距 */
+.family-select.data-v-045d88fd {
+  position: fixed;
+  z-index: 999;
+  /* --- 核心毛玻璃样式 --- */
+  background-color: rgba(255, 255, 255, 0.6);
+  /* 半透明白底 */
+  backdrop-filter: blur(10px);
+  /* 模糊背景 */
+  -webkit-backdrop-filter: blur(10px);
+  /* 兼容 iOS */
+  border-radius: 50%;
+  /* 圆形 */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  /* 极细的浅色边框 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* 轻微阴影 */
+  /* 布局与过渡 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  /* 确保边框不撑大尺寸 */
+  overflow: hidden;
+  /* 超出圆角部分隐藏 */
+}
+
+/* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */
+.data-v-045d88fd .uni-select {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  height: 100%;
+  justify-content: center;
+}
+.data-v-045d88fd .uni-select__input-text {
+  font-size: 12px;
+  /* 字体改小一点以适应按钮 */
+  color: #333;
+}
+
+/* --- 深色模式适配 --- */
+@media (prefers-color-scheme: dark) {
+.family-select.data-v-045d88fd {
+    background-color: rgba(30, 30, 30, 0.5);
+    /* 半透明黑底 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* 浅白边框 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.data-v-045d88fd .uni-select__input-text {
+    color: #fff;
+}
+}

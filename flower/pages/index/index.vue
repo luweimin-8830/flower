@@ -1,9 +1,8 @@
 <template>
 	<view class="container">
 		<view>
-			<navBar />
+			
 		</view>
-
 		<view class="flex_c_c page">
 			<!-- Tabbar页面 -->
 			<view class="flex1 custom-tabbar-page" v-if="list['a'].is"
@@ -22,6 +21,7 @@
 				:style="{ display: onKey === 'c' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面c -->
+					<home />
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['d'].is"
@@ -93,9 +93,11 @@ const {
 	windowWidth
 } = uni.getSystemInfoSync();
 import navBar from '@/components/navBar.vue';
+import home from '@/components/home.vue';
 export default {
 	components: {
 		navBar,
+		home,
 	},
 	data() {
 		return {
@@ -282,12 +284,12 @@ export default {
 	z-index: 2;
 	width: 100vw;
 	min-height: 100rpx;
-	opacity:0.55;
+	opacity: 0.55;
 	// background-color: #0A3323;
 }
 
 .safe-area-inset-bottom {
-	opacity:0.55;
+	opacity: 0.55;
 	background-color: #fff;
 	padding-bottom: calc(constant(safe-area-inset-bottom));
 	padding-bottom: calc(env(safe-area-inset-bottom));
@@ -302,7 +304,7 @@ export default {
 	width: 100vw;
 	height: 100rpx;
 	overflow: hidden;
-	opacity:0.55;
+	opacity: 0.55;
 	// background-color: #0A3323;
 }
 
@@ -394,13 +396,13 @@ export default {
 	width: 44px;
 	height: 44px;
 	border-radius: 50%;
-	background-image: linear-gradient(220deg,#BC3823,#BC3823, rgba(105, 55, 248, 0.3));
+	background-image: linear-gradient(220deg, #BC3823, #BC3823, rgba(105, 55, 248, 0.3));
 	// background-image: linear-gradient(220deg, #00e859, #00e859, rgba(255, 255, 255, 0.8));
 	// background-color: #8F3430;
 	// background-color: red;
-	opacity:0.85;
+	opacity: 0.85;
 	// border: 1px solid rgba(0,0,0,0.08);
-    // box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+	// box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 	transition: all .6s;
 }
 

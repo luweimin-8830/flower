@@ -1,10 +1,22 @@
 <template>
     <!-- 家庭选择框 -->
-    <view>
-        <uni-data-select v-model="value" :localdata="range" @change="change"></uni-data-select>
+    <view class="family-select" :style="{
+        width: menuButtonInfo.height + 'px',
+        height: menuButtonInfo.height + 'px', 
+        top: menuButtonInfo.top + 'px',
+        left: paddingLeft + 'px'
+    }">
+        <uni-data-select 
+            class="custom-select" 
+            v-model="value" 
+            :localdata="range" 
+            @change="change" 
+            :clear="false"
+        ></uni-data-select>
     </view>
+    <view :style="{height:topBarHeight+'px'}"></view> 
     <view>
-
+        <!-- <button>aaabsisnis</button> -->
     </view>
 </template>
 
@@ -32,7 +44,9 @@ export default {
      */
     data() {
         return {
-            
+            menuButtonInfo: {},
+            paddingLeft: 0,
+            topBarHeight:0,
         }
     },
     /**
@@ -49,7 +63,7 @@ export default {
      */
     //expose: [''],
     methods: {
-        
+
         /**
       * 内部使用的组件方法
       */
@@ -60,46 +74,61 @@ export default {
      * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑
      */
     created() {
-        
+        const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
+        this.menuButtonInfo = menuButtonInfo
+        const systemInfo = uni.getWindowInfo()
+        this.paddingLeft = systemInfo.screenWidth - menuButtonInfo.right
+        const app = getApp()
+        this.topBarHeight = app.globalData.topBarHeight;
     },
 }
 </script>
 
 <style scoped lang="scss">
-    .nav-back-button{
-        position: fixed;
-        z-index: 999;
-        opacity:0.55;
-        background-color: #fff;
-        // backdrop-filter: blur(10px);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(0,0,0,0.08);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        transition: transform 0.1s,background-color 0.2s;
-    }
-    .nav-back-icon{
-        font-size: 20px;
-        // color: var(--text-color,#333);
-        color:#333
+.family-select {
+    position: fixed;
+    z-index: 999;
     
+    /* --- 核心毛玻璃样式 --- */
+    background-color: rgba(255, 255, 255, 0.6); /* 半透明白底 */
+    backdrop-filter: blur(10px); /* 模糊背景 */
+    -webkit-backdrop-filter: blur(10px); /* 兼容 iOS */
+    border-radius: 50%; /* 圆形 */
+    border: 1px solid rgba(0, 0, 0, 0.08); /* 极细的浅色边框 */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
+    
+    /* 布局与过渡 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-sizing: border-box; /* 确保边框不撑大尺寸 */
+    overflow: hidden; /* 超出圆角部分隐藏 */
+}
+
+/* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */
+::v-deep .uni-select {
+    border: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    height: 100%;
+    justify-content: center;
+}
+::v-deep .uni-select__input-text {
+    font-size: 12px; /* 字体改小一点以适应按钮 */
+    color: #333;
+}
+
+/* --- 深色模式适配 --- */
+@media (prefers-color-scheme: dark) {
+    .family-select {
+        background-color: rgba(30, 30, 30, 0.5); /* 半透明黑底 */
+        border: 1px solid rgba(255, 255, 255, 0.1); /* 浅白边框 */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
-    .nav-back-button-hover {
-        transform: scale(0.92);
-        background-color: #f5f5f5; 
-        opacity:0.65;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    
+    ::v-deep .uni-select__input-text {
+        color: #fff;
     }
-    @media (prefers-color-scheme: dark) {
-        .nav-back-button {
-            background-color: rgba(30, 30, 30, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-        .nav-back-button-hover {
-            background-color: rgba(50, 50, 50, 0.8);
-        }
-    }
+}
 </style>
