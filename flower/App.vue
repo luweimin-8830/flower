@@ -47,7 +47,7 @@ export default {
 // 设置整个项目的背景色
 :root,
 page {
-	--bg-color: #f7f4d5;
+	--bg-color: #C1D0B7;
 	--bg-btn-color: #ffffff;
 	--card-bg: #f8f8f8;
 	/* 卡片背景 */
@@ -81,4 +81,11 @@ page {
 	color: var(--text-color);
 	transition: background-color 0.3s, color, 0.3s;
 }
+/*
+#fffff
+#FAF2CB
+#A7C190
+#6B8857
+#566C44
+*/
 </style>

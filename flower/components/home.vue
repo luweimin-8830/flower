@@ -1,8 +1,10 @@
 <template>
-    <view class="nav-back-button" hover-class="nav-back-button-hover" :style="{width:menuButtonInfo.height+'px',
-    height:menuButtonInfo.height+'px',top:menuButtonInfo.top+'px',
-    left: paddingLeft + 'px'}" @click="back">
-        <view class="iconfont plant-fanhui nav-back-icon"></view>
+    <!-- 家庭选择框 -->
+    <view>
+        <uni-data-select v-model="value" :localdata="range" @change="change"></uni-data-select>
+    </view>
+    <view>
+
     </view>
 </template>
 
@@ -11,7 +13,7 @@ export default {
     /**
      * 组件名称，也就是开发者使用的标签
      */
-    name: 'navBar',
+    name: 'home',
     /**
      * 组件涉及的事件声明，只有声明过的事件，才能被正常发送
      */
@@ -30,8 +32,7 @@ export default {
      */
     data() {
         return {
-            menuButtonInfo:{},
-            paddingLeft:0
+            
         }
     },
     /**
@@ -48,10 +49,7 @@ export default {
      */
     //expose: [''],
     methods: {
-        back(){
-            wx.vibrateShort({ type: 'medium' })
-            uni.navigateBack()
-        }
+        
         /**
       * 内部使用的组件方法
       */
@@ -62,10 +60,7 @@ export default {
      * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑
      */
     created() {
-        const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
-        this.menuButtonInfo = menuButtonInfo
-        const systemInfo = wx.getWindowInfo()
-        this.paddingLeft = systemInfo.screenWidth - menuButtonInfo.right
+        
     },
 }
 </script>
