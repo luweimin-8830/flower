@@ -1,26 +1,51 @@
 <template>
     <!-- 家庭选择框 -->
     <view class="family-select" :style="{
-        width: menuButtonInfo.height + 'px',
-        height: menuButtonInfo.height + 'px', 
+        width: 'auto',
+        // height: menuButtonInfo.height + 'px', 
+        borderRadius: menuButtonInfo.height / 2 + 'px',
         top: menuButtonInfo.top + 'px',
         left: paddingLeft + 'px'
     }">
-        <uni-data-select 
-            class="custom-select" 
-            v-model="value" 
-            :localdata="range" 
-            @change="change" 
-            :clear="false"
-        ></uni-data-select>
+        <uni-data-select class="custom-select" v-model="value" :localdata="familyRange" @change="changeFamily"
+            :clear="false">
+            <!-- <template v-slot:option="{ item, selected }">
+                <view class="dropdown-item" :class="{ 'is-selected': selected }">
+                    <text class="item-text">{{ item.text }}</text>
+                    <uni-icons v-if="selected" type="checkmarkempty" size="16" color="#007aff"></uni-icons>
+                </view>
+            </template> -->
+        </uni-data-select>
     </view>
-    <view :style="{height:topBarHeight+'px'}"></view> 
+    <view :style="{ height: topBarHeight + 'px' }"></view>
+    <!-- 搜索框 -->
     <view>
-        <!-- <button>aaabsisnis</button> -->
+        <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="true" v-model="searchValue"
+            bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
+        </uni-search-bar>
+    </view>
+    <!-- 横向滚动列表 -->
+    <view class="tag-scroll-container">
+        <scroll-view scroll-x="true" class="tag-scroll-view" :show-scrollbar="false"
+            :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)" scroll-with-animation>
+            <!-- 必须给 flex 容器一个 id，用于计算相对位置 -->
+            <view class="tag-flex-box" id="tag-container">
+                <view v-for="(item, index) in tagList" :key="index" :id="'tag-item-' + index" class="tag-item"
+                    :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
+                    <!-- 给文字加上 ID，以便精确获取文字宽度 -->
+                    <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
+                </view>
+                <!-- 独立的滑动下划线 -->
+                <!-- 注意：它在 v-for 之外，但在 flex-box 之内 -->
+                <view class="slider-bar" :style="sliderStyle"></view>
+
+            </view>
+        </scroll-view>
     </view>
 </template>
 
 <script>
+import { callContainer } from '../utils/request';
 export default {
     /**
      * 组件名称，也就是开发者使用的标签
@@ -37,6 +62,7 @@ export default {
         navText: {
             type: String,
             default: "",
+
         },
     },
     /**
@@ -46,7 +72,25 @@ export default {
         return {
             menuButtonInfo: {},
             paddingLeft: 0,
-            topBarHeight:0,
+            topBarHeight: 0,
+            windowWidth: 0,
+            familyRange: [],
+            value: null,
+            searchValue: "",
+            tagList: [],
+            currentTagIndex: 0,
+            sliderLeft: 0,
+            sliderWidth: 0,
+            sliderTimer: null,
+        }
+    },
+    computed: {
+        // 动态生成滑块样式
+        sliderStyle() {
+            return {
+                transform: `translateX(${this.sliderLeft}px)`,
+                width: `${this.sliderWidth}px`
+            }
         }
     },
     /**
@@ -63,7 +107,120 @@ export default {
      */
     //expose: [''],
     methods: {
+        async loadFamilyData() {
+            try {
+                const familyList = await new Promise((resolve) => {
+                    uni.getStorage({ key: 'family', success: resolve })
+                })
+                this.familyRange = []
+                familyList?.data?.forEach(item => {
+                    this.familyRange = [...this.familyRange, { "text": item.name, "value": item.ID, "disable": false }]
+                });
+                const exists = this.familyRange.some(item => item.value === this.value);
+                if (!exists && this.familyRange.length > 0) {
+                    this.value = this.familyRange[0].value;
+                }
+                this.getTagList()
+            } catch (error) {
+                console.error(error)
+            }
+        },
+        changeFamily(e) {
+            console.log(e)
+        },
+        async getTagList() {
+            try {
+                const tagList = await callContainer("/api/tag/", {
+                    familyId: this.value
+                })
+                console.log("tagList:", tagList)
+                const apiTags = tagList?.data || []
+                this.tagList = [
+                    { name: "全部", ID: 0 },
+                    ...apiTags.map(item => ({
+                        name: item.name,
+                        ID: item.ID,
+                        ...item
+                    }))
+                ]
+                console.log("tags:", this.tagList)
+                this.$nextTick(() => {
+                    // 稍微延迟一点，确保 DOM 渲染完成
+                    setTimeout(() => {
+                        this.updateSliderPosition(0);
+                    }, 200);
+                });
+            } catch (error) {
+                console.error(error)
+            }
+        },
+        searchPlant(e) {
+            console.log("e", e)
+            console.log("search:", this.searchValue)
+        },
+        selectTag(index, item) {
+            this.currentTagIndex = index;
 
+            const query = uni.createSelectorQuery().in(this);
+            // 获取容器和当前点击的文字（此时还是小字体状态）
+            query.select('#tag-container').boundingClientRect();
+            query.select('#tag-text-' + index).boundingClientRect();
+
+            query.exec((res) => {
+                if (res[0] && res[1]) {
+                    const containerLeft = res[0].left;
+                    const currentTextLeft = res[1].left;
+                    const currentTextWidth = res[1].width;
+
+                    // --- 核心逻辑：预判算法 ---
+                    // 已知：字体从 18px 变为 22px
+                    const ratio = 22 / 18;
+
+                    // 1. 算出最终宽度
+                    const finalWidth = currentTextWidth * ratio;
+
+                    // 2. 算出宽度差 (变宽了多少)
+                    const widthDiff = finalWidth - currentTextWidth;
+
+                    // 3. 算出最终左边距
+                    // 原理：文字是居中放大的，所以左边距要向左移动“宽度差的一半”
+                    const finalLeft = (currentTextLeft - containerLeft) - (widthDiff / 2);
+
+                    // 4. 直接设置最终值，让 CSS transition 去处理动画
+                    this.sliderWidth = finalWidth;
+                    this.sliderLeft = finalLeft;
+
+                    // 5. 保底修正：350ms 动画结束后，再精准测量一次
+                    // (防止预判有细微误差，或者受其他元素排版影响)
+                    if (this.sliderTimer) clearTimeout(this.sliderTimer);
+                    this.sliderTimer = setTimeout(() => {
+                        this.updateSliderPosition(index);
+                    }, 350);
+                }
+            });
+        },
+
+        updateSliderPosition(index) {
+            const query = uni.createSelectorQuery().in(this);
+
+            // 1. 获取容器的位置 (作为基准)
+            // 2. 获取目标文字的位置和宽度
+            query.select('#tag-container').boundingClientRect();
+            query.select('#tag-text-' + index).boundingClientRect();
+
+            query.exec((res) => {
+                if (res[0] && res[1]) {
+                    const containerLeft = res[0].left; // 容器距离屏幕左边的距离
+                    const textLeft = res[1].left;      // 文字距离屏幕左边的距离
+                    const textWidth = res[1].width;    // 文字宽度
+
+                    // 计算相对位置：文字位置 - 容器位置 = 滑块在容器内的 left
+                    // 注意：因为是在 scroll-view 内部，这种相对计算方式即使在滚动后也是正确的
+                    this.sliderLeft = textLeft - containerLeft;
+                    this.sliderWidth = textWidth;
+                }
+            });
+        },
         /**
       * 内部使用的组件方法
       */
@@ -80,6 +237,9 @@ export default {
         this.paddingLeft = systemInfo.screenWidth - menuButtonInfo.right
         const app = getApp()
         this.topBarHeight = app.globalData.topBarHeight;
+        this.windowWidth = app.globalData.windowWidth;
+        this.loadFamilyData()
+
     },
 }
 </script>
@@ -88,22 +248,48 @@ export default {
 .family-select {
     position: fixed;
     z-index: 999;
-    
+
     /* --- 核心毛玻璃样式 --- */
-    background-color: rgba(255, 255, 255, 0.6); /* 半透明白底 */
-    backdrop-filter: blur(10px); /* 模糊背景 */
-    -webkit-backdrop-filter: blur(10px); /* 兼容 iOS */
-    border-radius: 50%; /* 圆形 */
-    border: 1px solid rgba(0, 0, 0, 0.08); /* 极细的浅色边框 */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
-    
+    background-color: rgba(255, 255, 255, 0.5);
+    /* 半透明白底 */
+    backdrop-filter: blur(10px);
+    /* 模糊背景 */
+    -webkit-backdrop-filter: blur(10px);
+    /* 兼容 iOS */
+    // border-radius: 50%; /* 圆形 */
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    /* 极细的浅色边框 */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* 轻微阴影 */
+
     /* 布局与过渡 */
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    box-sizing: border-box; /* 确保边框不撑大尺寸 */
-    overflow: hidden; /* 超出圆角部分隐藏 */
+    box-sizing: border-box;
+    /* 确保边框不撑大尺寸 */
+    //overflow: hidden; /* 超出圆角部分隐藏 */
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* 文字靠左，图标靠右 */
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #333;
+
+}
+
+/* 2. 选中状态的高亮样式 */
+.dropdown-item.is-selected {
+    background-color: #f0f7ff;
+    /* 浅蓝色背景 */
+    color: #007aff;
+    /* 蓝色文字 */
+    font-weight: bold;
 }
 
 /* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */
@@ -114,21 +300,140 @@ export default {
     height: 100%;
     justify-content: center;
 }
+
 ::v-deep .uni-select__input-text {
-    font-size: 12px; /* 字体改小一点以适应按钮 */
+    font-size: 12px;
+    /* 字体改小一点以适应按钮 */
     color: #333;
+}
+
+::v-deep .uni-select__selector-item {
+    /* 这一行是为了覆盖原生样式，确保我们自定义的 slot 充满整行 */
+    padding: 0 !important;
+}
+
+// tag css
+.tag-scroll-container {
+    width: 100%;
+    background-color: transparent;
+    padding: 5px 0;
+}
+
+.tag-scroll-view {
+    width: 100%;
+    white-space: nowrap;
+    /* 关键：禁止换行 */
+}
+
+.tag-flex-box {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    position: relative;
+}
+
+.tag-item {
+    position: relative;
+    /* 为了定位下划线 */
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    margin-right: 10px;
+    font-size: 18px;
+    color: #666;
+    transition: all 0.3s;
+
+    &.active {
+        color: #6B8857;
+        /* 选中颜色 */
+        font-weight: bold;
+        font-size: 22px;
+        /* 选中稍微变大 */
+    }
+}
+
+/* 下划线动画样式 */
+.slider-bar {
+    position: absolute;
+    bottom: 8px;
+    /* 距离底部的位置 */
+    left: 0;
+    /* 初始位置，由 JS 控制 translateX */
+    height: 3px;
+    background-color: #6B8857;
+    /* 下划线颜色 */
+    border-radius: 2px;
+
+    /* 动画配置 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* width 和 transform 都会平滑过渡 */
+
+    z-index: 1;
+    /* 确保在文字下方或上方 */
+    pointer-events: none;
+    /* 不影响点击 */
+}
+
+.active-line {
+    position: absolute;
+    bottom: 0;
+    width: 20px;
+    /* 下划线宽度 */
+    height: 3px;
+    background-color: #6B8857;
+    border-radius: 2px;
+    animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
 }
 
 /* --- 深色模式适配 --- */
 @media (prefers-color-scheme: dark) {
     .family-select {
-        background-color: rgba(30, 30, 30, 0.5); /* 半透明黑底 */
-        border: 1px solid rgba(255, 255, 255, 0.1); /* 浅白边框 */
+        background-color: rgba(30, 30, 30, 0.5);
+        /* 半透明黑底 */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        /* 浅白边框 */
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
-    
+
     ::v-deep .uni-select__input-text {
         color: #fff;
+    }
+
+    .dropdown-item {
+        color: #eee;
+    }
+
+    .dropdown-item.is-selected {
+        background-color: rgba(0, 122, 255, 0.2);
+        color: #409eff;
+    }
+
+    .tag-item {
+        color: #aaa;
+
+        &.active {
+            color: #409eff;
+        }
+    }
+
+    .active-line {
+        background-color: #409eff;
+    }
+
+    .slider-bar {
+        background-color: #8bb374;
     }
 }
 </style>

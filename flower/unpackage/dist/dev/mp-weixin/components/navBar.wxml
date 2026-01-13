@@ -1,0 +1,1 @@
+<view class="nav-back-button data-v-3075e18a" hover-class="nav-back-button-hover" style="{{'width:' + a + ';' + ('height:' + b) + ';' + ('top:' + c) + ';' + ('left:' + d)}}" bindtap="{{e}}"><view class="iconfont plant-fanhui nav-back-icon data-v-3075e18a"></view></view>

@@ -277,7 +277,7 @@
 		margin-left: 5px;
 		margin-top: 1px;
 		/* #ifndef APP-NVUE */
-		background-color: inherit;
+		// background-color: inherit;
 		/* #endif */
 	}
 
