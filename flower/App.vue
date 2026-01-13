@@ -4,11 +4,15 @@ export default {
 	globalData: {
 		topBarHeight:0,
 		bottomSafeAreaHeight:0,
+		windowWidth:0,
+		windowHeight:0,
 	},
 	onLaunch: async function () {
 		console.log('App Launch')
 		//获取手机信息
 		const systemInfo = wx.getWindowInfo()
+		this.globalData.windowWidth = systemInfo.windowWidth;
+		this.globalData.windowHeight = systemInfo.windowHeight;
 		const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
 		const statusBarHeight = systemInfo.statusBarHeight
 		const navBarHeight = (menuButtonInfo.top - statusBarHeight) * 2 + menuButtonInfo.height

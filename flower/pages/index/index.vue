@@ -397,10 +397,10 @@ export default {
 	height: 44px;
 	border-radius: 50%;
 	background-image: linear-gradient(220deg, #BC3823, #BC3823, rgba(105, 55, 248, 0.3));
-	// background-image: linear-gradient(220deg, #00e859, #00e859, rgba(255, 255, 255, 0.8));
+	// background-image: linear-gradient(220deg, #566C44, #566C44, rgba(255, 255, 255, 0.8));
 	// background-color: #8F3430;
 	// background-color: red;
-	opacity: 0.85;
+	// opacity: 0.85;
 	// border: 1px solid rgba(0,0,0,0.08);
 	// box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 	transition: all .6s;

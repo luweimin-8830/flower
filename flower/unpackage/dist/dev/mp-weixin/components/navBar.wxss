@@ -1,0 +1,35 @@
+/* 水平间距 */
+/* 水平间距 */
+.nav-back-button.data-v-3075e18a {
+  position: fixed;
+  z-index: 999;
+  opacity: 0.55;
+  background-color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s, background-color 0.2s;
+}
+.nav-back-icon.data-v-3075e18a {
+  font-size: 20px;
+  color: #333;
+}
+.nav-back-button-hover.data-v-3075e18a {
+  transform: scale(0.92);
+  background-color: #f5f5f5;
+  opacity: 0.65;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+@media (prefers-color-scheme: dark) {
+.nav-back-button.data-v-3075e18a {
+    background-color: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.nav-back-button-hover.data-v-3075e18a {
+    background-color: rgba(50, 50, 50, 0.8);
+}
+}

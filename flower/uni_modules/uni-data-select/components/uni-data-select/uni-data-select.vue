@@ -372,7 +372,7 @@
 
 	.uni-select {
 		font-size: 14px;
-		border: 1px solid $uni-border-3;
+		// border: 1px solid $uni-border-3;
 		box-sizing: border-box;
 		border-radius: 4px;
 		padding: 0 5px;
@@ -384,7 +384,7 @@
 		/* #endif */
 		flex-direction: row;
 		align-items: center;
-		border-bottom: solid 1px $uni-border-3;
+		// border-bottom: solid 1px $uni-border-3;
 		width: 100%;
 		flex: 1;
 		height: 35px;
@@ -490,7 +490,7 @@
 	.uni-popper__arrow_bottom,
 	.uni-popper__arrow_bottom::after,
 	.uni-popper__arrow_top,
-	.uni-popper__arrow_top::after,
+	.uni-popper__arrow_top::after
 	{
 	position: absolute;
 	display: block;
