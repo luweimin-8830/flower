@@ -83,7 +83,7 @@
   justify-content: center;
   padding: 8px;
   margin-right: 10px;
-  font-size: 18px;
+  font-size: 16px;
   color: #666;
   transition: all 0.3s;
 }
@@ -91,7 +91,7 @@
   color: #6B8857;
   /* 选中颜色 */
   font-weight: bold;
-  font-size: 22px;
+  font-size: 20px;
   /* 选中稍微变大 */
 }
 

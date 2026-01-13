@@ -341,15 +341,16 @@ export default {
     justify-content: center;
     padding: 8px;
     margin-right: 10px;
-    font-size: 18px;
+    font-size: 16px;
     color: #666;
     transition: all 0.3s;
 
     &.active {
+        // color:#BC3823;
         color: #6B8857;
         /* 选中颜色 */
         font-weight: bold;
-        font-size: 22px;
+        font-size: 20px;
         /* 选中稍微变大 */
     }
 }
@@ -362,6 +363,7 @@ export default {
     left: 0;
     /* 初始位置，由 JS 控制 translateX */
     height: 3px;
+    // background-color: #BC3823;
     background-color: #6B8857;
     /* 下划线颜色 */
     border-radius: 2px;
