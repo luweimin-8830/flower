@@ -37,7 +37,7 @@ func (c *Config) normalize() {
 		c.Environment = "production"
 	}
 	if c.Endpoint == "" {
-		c.Endpoint = "pl.ap-shanghai.apm.tencentcs.com:4319"
+		c.Endpoint = "http://pl.ap-shanghai.apm.tencentcs.com:4319"
 	}
 	if c.Timeout <= 0 {
 		c.Timeout = 5 * time.Second
