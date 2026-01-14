@@ -15,7 +15,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc"
 )
 
 var tracerName = "wxcloud-golang"
@@ -37,7 +36,7 @@ func (c *Config) normalize() {
 		c.Environment = "production"
 	}
 	if c.Endpoint == "" {
-		c.Endpoint = "http://pl.ap-shanghai.apm.tencentcs.com:4319"
+		c.Endpoint = "pl.ap-shanghai.apm.tencentcs.com:4320"
 	}
 	if c.Timeout <= 0 {
 		c.Timeout = 5 * time.Second
@@ -52,14 +51,6 @@ func Init(ctx context.Context, cfg Config) (*sdktrace.TracerProvider, error) {
 	opts := []otlptracegrpc.Option{
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(cfg.Endpoint),
-		otlptracegrpc.WithDialOption(grpc.WithBlock()),
-		otlptracegrpc.WithTimeout(cfg.Timeout),
-	}
-
-	if cfg.Token != "" {
-		opts = append(opts, otlptracegrpc.WithHeaders(map[string]string{
-			"Authentication": cfg.Token,
-		}))
 	}
 
 	exporter, err := otlptracegrpc.New(ctx, opts...)
@@ -67,12 +58,13 @@ func Init(ctx context.Context, cfg Config) (*sdktrace.TracerProvider, error) {
 		return nil, fmt.Errorf("telemetry exporter init failed: %w", err)
 	}
 
-	res, err := resource.New(ctx,
+	res, err := resource.New(ctx, []resource.Option{
 		resource.WithAttributes(
-			semconv.ServiceNameKey.String(cfg.ServiceName),
-			attribute.String("environment", cfg.Environment),
+			attribute.String("token", "unZyTAhCEYVnKsKBSxGu"),
+			attribute.String("service.name", "plants"),
+			attribute.String("host.name", "127.0.0.1"),
 		),
-	)
+	}...)
 	if err != nil {
 		return nil, fmt.Errorf("telemetry resource init failed: %w", err)
 	}
