@@ -6,6 +6,8 @@ import (
 	"time"
 	"wxcloud-golang/db/model"
 
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
+	"go.opentelemetry.io/otel"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -33,6 +35,14 @@ func Init() error {
 		}})
 	if err != nil {
 		fmt.Println("DB Open error,err=", err.Error())
+		return err
+	}
+
+	if err := db.Use(otelgorm.NewPlugin(
+		otelgorm.WithTracerProvider(otel.GetTracerProvider()),
+		otelgorm.WithDBName(dataBase),
+	)); err != nil {
+		fmt.Println("DB OTel plugin error,err=", err.Error())
 		return err
 	}
 
