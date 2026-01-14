@@ -1,7 +1,11 @@
 "use strict";
 const common_vendor = require("../common/vendor.js");
 const utils_request = require("../utils/request.js");
+const WaterfallBox = () => "./WaterfallBox.js";
 const _sfc_main = {
+  components: {
+    WaterfallBox
+  },
   /**
    * 组件名称，也就是开发者使用的标签
    */
@@ -35,7 +39,8 @@ const _sfc_main = {
       currentTagIndex: 0,
       sliderLeft: 0,
       sliderWidth: 0,
-      sliderTimer: null
+      sliderTimer: null,
+      plantsList: []
     };
   },
   computed: {
@@ -74,19 +79,34 @@ const _sfc_main = {
           this.value = this.familyRange[0].value;
         }
         this.getTagList();
+        this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:125", error);
+        common_vendor.index.__f__("error", "at components/home.vue:156", error);
+      }
+    },
+    async getPlantsList() {
+      try {
+        const plants = await utils_request.callContainer("/api/plant/list", {
+          "familyId": this.value
+        });
+        common_vendor.index.__f__("log", "at components/home.vue:164", "plants list:", plants);
+        this.plantsList = plants == null ? void 0 : plants.data;
+        this.plantsList.forEach((item, index) => {
+          item.width = 256;
+          item.height = 256;
+        });
+      } catch (error) {
       }
     },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:129", e);
+      common_vendor.index.__f__("log", "at components/home.vue:177", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:136", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:184", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -96,19 +116,19 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:146", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:194", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:154", error);
+        common_vendor.index.__f__("error", "at components/home.vue:202", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:158", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:159", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:206", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:207", "search:", this.searchValue);
     },
     selectTag(index, item) {
       this.currentTagIndex = index;
@@ -147,6 +167,9 @@ const _sfc_main = {
           this.sliderWidth = textWidth;
         }
       });
+    },
+    onImgLoad(item) {
+      item.isLoaded = true;
     }
     /**
     * 内部使用的组件方法
@@ -171,7 +194,8 @@ const _sfc_main = {
 if (!Array) {
   const _easycom_uni_data_select2 = common_vendor.resolveComponent("uni-data-select");
   const _easycom_uni_search_bar2 = common_vendor.resolveComponent("uni-search-bar");
-  (_easycom_uni_data_select2 + _easycom_uni_search_bar2)();
+  const _component_WaterfallBox = common_vendor.resolveComponent("WaterfallBox");
+  (_easycom_uni_data_select2 + _easycom_uni_search_bar2 + _component_WaterfallBox)();
 }
 const _easycom_uni_data_select = () => "../uni_modules/uni-data-select/components/uni-data-select/uni-data-select.js";
 const _easycom_uni_search_bar = () => "../uni_modules/uni-search-bar/components/uni-search-bar/uni-search-bar.js";
@@ -213,7 +237,31 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     }),
     l: common_vendor.s($options.sliderStyle),
-    m: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0)
+    m: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0),
+    n: common_vendor.w(({
+      item
+    }, s0, i0) => {
+      return common_vendor.e({
+        a: item.cover,
+        b: item.isLoaded ? 1 : "",
+        c: common_vendor.o(($event) => $options.onImgLoad(item)),
+        d: item.height / item.width * 100 + "%",
+        e: common_vendor.t(item.name),
+        f: item.tags
+      }, item.tags ? {} : {}, {
+        g: i0,
+        h: s0
+      });
+    }, {
+      name: "item",
+      path: "n",
+      vueId: "045d88fd-2"
+    }),
+    o: common_vendor.p({
+      list: $data.plantsList,
+      idKey: "ID",
+      cols: "2"
+    })
   };
 }
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-045d88fd"]]);

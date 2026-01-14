@@ -42,11 +42,40 @@
             </view>
         </scroll-view>
     </view>
+    <!-- 植物列表瀑布流 -->
+    <!-- <image :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'" mode="scaleToFill" /> -->
+    <view>
+        <WaterfallBox :list="plantsList" idKey="ID" cols="2">
+
+            <!-- 【重点】这里是插槽，item 是组件回传给你的当前植物数据 -->
+            <template #item="{ item }">
+                <view class="plant-card">
+                    <!-- 图片：直接在这里处理路径，不需要组件操心 -->
+                    <view class="image-wrapper" :style="{ paddingBottom: (item.height / item.width * 100) + '%' }">
+                        <image :src="item.cover" mode="aspectFill" class="plant-image" lazy-load
+                            :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
+                    </view>
+                    <!-- 文字内容 -->
+                    <view class="plant-info">
+                        <text class="plant-name">{{ item.name }}</text>
+                        <view class="plant-tags" v-if="item.tags">
+                            <!-- 甚至可以放更多复杂的 UI -->
+                        </view>
+                    </view>
+                </view>
+            </template>
+
+        </WaterfallBox>
+    </view>
 </template>
 
 <script>
 import { callContainer } from '../utils/request';
+import WaterfallBox from './WaterfallBox.vue'
 export default {
+    components: {
+        WaterfallBox,
+    },
     /**
      * 组件名称，也就是开发者使用的标签
      */
@@ -82,6 +111,7 @@ export default {
             sliderLeft: 0,
             sliderWidth: 0,
             sliderTimer: null,
+            plantsList: [],
         }
     },
     computed: {
@@ -121,8 +151,26 @@ export default {
                     this.value = this.familyRange[0].value;
                 }
                 this.getTagList()
+                this.getPlantsList()
             } catch (error) {
                 console.error(error)
+            }
+        },
+        async getPlantsList() {
+            try {
+                const plants = await callContainer("/api/plant/list", {
+                    "familyId": this.value
+                })
+                console.log("plants list:", plants)
+                this.plantsList = plants?.data
+
+                //测试,删除
+                this.plantsList.forEach((item,index)=>{
+                    item.width = 256;
+                    item.height = 256;
+                })
+            } catch (error) {
+
             }
         },
         changeFamily(e) {
@@ -220,6 +268,9 @@ export default {
                     this.sliderWidth = textWidth;
                 }
             });
+        },
+        onImgLoad(item) {
+            item.isLoaded = true
         },
         /**
       * 内部使用的组件方法
@@ -387,6 +438,48 @@ export default {
     background-color: #6B8857;
     border-radius: 2px;
     animation: scaleIn 0.2s ease-out;
+}
+
+.plant-card {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    // transform: translateY(0);
+}
+
+.image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 0;
+    /* 背景色作为占位时的颜色 */
+    background-color: rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+}
+
+.plant-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    // background-color: rgba(255,255,255,1); // 加载时的背景色
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.plant-image.show {
+    opacity: 1;
+}
+
+.plant-info {
+    padding: 8px;
+}
+
+.plant-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
 }
 
 @keyframes scaleIn {
