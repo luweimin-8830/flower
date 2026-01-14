@@ -9,20 +9,19 @@
     }">
         <uni-data-select class="custom-select" v-model="value" :localdata="familyRange" @change="changeFamily"
             :clear="false">
-            <!-- <template v-slot:option="{ item, selected }">
-                <view class="dropdown-item" :class="{ 'is-selected': selected }">
-                    <text class="item-text">{{ item.text }}</text>
-                    <uni-icons v-if="selected" type="checkmarkempty" size="16" color="#007aff"></uni-icons>
-                </view>
-            </template> -->
         </uni-data-select>
     </view>
     <view :style="{ height: topBarHeight + 'px' }"></view>
     <!-- 搜索框 -->
-    <view>
-        <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="true" v-model="searchValue"
+    <view class="header-action-container">
+        <view class="search-box-wrapper">
+            <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="true" v-model="searchValue"
             bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
         </uni-search-bar>
+        </view>
+        <view class="add-btn" @click="goAddPage">
+            <uni-icons type="plusempty" size="22" color="#ffffff"></uni-icons>
+        </view>
     </view>
     <!-- 横向滚动列表 -->
     <view class="tag-scroll-container">
@@ -272,6 +271,11 @@ export default {
         onImgLoad(item) {
             item.isLoaded = true
         },
+        goAddPage() {
+            wx.vibrateShort({type:"medium"})
+            
+            // uni.navigateTo({ url: '/pages/add/add' });
+        },
         /**
       * 内部使用的组件方法
       */
@@ -341,6 +345,60 @@ export default {
     color: #007aff;
     /* 蓝色文字 */
     font-weight: bold;
+}
+
+.header-action-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px; /* 左右留白 */
+    margin-bottom: 5px; /* 和下方 Tag 保持一点距离 */
+}
+
+.search-box-wrapper {
+    /* 核心：搜索框占 82% (稍微多一点看起来更协调，留 18% 给按钮) */
+    width: 86%; 
+}
+
+.add-btn {
+    width: 44px; /* 稍微加大一点点，更易点击 */
+    height: 44px;
+    
+    /* 1. 微弱的线性渐变，模拟光照（上亮下暗） */
+    background: linear-gradient(145deg, #7da066, #607a4e);
+    /* 如果不支持渐变回退到纯色 */
+    background-color: #6B8857; 
+    
+    border-radius: 50%;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* 2. 核心：加重且多层的阴影 */
+    /* 第一层：深色投影，营造高度 */
+    /* 第二层：内部高光（inset），营造凸起感 */
+    box-shadow: 
+        0 6px 16px rgba(107, 136, 87, 0.4),  /* 外部弥散阴影 */
+        0 2px 4px rgba(0, 0, 0, 0.1),        /* 外部贴近阴影（轮廓） */
+        inset 0 1px 1px rgba(255, 255, 255, 0.3); /* 顶部内发光（高光） */
+        
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    
+    /* 3. 增加一点边框让轮廓更清晰 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    &:active {
+        transform: scale(0.92) translateY(2px); /* 点击时下沉 */
+        /* 点击时阴影收缩，模拟被按下去 */
+        box-shadow: 
+            0 2px 8px rgba(107, 136, 87, 0.3),
+            inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+}
+
+::v-deep .uni-searchbar {
+    padding: 10px 0 !important; /* 去掉左右默认 padding */
 }
 
 /* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */

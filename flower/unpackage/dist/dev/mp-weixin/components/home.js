@@ -81,7 +81,7 @@ const _sfc_main = {
         this.getTagList();
         this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:156", error);
+        common_vendor.index.__f__("error", "at components/home.vue:155", error);
       }
     },
     async getPlantsList() {
@@ -89,7 +89,7 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:164", "plants list:", plants);
+        common_vendor.index.__f__("log", "at components/home.vue:163", "plants list:", plants);
         this.plantsList = plants == null ? void 0 : plants.data;
         this.plantsList.forEach((item, index) => {
           item.width = 256;
@@ -99,14 +99,14 @@ const _sfc_main = {
       }
     },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:177", e);
+      common_vendor.index.__f__("log", "at components/home.vue:176", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:184", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:183", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -116,19 +116,19 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:194", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:193", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:202", error);
+        common_vendor.index.__f__("error", "at components/home.vue:201", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:206", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:207", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:205", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:206", "search:", this.searchValue);
     },
     selectTag(index, item) {
       this.currentTagIndex = index;
@@ -170,6 +170,9 @@ const _sfc_main = {
     },
     onImgLoad(item) {
       item.isLoaded = true;
+    },
+    goAddPage() {
+      common_vendor.wx$1.vibrateShort({ type: "medium" });
     }
     /**
     * 内部使用的组件方法
@@ -194,13 +197,15 @@ const _sfc_main = {
 if (!Array) {
   const _easycom_uni_data_select2 = common_vendor.resolveComponent("uni-data-select");
   const _easycom_uni_search_bar2 = common_vendor.resolveComponent("uni-search-bar");
+  const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   const _component_WaterfallBox = common_vendor.resolveComponent("WaterfallBox");
-  (_easycom_uni_data_select2 + _easycom_uni_search_bar2 + _component_WaterfallBox)();
+  (_easycom_uni_data_select2 + _easycom_uni_search_bar2 + _easycom_uni_icons2 + _component_WaterfallBox)();
 }
 const _easycom_uni_data_select = () => "../uni_modules/uni-data-select/components/uni-data-select/uni-data-select.js";
 const _easycom_uni_search_bar = () => "../uni_modules/uni-search-bar/components/uni-search-bar/uni-search-bar.js";
+const _easycom_uni_icons = () => "../uni_modules/uni-icons/components/uni-icons/uni-icons.js";
 if (!Math) {
-  (_easycom_uni_data_select + _easycom_uni_search_bar)();
+  (_easycom_uni_data_select + _easycom_uni_search_bar + _easycom_uni_icons)();
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
@@ -226,7 +231,13 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       cancelButton: "none",
       modelValue: $data.searchValue
     }),
-    k: common_vendor.f($data.tagList, (item, index, i0) => {
+    k: common_vendor.p({
+      type: "plusempty",
+      size: "22",
+      color: "#ffffff"
+    }),
+    l: common_vendor.o((...args) => $options.goAddPage && $options.goAddPage(...args)),
+    m: common_vendor.f($data.tagList, (item, index, i0) => {
       return {
         a: common_vendor.t(item.name),
         b: "tag-text-" + index,
@@ -236,9 +247,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         f: common_vendor.o(($event) => $options.selectTag(index, item), index)
       };
     }),
-    l: common_vendor.s($options.sliderStyle),
-    m: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0),
-    n: common_vendor.w(({
+    n: common_vendor.s($options.sliderStyle),
+    o: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0),
+    p: common_vendor.w(({
       item
     }, s0, i0) => {
       return common_vendor.e({
@@ -254,10 +265,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     }, {
       name: "item",
-      path: "n",
-      vueId: "045d88fd-2"
+      path: "p",
+      vueId: "045d88fd-3"
     }),
-    o: common_vendor.p({
+    q: common_vendor.p({
       list: $data.plantsList,
       idKey: "ID",
       cols: "2"
