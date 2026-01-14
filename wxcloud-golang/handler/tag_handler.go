@@ -31,7 +31,8 @@ func GetTagListHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误:"+err.Error())
 		return
 	}
-	tags, err := service.GetFamilyTag(req.FamilyID)
+	ctx := c.Request.Context()
+	tags, err := service.GetFamilyTag(ctx, req.FamilyID)
 	if err != nil {
 		response.Fail(c, "获取失败:"+err.Error())
 		return
@@ -45,7 +46,8 @@ func CreateTagHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误:"+err.Error())
 		return
 	}
-	tag, err := service.AddTag(req.Name, req.FamilyID)
+	ctx := c.Request.Context()
+	tag, err := service.AddTag(ctx, req.Name, req.FamilyID)
 	if err != nil {
 		response.FailWithCode(c, 500, "创建失败"+err.Error())
 		return
@@ -59,7 +61,8 @@ func DeleteTagHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误:"+err.Error())
 		return
 	}
-	if err := service.DeleteTag(req.ID); err != nil {
+	ctx := c.Request.Context()
+	if err := service.DeleteTag(ctx, req.ID); err != nil {
 		response.FailWithCode(c, 500, "删除失败"+err.Error())
 		return
 	}
@@ -72,7 +75,8 @@ func UpdateTagHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误:"+err.Error())
 		return
 	}
-	err := service.UpdateTag(req.ID, req.Name)
+	ctx := c.Request.Context()
+	err := service.UpdateTag(ctx, req.ID, req.Name)
 	if err != nil {
 		response.FailWithCode(c, 500, "更新失败"+err.Error())
 		return

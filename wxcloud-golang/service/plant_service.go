@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"wxcloud-golang/db/dao"
 	"wxcloud-golang/db/model"
@@ -8,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddPlant(plant *model.Plant, tagIDs []uint) error {
+func AddPlant(ctx context.Context, plant *model.Plant, tagIDs []uint) error {
 	if len(tagIDs) > 0 {
 		var tags []model.Tag
 		for _, id := range tagIDs {
@@ -17,21 +18,21 @@ func AddPlant(plant *model.Plant, tagIDs []uint) error {
 		plant.Tags = tags
 		fmt.Println("传入标签是：", tags)
 	}
-	return dao.CreatePlant(plant)
+	return dao.CreatePlant(ctx, plant)
 }
 
-func UpdatePlant(plantID uint, updateDate map[string]interface{}, tagIDs []uint) error {
-	return dao.UpdatePlant(plantID, updateDate, tagIDs)
+func UpdatePlant(ctx context.Context, plantID uint, updateDate map[string]any, tagIDs []uint) error {
+	return dao.UpdatePlant(ctx, plantID, updateDate, tagIDs)
 }
 
-func GetPlants(familyID uint) ([]model.Plant, error) {
-	return dao.GetPlantByFamilyID(familyID)
+func GetPlants(ctx context.Context, familyID uint) ([]model.Plant, error) {
+	return dao.GetPlantByFamilyID(ctx, familyID)
 }
 
-func GetPlant(id uint) (*model.Plant, error) {
-	return dao.GetPlantByID(id)
+func GetPlant(ctx context.Context, id uint) (*model.Plant, error) {
+	return dao.GetPlantByID(ctx, id)
 }
 
-func DeletePlant(plantID uint) error {
-	return dao.DeletePlant(plantID)
+func DeletePlant(ctx context.Context, plantID uint) error {
+	return dao.DeletePlant(ctx, plantID)
 }

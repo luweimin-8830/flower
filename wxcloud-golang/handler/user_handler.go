@@ -20,7 +20,8 @@ func CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := service.AddUser(OPENID)
+	ctx := c.Request.Context()
+	user, err := service.AddUser(ctx, OPENID)
 	if err != nil {
 		response.FailWithCode(c, 500, "创建用户失败:"+err.Error())
 		return
@@ -35,7 +36,8 @@ func UserLoginHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "未获取到OpenId")
 		return
 	}
-	user, family, err := service.Login(OPENID)
+	ctx := c.Request.Context()
+	user, family, err := service.Login(ctx, OPENID)
 	if err != nil {
 		response.FailWithCode(c, 500, "登录失败:"+err.Error())
 		return

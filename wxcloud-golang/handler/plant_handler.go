@@ -72,12 +72,13 @@ func CreatePlantHandler(c *gin.Context) {
 		Birthday: birthday,
 		OpenId:   OPENID,
 	}
-	if err := service.AddPlant(plant, tagIDs); err != nil {
+	ctx := c.Request.Context()
+	if err := service.AddPlant(ctx, plant, tagIDs); err != nil {
 		response.Fail(c, "新建失败:"+err.Error())
 		return
 	}
 
-	fullPlant, err := service.GetPlant(plant.ID)
+	fullPlant, err := service.GetPlant(ctx, plant.ID)
 	if err != nil {
 		response.Success(c, plant)
 	}
@@ -91,7 +92,7 @@ func UpdatePlantHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
 		return
 	}
-	updateData := make(map[string]interface{})
+	updateData := make(map[string]any)
 	if req.Name != "" {
 		updateData["name"] = req.Name
 	}
@@ -113,7 +114,8 @@ func UpdatePlantHandler(c *gin.Context) {
 		}
 	}
 
-	if err := service.UpdatePlant(uint(req.ID), updateData, tagIDs); err != nil {
+	ctx := c.Request.Context()
+	if err := service.UpdatePlant(ctx, uint(req.ID), updateData, tagIDs); err != nil {
 		response.Fail(c, "更新失败:"+err.Error())
 		return
 	}
@@ -126,7 +128,8 @@ func GetPlantsHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
 		return
 	}
-	plants, err := service.GetPlants(req.FamilyID)
+	ctx := c.Request.Context()
+	plants, err := service.GetPlants(ctx, req.FamilyID)
 	if err != nil {
 		response.Fail(c, "获取失败:"+err.Error())
 		return
@@ -140,7 +143,8 @@ func DeletePlantHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
 		return
 	}
-	if err := service.DeletePlant(req.ID); err != nil {
+	ctx := c.Request.Context()
+	if err := service.DeletePlant(ctx, req.ID); err != nil {
 		response.Fail(c, "删除失败:"+err.Error())
 		return
 	}
@@ -153,7 +157,8 @@ func GetPlantHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
 		return
 	}
-	plant, err := service.GetPlant(req.ID)
+	ctx := c.Request.Context()
+	plant, err := service.GetPlant(ctx, req.ID)
 	if err != nil {
 		response.Fail(c, "获取失败:"+err.Error())
 		return

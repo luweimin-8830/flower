@@ -1,13 +1,14 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"wxcloud-golang/db/dao"
 	"wxcloud-golang/db/model"
 )
 
-func AddTag(name string, familyID uint) (*model.Tag, error) {
-	existingTags, _ := dao.GetTagByFamilyID(familyID)
+func AddTag(ctx context.Context, name string, familyID uint) (*model.Tag, error) {
+	existingTags, _ := dao.GetTagByFamilyID(ctx, familyID)
 	for _, t := range existingTags {
 		if t.Name == name {
 			return nil, errors.New("家庭已存在此标签名")
@@ -17,21 +18,21 @@ func AddTag(name string, familyID uint) (*model.Tag, error) {
 		Name:     name,
 		FamilyID: familyID,
 	}
-	err := dao.CreateTag(tag)
+	err := dao.CreateTag(ctx, tag)
 	if err != nil {
 		return nil, err
 	}
 	return tag, nil
 }
 
-func DeleteTag(tagID uint) error {
-	return dao.DeleteTag(tagID)
+func DeleteTag(ctx context.Context, tagID uint) error {
+	return dao.DeleteTag(ctx, tagID)
 }
 
-func UpdateTag(tagID uint, name string) error {
-	return dao.UpdateTag(tagID, name)
+func UpdateTag(ctx context.Context, tagID uint, name string) error {
+	return dao.UpdateTag(ctx, tagID, name)
 }
 
-func GetFamilyTag(familyID uint) ([]model.Tag, error) {
-	return dao.GetTagByFamilyID(familyID)
+func GetFamilyTag(ctx context.Context, familyID uint) ([]model.Tag, error) {
+	return dao.GetTagByFamilyID(ctx, familyID)
 }
