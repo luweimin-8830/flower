@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/my/my",
-    "pages/system/system"
+    "pages/system/system",
+    "pages/addPlant/addPlant"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",

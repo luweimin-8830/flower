@@ -25,6 +25,14 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": true
 		}
+	},{
+		"path": "pages/addPlant/addPlant",
+		"style": {
+			"navigationBarTitleText": "",
+			"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": true
+		}
 	}],
 	"globalStyle": {
 		"navigationBarTextStyle": "@navTextStyle",

@@ -20,7 +20,7 @@
         </uni-search-bar>
         </view>
         <view class="add-btn" @click="goAddPage">
-            <uni-icons type="plusempty" size="22" color="#ffffff"></uni-icons>
+            <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
         </view>
     </view>
     <!-- 横向滚动列表 -->
@@ -31,25 +31,19 @@
             <view class="tag-flex-box" id="tag-container">
                 <view v-for="(item, index) in tagList" :key="index" :id="'tag-item-' + index" class="tag-item"
                     :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
-                    <!-- 给文字加上 ID，以便精确获取文字宽度 -->
                     <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
                 </view>
                 <!-- 独立的滑动下划线 -->
-                <!-- 注意：它在 v-for 之外，但在 flex-box 之内 -->
                 <view class="slider-bar" :style="sliderStyle"></view>
 
             </view>
         </scroll-view>
     </view>
     <!-- 植物列表瀑布流 -->
-    <!-- <image :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'" mode="scaleToFill" /> -->
     <view>
         <WaterfallBox :list="plantsList" idKey="ID" cols="2">
-
-            <!-- 【重点】这里是插槽，item 是组件回传给你的当前植物数据 -->
             <template #item="{ item }">
                 <view class="plant-card">
-                    <!-- 图片：直接在这里处理路径，不需要组件操心 -->
                     <view class="image-wrapper" :style="{ paddingBottom: (item.height / item.width * 100) + '%' }">
                         <image :src="item.cover" mode="aspectFill" class="plant-image" lazy-load
                             :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
@@ -57,9 +51,7 @@
                     <!-- 文字内容 -->
                     <view class="plant-info">
                         <text class="plant-name">{{ item.name }}</text>
-                        <view class="plant-tags" v-if="item.tags">
-                            <!-- 甚至可以放更多复杂的 UI -->
-                        </view>
+                        <view class="plant-tags" v-if="item.tags"></view>
                     </view>
                 </view>
             </template>
@@ -207,38 +199,20 @@ export default {
         },
         selectTag(index, item) {
             this.currentTagIndex = index;
-
             const query = uni.createSelectorQuery().in(this);
-            // 获取容器和当前点击的文字（此时还是小字体状态）
             query.select('#tag-container').boundingClientRect();
             query.select('#tag-text-' + index).boundingClientRect();
-
             query.exec((res) => {
                 if (res[0] && res[1]) {
                     const containerLeft = res[0].left;
                     const currentTextLeft = res[1].left;
                     const currentTextWidth = res[1].width;
-
-                    // --- 核心逻辑：预判算法 ---
-                    // 已知：字体从 18px 变为 22px
                     const ratio = 22 / 18;
-
-                    // 1. 算出最终宽度
                     const finalWidth = currentTextWidth * ratio;
-
-                    // 2. 算出宽度差 (变宽了多少)
                     const widthDiff = finalWidth - currentTextWidth;
-
-                    // 3. 算出最终左边距
-                    // 原理：文字是居中放大的，所以左边距要向左移动“宽度差的一半”
                     const finalLeft = (currentTextLeft - containerLeft) - (widthDiff / 2);
-
-                    // 4. 直接设置最终值，让 CSS transition 去处理动画
                     this.sliderWidth = finalWidth;
                     this.sliderLeft = finalLeft;
-
-                    // 5. 保底修正：350ms 动画结束后，再精准测量一次
-                    // (防止预判有细微误差，或者受其他元素排版影响)
                     if (this.sliderTimer) clearTimeout(this.sliderTimer);
                     this.sliderTimer = setTimeout(() => {
                         this.updateSliderPosition(index);
@@ -249,9 +223,6 @@ export default {
 
         updateSliderPosition(index) {
             const query = uni.createSelectorQuery().in(this);
-
-            // 1. 获取容器的位置 (作为基准)
-            // 2. 获取目标文字的位置和宽度
             query.select('#tag-container').boundingClientRect();
             query.select('#tag-text-' + index).boundingClientRect();
 
@@ -273,8 +244,7 @@ export default {
         },
         goAddPage() {
             wx.vibrateShort({type:"medium"})
-            
-            // uni.navigateTo({ url: '/pages/add/add' });
+            uni.navigateTo({ url: '/pages/addPlant/addPlant' });
         },
         /**
       * 内部使用的组件方法
@@ -327,25 +297,7 @@ export default {
     //overflow: hidden; /* 超出圆角部分隐藏 */
 }
 
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    /* 文字靠左，图标靠右 */
-    padding: 10px 12px;
-    font-size: 14px;
-    color: #333;
 
-}
-
-/* 2. 选中状态的高亮样式 */
-.dropdown-item.is-selected {
-    background-color: #f0f7ff;
-    /* 浅蓝色背景 */
-    color: #007aff;
-    /* 蓝色文字 */
-    font-weight: bold;
-}
 
 .header-action-container {
     display: flex;
@@ -361,13 +313,14 @@ export default {
 }
 
 .add-btn {
-    width: 44px; /* 稍微加大一点点，更易点击 */
-    height: 44px;
+    width: 74rpx; /* 稍微加大一点点，更易点击 */
+    height: 74rpx;
     
     /* 1. 微弱的线性渐变，模拟光照（上亮下暗） */
-    background: linear-gradient(145deg, #7da066, #607a4e);
+    // background: linear-gradient(145deg, #7da066, #607a4e);
+    background: rgba(255,255,255,0.55);
     /* 如果不支持渐变回退到纯色 */
-    background-color: #6B8857; 
+    // background-color: #6B8857; 
     
     border-radius: 50%;
     
@@ -375,14 +328,6 @@ export default {
     align-items: center;
     justify-content: center;
     
-    /* 2. 核心：加重且多层的阴影 */
-    /* 第一层：深色投影，营造高度 */
-    /* 第二层：内部高光（inset），营造凸起感 */
-    box-shadow: 
-        0 6px 16px rgba(107, 136, 87, 0.4),  /* 外部弥散阴影 */
-        0 2px 4px rgba(0, 0, 0, 0.1),        /* 外部贴近阴影（轮廓） */
-        inset 0 1px 1px rgba(255, 255, 255, 0.3); /* 顶部内发光（高光） */
-        
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
     
     /* 3. 增加一点边框让轮廓更清晰 */
@@ -390,10 +335,6 @@ export default {
     
     &:active {
         transform: scale(0.92) translateY(2px); /* 点击时下沉 */
-        /* 点击时阴影收缩，模拟被按下去 */
-        box-shadow: 
-            0 2px 8px rgba(107, 136, 87, 0.3),
-            inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 }
 
@@ -562,15 +503,6 @@ export default {
 
     ::v-deep .uni-select__input-text {
         color: #fff;
-    }
-
-    .dropdown-item {
-        color: #eee;
-    }
-
-    .dropdown-item.is-selected {
-        background-color: rgba(0, 122, 255, 0.2);
-        color: #409eff;
     }
 
     .tag-item {

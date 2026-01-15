@@ -81,7 +81,7 @@ const _sfc_main = {
         this.getTagList();
         this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:155", error);
+        common_vendor.index.__f__("error", "at components/home.vue:147", error);
       }
     },
     async getPlantsList() {
@@ -89,7 +89,7 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:163", "plants list:", plants);
+        common_vendor.index.__f__("log", "at components/home.vue:155", "plants list:", plants);
         this.plantsList = plants == null ? void 0 : plants.data;
         this.plantsList.forEach((item, index) => {
           item.width = 256;
@@ -99,14 +99,14 @@ const _sfc_main = {
       }
     },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:176", e);
+      common_vendor.index.__f__("log", "at components/home.vue:168", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:183", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:175", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -116,19 +116,19 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:193", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:185", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:201", error);
+        common_vendor.index.__f__("error", "at components/home.vue:193", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:205", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:206", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:197", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:198", "search:", this.searchValue);
     },
     selectTag(index, item) {
       this.currentTagIndex = index;
@@ -173,6 +173,7 @@ const _sfc_main = {
     },
     goAddPage() {
       common_vendor.wx$1.vibrateShort({ type: "medium" });
+      common_vendor.index.navigateTo({ url: "/pages/addPlant/addPlant" });
     }
     /**
     * 内部使用的组件方法
@@ -234,7 +235,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     k: common_vendor.p({
       type: "plusempty",
       size: "22",
-      color: "#ffffff"
+      color: "#333"
     }),
     l: common_vendor.o((...args) => $options.goAddPage && $options.goAddPage(...args)),
     m: common_vendor.f($data.tagList, (item, index, i0) => {
