@@ -173,7 +173,7 @@ const _sfc_main = {
     },
     goAddPage() {
       common_vendor.wx$1.vibrateShort({ type: "medium" });
-      common_vendor.index.navigateTo({ url: "/pages/addPlant/addPlant" });
+      common_vendor.index.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
     }
     /**
     * 内部使用的组件方法

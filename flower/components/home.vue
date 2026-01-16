@@ -244,7 +244,8 @@ export default {
         },
         goAddPage() {
             wx.vibrateShort({type:"medium"})
-            uni.navigateTo({ url: '/pages/addPlant/addPlant' });
+            // 传入当前家庭ID
+            uni.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
         },
         /**
       * 内部使用的组件方法

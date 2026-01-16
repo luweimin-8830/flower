@@ -67,7 +67,7 @@ func CreatePlantHandler(c *gin.Context) {
 	plant := &model.Plant{
 		Name:     req.Name,
 		FamilyID: req.FamilyID,
-		Cover:    req.Cover,
+		CoverID:  req.Cover,
 		Desc:     req.Desc,
 		Birthday: birthday,
 		OpenId:   OPENID,

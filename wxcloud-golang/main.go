@@ -69,6 +69,7 @@ func main() {
 			tag.POST("/delete", handler.DeleteTagHandler)
 			tag.POST("/update", handler.UpdateTagHandler)
 		}
+		api.POST("/upload", handler.UploadHandler)
 	}
 
 	log.Fatal(r.Run(":80"))

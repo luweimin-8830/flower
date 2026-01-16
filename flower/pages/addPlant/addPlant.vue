@@ -9,12 +9,12 @@
 		<view :style="{ padding: '0 ' + paddingLeft + 'px' }">
 			<uni-row :gutter="gutter" :width="nvueWidth">
 				<uni-col :span="5">
-					<view class="clean-btn" @click="goAddPage">
+					<view class="clean-btn" @click="clear">
 						<text>取消</text>
 					</view>
 				</uni-col>
 				<uni-col :span="5" :push="14">
-					<view class="add-btn" @click="goAddPage">
+					<view class="add-btn" @click="save">
 						<text>保存</text>
 					</view>
 				</uni-col>
@@ -40,9 +40,9 @@
 				<uni-easyinput v-model="plant.name" :inputBorder="false" :clearable="false" placeholder="输入植物名称"
 					placeholderStyle="color:#8BA989; font-size:15px;" @focus="nameFocus = true"
 					@blur="nameFocus = false"></uni-easyinput>
-				<!-- 右侧扫码图标 -->
-				<view class="icon-right">
-					<uni-icons type="loop" size="24" color="#566C44"></uni-icons>
+				<!-- 右侧刷新图标 -->
+				<view class="icon-right" @click="rollName">
+						<uni-icons type="loop" size="24" color="#566C44"></uni-icons>
 				</view>
 			</view>
 
@@ -84,7 +84,7 @@
 			</view>
 
 			<!-- 添加按钮 -->
-			<view class="tag-add-btn" @click="addTag" >
+			<view class="tag-add-btn" @click="addTag">
 				<uni-icons type="plusempty" size="16" color="#566C44"></uni-icons>
 				<text>添加</text>
 			</view>
@@ -94,6 +94,7 @@
 
 <script>
 import navBar from '@/components/navBar.vue'
+import { callContainer } from '../../utils/request';
 export default {
 	components: {
 		navBar,
@@ -103,6 +104,7 @@ export default {
 			menuButtonInfo: {},
 			topBarHeight: 0,
 			paddingLeft: 0,
+			familyId: 0,
 			plant: {
 				name: '',
 				cover: '',
@@ -112,18 +114,25 @@ export default {
 			},
 			nameFocus: false,
 			descFocus: false,
-			tags: [
-				{ name: '室内', active: true }, 
-				{ name: '多肉', active: false }, 
-				{ name: '需浇水', active: false },
-				{ name: '需浇水', active: false },
-				{ name: '需浇水', active: false },
-				{ name: '需浇水', active: false },
-				{ name: '需浇水', active: false },
-			] 
+			tags: [],
+			isCD:false,
 		}
 	},
 	methods: {
+		getTimeCode() {
+			// 1. 获取秒级时间戳
+			const timestamp = Math.floor(new Date().getTime() / 1000);
+			// 2. 转为36进制并大写
+			return timestamp.toString(36).toUpperCase();
+		},
+		rollName(){
+			if(this.isCD) return
+			this.isCD = true
+			wx.vibrateShort({ type: "medium" })
+			const c = this.getTimeCode()
+			this.plant.name = "未知-" + c
+			setTimeout(()=>{this.isCD=false},1000)
+		},
 		onDateChange(e) {
 			console.log("date", e)
 			this.plant.birthday = e
@@ -144,14 +153,58 @@ export default {
 		toggleTag(index) {
 			this.tags[index].active = !this.tags[index].active;
 		},
+		async getTagsList() {
+			try {
+				const tagList = await callContainer("/api/tag/", {
+					familyId: this.familyId
+				})
+				console.log("tagList:", tagList)
+				const apiTags = tagList?.data || []
+				this.tags = [
+					...apiTags.map((item) => ({
+						name: item.name,
+						ID: item.ID,
+						active: false
+					}))
+				]
+				console.log("tags", this.tags)
+			} catch (error) {
+				console.error(error)
+			}
+		},
+		clear() {
+			wx.vibrateShort({ type: "medium" })
+			wx.navigateBack()
+		},
+		save() {
+			wx.vibrateShort({ type: "medium" })
+			if (!this.plant.name) {
+				uni.showToast({
+					title: '请输入植物名称',
+					icon: 'error',
+					mask: true
+				})
+				return;
+			}
+			console.log("name", this.plant.name)
+			console.log("cover", this.plant.cover)
+			console.log("desc", this.plant.desc)
+			console.log("birthday", this.plant.birthday)
+			console.log("tags", this.plant.tags)
+		}
 	},
-	onLoad() {
+	onLoad(options) {
+		if (options) {
+			this.familyId = Number(options.familyId);
+			console.log("获取家庭ID", this.familyId)
+		}
 		const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
 		this.menuButtonInfo = menuButtonInfo
 		const systemInfo = uni.getWindowInfo()
 		this.paddingLeft = systemInfo.screenWidth - menuButtonInfo.right
 		const app = getApp()
 		this.topBarHeight = app.globalData.topBarHeight;
+		this.getTagsList()
 	}
 }
 </script>
@@ -319,8 +372,8 @@ $text-color: #566C44;
 
 .tags-wrapper {
 	display: flex;
-	flex-wrap: wrap; 
-	gap: 20rpx; 
+	flex-wrap: wrap;
+	gap: 20rpx;
 }
 
 /* 单个标签 */
@@ -331,23 +384,27 @@ $text-color: #566C44;
 	border-radius: 40rpx;
 	display: flex;
 	align-items: center;
-	transition: all 0.2s ease; /* 添加过渡动画 */
-	border: 2rpx solid transparent; /* 预留边框位置防止抖动 */
-	
+	transition: all 0.2s ease;
+	/* 添加过渡动画 */
+	border: 2rpx solid transparent;
+	/* 预留边框位置防止抖动 */
+
 	text {
 		font-size: 26rpx;
 		color: $text-color;
 		font-weight: 500;
 		transition: color 0.2s ease;
 	}
-	
+
 	/* 选中状态：深色背景，浅色字 (互换颜色) */
 	&.active {
-		background-color: $text-color; /* #566C44 */
+		background-color: $text-color;
+		/* #566C44 */
 		box-shadow: 0 4rpx 10rpx rgba(86, 108, 68, 0.3);
-		
+
 		text {
-			color: #fff; /* 或者使用 $bg-color (#E8F0E8) */
+			color: #fff;
+			/* 或者使用 $bg-color (#E8F0E8) */
 		}
 	}
 }
@@ -358,15 +415,15 @@ $text-color: #566C44;
 	border-radius: 40rpx;
 	display: flex;
 	align-items: center;
-	border: 2rpx dashed $text-color; 
+	border: 2rpx dashed $text-color;
 	background-color: rgba(255, 255, 255, 0.4);
-	
+
 	text {
 		font-size: 26rpx;
 		color: $text-color;
 		margin-left: 6rpx;
 	}
-	
+
 	&:active {
 		background-color: rgba(86, 108, 68, 0.1);
 	}
