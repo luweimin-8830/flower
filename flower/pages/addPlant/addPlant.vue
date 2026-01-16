@@ -28,7 +28,7 @@
 					:src="plant.cover ? plant.cover : 'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"
 					mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
-				<view class="camera-badge">
+				<view class="camera-badge" @click="uploadImage">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
 				</view>
 			</view>
@@ -42,7 +42,7 @@
 					@blur="nameFocus = false"></uni-easyinput>
 				<!-- 右侧刷新图标 -->
 				<view class="icon-right" @click="rollName">
-						<uni-icons type="loop" size="24" color="#566C44"></uni-icons>
+					<uni-icons type="loop" size="24" color="#566C44"></uni-icons>
 				</view>
 			</view>
 
@@ -115,7 +115,7 @@ export default {
 			nameFocus: false,
 			descFocus: false,
 			tags: [],
-			isCD:false,
+			isCD: false,
 		}
 	},
 	methods: {
@@ -125,13 +125,13 @@ export default {
 			// 2. 转为36进制并大写
 			return timestamp.toString(36).toUpperCase();
 		},
-		rollName(){
-			if(this.isCD) return
+		rollName() {
+			if (this.isCD) return
 			this.isCD = true
 			wx.vibrateShort({ type: "medium" })
 			const c = this.getTimeCode()
 			this.plant.name = "未知-" + c
-			setTimeout(()=>{this.isCD=false},1000)
+			setTimeout(() => { this.isCD = false }, 1000)
 		},
 		onDateChange(e) {
 			console.log("date", e)
@@ -191,6 +191,50 @@ export default {
 			console.log("desc", this.plant.desc)
 			console.log("birthday", this.plant.birthday)
 			console.log("tags", this.plant.tags)
+		},
+		async uploadImage() {
+			try {
+				const result = await new Promise((resolve, reject) => {
+					wx.chooseMedia({
+						count: 1,
+						mediaType: ['image'],
+						success: resolve,
+						fail: reject
+					})
+				})
+				console.log("tmp image", result)
+				const file = result.tempFiles[0]
+				const MAX_SIZE = 2 * 1024 * 1024 // 2MB
+				if (file.size > MAX_SIZE) {
+					wx.showToast({
+						title: '图片大小不能超过2MB',
+						icon: 'error',
+						duration: 2000
+					})
+					return
+				}
+				const upload = await new Promise((resolve, reject) => {
+					wx.getFileSystemManager().readFile({
+						filePath: file.tempFilePath,
+						encoding: 'base64',
+						success: resolve,
+						fail: reject
+					})
+				})
+				console.log("base64:", upload)
+				const timestamp = Math.floor(new Date().getTime() / 1000);
+				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+				const name = `${timestamp}${random}.jpg`;
+				const imageUrl = await callContainer("/api/upload",{
+					familyId:this.familyId,
+					fileName:name,
+					image:upload.data
+				})
+				console.log("后台返回url:",imageUrl)
+
+			} catch (error) {
+				console.error(error)
+			}
 		}
 	},
 	onLoad(options) {

@@ -67,8 +67,8 @@ const _sfc_main = {
     async loadFamilyData() {
       var _a;
       try {
-        const familyList = await new Promise((resolve) => {
-          common_vendor.index.getStorage({ key: "family", success: resolve });
+        const familyList = await new Promise((resolve, reject) => {
+          common_vendor.index.getStorage({ key: "family", success: resolve, fail: reject });
         });
         this.familyRange = [];
         (_a = familyList == null ? void 0 : familyList.data) == null ? void 0 : _a.forEach((item) => {

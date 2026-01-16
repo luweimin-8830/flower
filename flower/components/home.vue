@@ -130,8 +130,8 @@ export default {
     methods: {
         async loadFamilyData() {
             try {
-                const familyList = await new Promise((resolve) => {
-                    uni.getStorage({ key: 'family', success: resolve })
+                const familyList = await new Promise((resolve,reject) => {
+                    uni.getStorage({ key: 'family', success: resolve ,fail:reject})
                 })
                 this.familyRange = []
                 familyList?.data?.forEach(item => {
