@@ -25,7 +25,7 @@
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片 -->
 				<image class="plant-img"
-					:src="plant.cover ? plant.cover : 'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"
+					:src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/families/1/f3b055fa20c493f0d994eb1ccaa2df9745507198c2809b59e03a0074086594f5.jpg'"
 					mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImage">
@@ -207,7 +207,7 @@ export default {
 				const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 				if (file.size > MAX_SIZE) {
 					wx.showToast({
-						title: '图片大小不能超过2MB',
+						title: '不能超过2MB',
 						icon: 'error',
 						duration: 2000
 					})
@@ -231,7 +231,7 @@ export default {
 					image:upload.data
 				})
 				console.log("后台返回url:",imageUrl)
-
+				this.plant.cover = imageUrl.data.url
 			} catch (error) {
 				console.error(error)
 			}
