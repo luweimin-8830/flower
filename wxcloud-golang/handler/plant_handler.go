@@ -16,7 +16,7 @@ type CreatePlantRequest struct {
 	Tags     []struct {
 		ID uint `json:"id"`
 	} `json:"tags"`
-	Cover    string    `json:"cover"`
+	CoverID  uint      `json:"coverId"`
 	Desc     string    `json:"desc"`
 	Birthday time.Time `json:"birthday"`
 	OpenId   string    `json:"openId"`
@@ -32,7 +32,7 @@ type UpdatePlantRequest struct {
 	ID       uint      `json:"id" binding:"required"`
 	Name     string    `json:"name"`
 	Desc     string    `json:"desc"`
-	Cover    string    `json:"cover"`
+	CoverID  uint      `json:"coverId"`
 	Birthday time.Time `json:"birthday"`
 	Tags     []struct {
 		ID uint `json:"id"`
@@ -67,7 +67,7 @@ func CreatePlantHandler(c *gin.Context) {
 	plant := &model.Plant{
 		Name:     req.Name,
 		FamilyID: req.FamilyID,
-		CoverID:  req.Cover,
+		CoverID:  req.CoverID,
 		Desc:     req.Desc,
 		Birthday: birthday,
 		OpenId:   OPENID,
@@ -99,8 +99,8 @@ func UpdatePlantHandler(c *gin.Context) {
 	if req.Desc != "" {
 		updateData["desc"] = req.Desc
 	}
-	if req.Cover != "" {
-		updateData["cover"] = req.Cover
+	if req.CoverID > 0 {
+		updateData["cover_id"] = req.CoverID
 	}
 	if !req.Birthday.IsZero() {
 		updateData["birthday"] = req.Birthday

@@ -9,7 +9,7 @@ import (
 type Plant struct {
 	gorm.Model
 	Name     string    `json:"name" gorm:"type:varchar(100);not null"` //名称
-	CoverID  string    `json:"coverId"`                                //主图
+	CoverID  uint      `json:"coverId"`                                //主图
 	Cover    Image     `json:"cover" gorm:"foreignKey:CoverID"`
 	Desc     string    `json:"desc" gorm:"type:varchar(255)"` //备注
 	OpenId   string    `json:"openId"`                        //所属人
