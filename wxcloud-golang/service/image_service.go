@@ -19,6 +19,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	WxEnvID      = "prod-0gr2o3qpe533f1fb"                 // 你的环境ID
+	WxBucketName = "7072-prod-0gr2o3qpe533f1fb-1352691102" // 你的存储桶名称
+)
+
 // UploadImage 处理图片上传的核心业务
 // fileData 必须是 io.ReadSeeker，因为我们需要多次读取流（算Hash、取宽高、上传）
 func UploadImage(ctx context.Context, fileData io.ReadSeeker, originalName string, familyID uint) (*model.Image, error) {
@@ -70,11 +75,13 @@ func UploadImage(ctx context.Context, fileData io.ReadSeeker, originalName strin
 
 	// 6. 上传到 COS
 	// utils.UploadToCOS 内部应该接收 io.Reader
-	url, err := utils.UploadToCOS(fileData, objectKey)
+	_, err = utils.UploadToCOS(fileData, objectKey)
 	if err != nil {
 		fmt.Printf("COS Upload Error: %v\n", err)
 		return nil, err
 	}
+
+	url := fmt.Sprintf("cloud://%s.%s/%s", WxEnvID, WxBucketName, objectKey)
 
 	// 7. 入库
 	newImg := &model.Image{

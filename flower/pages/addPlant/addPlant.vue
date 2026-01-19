@@ -23,9 +23,9 @@
 		<!-- 图片上传 -->
 		<view class="upload-section">
 			<view class="avatar-wrapper">
-				<!-- 图片：如果没有src显示背景色，有src显示图片 -->
+				<!-- 图片：如果没有src显示背景色，有src显示图片 :src="plant.cover" -->
 				<image class="plant-img"
-					:src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/families/1/f3b055fa20c493f0d994eb1ccaa2df9745507198c2809b59e03a0074086594f5.jpg'"
+					:src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"
 					mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImage">
