@@ -229,9 +229,11 @@ export default {
 					image: upload.data
 				})
 				console.log("后台返回url:", imageUrl)
-				this.plant.cover = String(imageUrl.data.url).trim()
-				console.log("前端url:", this.plant.cover)
-
+				this.plant.cover = imageUrl.data.url
+				const startIndex = this.plant.cover.indexOf('cloud://');
+				if (startIndex !== -1) {
+					this.plant.cover = this.plant.cover.substring(startIndex);
+				}
 			} catch (error) {
 				console.error(error)
 			}
