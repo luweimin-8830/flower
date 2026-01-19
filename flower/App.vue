@@ -2,13 +2,22 @@
 import { callContainer } from './utils/request';
 export default {
 	globalData: {
-		topBarHeight:0,
-		bottomSafeAreaHeight:0,
-		windowWidth:0,
-		windowHeight:0,
+		initPromise: null,
+		topBarHeight: 0,
+		bottomSafeAreaHeight: 0,
+		windowWidth: 0,
+		windowHeight: 0,
 	},
 	onLaunch: async function () {
 		console.log('App Launch')
+		if(!wx.cloud) {
+			console.error('请使用 2.2.3 或以上的基础库以使用云能力')
+		}else{
+			wx.cloud.init({
+				env:"prod-0gr2o3qpe533f1fb",
+				traceUser: true,
+			})
+		}
 		//获取手机信息
 		const systemInfo = wx.getWindowInfo()
 		this.globalData.windowWidth = systemInfo.windowWidth;
@@ -21,7 +30,6 @@ export default {
 		const bottomSafeAreaHeight = systemInfo.screenHeight - systemInfo.safeArea.bottom
 		this.globalData.bottomSafeAreaHeight = bottomSafeAreaHeight
 		// uni.hideTabBar()
-		wx.cloud.init()
 		const user = await callContainer("/api/login")
 		console.log("callContainer login:", user)
 		await new Promise((resolve) => {
@@ -70,8 +78,7 @@ page {
 	:root,
 	page {
 		--bg-color: #202020;
-		--bg-btn-color: #151515
-		--card-bg: #1e1e1e;
+		--bg-btn-color: #151515 --card-bg: #1e1e1e;
 		--text-color: #ffffff;
 		--text-sub: #777777;
 		--border-color: #333333;
@@ -85,6 +92,7 @@ page {
 	color: var(--text-color);
 	transition: background-color 0.3s, color, 0.3s;
 }
+
 /*
 #fffff
 #FAF2CB

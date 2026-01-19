@@ -256,7 +256,7 @@ export default {
      * [可选实现] 组件被创建，组件第一个生命周期，
      * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑
      */
-    created() {
+    async created() {
         const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
         this.menuButtonInfo = menuButtonInfo
         const systemInfo = uni.getWindowInfo()
@@ -264,6 +264,7 @@ export default {
         const app = getApp()
         this.topBarHeight = app.globalData.topBarHeight;
         this.windowWidth = app.globalData.windowWidth;
+        await app.globalData.initPromise;
         this.loadFamilyData()
 
     },

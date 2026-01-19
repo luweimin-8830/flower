@@ -10,13 +10,22 @@ if (!Math) {
 }
 const _sfc_main = {
   globalData: {
+    initPromise: null,
     topBarHeight: 0,
     bottomSafeAreaHeight: 0,
     windowWidth: 0,
     windowHeight: 0
   },
   onLaunch: async function() {
-    common_vendor.index.__f__("log", "at App.vue:11", "App Launch");
+    common_vendor.index.__f__("log", "at App.vue:12", "App Launch");
+    if (!common_vendor.wx$1.cloud) {
+      common_vendor.index.__f__("error", "at App.vue:14", "请使用 2.2.3 或以上的基础库以使用云能力");
+    } else {
+      common_vendor.wx$1.cloud.init({
+        env: "prod-0gr2o3qpe533f1fb",
+        traceUser: true
+      });
+    }
     const systemInfo = common_vendor.wx$1.getWindowInfo();
     this.globalData.windowWidth = systemInfo.windowWidth;
     this.globalData.windowHeight = systemInfo.windowHeight;
@@ -27,9 +36,8 @@ const _sfc_main = {
     this.globalData.topBarHeight = barHeight;
     const bottomSafeAreaHeight = systemInfo.screenHeight - systemInfo.safeArea.bottom;
     this.globalData.bottomSafeAreaHeight = bottomSafeAreaHeight;
-    common_vendor.wx$1.cloud.init();
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at App.vue:26", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at App.vue:34", "callContainer login:", user);
     await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
     });

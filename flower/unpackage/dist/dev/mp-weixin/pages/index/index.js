@@ -159,7 +159,9 @@ const _sfc_main = {
       }
     }
   },
-  onLoad() {
+  async onLoad() {
+    const app = getApp();
+    await app.globalData.initPromise;
     this.$nextTick(() => {
       this.getDemRefAll({
         selector: ".pan-tabbar-item",

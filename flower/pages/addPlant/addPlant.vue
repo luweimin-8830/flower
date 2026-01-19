@@ -24,7 +24,9 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img" :src="plant.cover" mode="aspectFill" />
+				<image class="plant-img" 
+				:src="plant.cover" 
+				mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImage">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
@@ -230,10 +232,24 @@ export default {
 				})
 				console.log("后台返回url:", imageUrl)
 				this.plant.cover = imageUrl.data.url
-				const startIndex = this.plant.cover.indexOf('cloud://');
-				if (startIndex !== -1) {
-					this.plant.cover = this.plant.cover.substring(startIndex);
-				}
+
+				// wx.cloud.getTempFileURL({
+				// 	fileList: ['cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/families/1/f096ce450e0b18fa8ec79dfdef0aa7f7353cafae92766ddfc5b845faced28536.jpg'],
+				// 	success: res => {
+				// 		if (res.fileList && res.fileList[0].tempFileURL) {
+				// 			console.log("成功复活链接:", res.fileList[0].tempFileURL);
+				// 			// 赋值给页面显示
+				// 			this.plant.cover = res.fileList[0].tempFileURL;
+				// 		} else {
+				// 			console.error("换取结果为空", res);
+				// 		}
+				// 	},
+				// 	fail: err => {
+				// 		console.error("换取失败", err);
+				// 	}
+				// });
+
+
 			} catch (error) {
 				console.error(error)
 			}

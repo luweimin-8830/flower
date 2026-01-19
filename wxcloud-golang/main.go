@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 	"wxcloud-golang/telemetry"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
 const (
@@ -71,7 +75,7 @@ func main() {
 		}
 		api.POST("/upload", handler.UploadHandler)
 	}
-
+	ForceOpenPublicRead()
 	log.Fatal(r.Run(":80"))
 }
 
@@ -80,4 +84,32 @@ func envOrDefault(key, fallback string) string {
 		return val
 	}
 	return fallback
+}
+
+func ForceOpenPublicRead() {
+	// 1. 填入你的桶 URL
+	u, _ := url.Parse("https://7072-prod-0gr2o3qpe533f1fb-1352691102.cos.ap-shanghai.myqcloud.com")
+	b := &cos.BaseURL{BucketURL: u}
+
+	// 2. 填入你的 SecretId 和 SecretKey (必须是腾讯云的，不是微信的)
+	client := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("OS_TEMP_SECRET_ID"),  // 你的 SecretId
+			SecretKey: os.Getenv("OS_TEMP_SECRET_KEY"), // 你的 SecretKey
+		},
+	})
+
+	// 3. 强行设置为“公有读”
+	opt := &cos.BucketPutACLOptions{
+		Header: &cos.ACLHeaderOptions{
+			XCosACL: "public-read", // 关键代码
+		},
+	}
+
+	_, err := client.Bucket.PutACL(context.Background(), opt)
+	if err != nil {
+		fmt.Println("修改失败:", err)
+	} else {
+		fmt.Println("修改成功！现在是公有读了。")
+	}
 }
