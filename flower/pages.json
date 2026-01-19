@@ -1,39 +1,42 @@
 {
-	"pages": [{
-		"path": "pages/index/index",
-		"style": {
-			"navigationBarTitleText": "",
-			"navigationStyle": "custom",
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false,
 				"disableScroll": true
-		}
-	},
-	{
-		"path": "pages/my/my",
-		"style": {
-			"navigationBarTitleText": "",
-			"navigationStyle": "custom",
+			}
+		},
+		{
+			"path": "pages/my/my",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false,
 				"disableScroll": true
-		}
-	},
-	{
-		"path": "pages/system/system",
-		"style": {
-			"navigationBarTitleText": "",
-			"navigationStyle": "custom",
+			}
+		},
+		{
+			"path": "pages/system/system",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false,
 				"disableScroll": true
-		}
-	},{
-		"path": "pages/addPlant/addPlant",
-		"style": {
-			"navigationBarTitleText": "",
-			"navigationStyle": "custom",
+			}
+		},
+		{
+			"path": "pages/addPlant/addPlant",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false,
 				"disableScroll": true
+			}
 		}
-	}],
+	],
 	"globalStyle": {
 		"navigationBarTextStyle": "@navTextStyle",
 		"navigationBarTitleText": "我的花园",
@@ -43,12 +46,28 @@
 	"tabBar": {
 		"custom": true,
 		"display": "none",
-		"color":"white",
+		"color": "white",
 		"selectedColor": "black",
 		"backgroundColor": "#1F2125",
 		"list": [
-			{"pagePath": "pages/index/index"},
-			{"pagePath": "pages/my/my"}
+			{
+				"pagePath": "pages/index/index"
+			},
+			{
+				"pagePath": "pages/my/my"
+			}
 		]
+	},
+	"lazyCodeLoading": "requiredComponents",
+	"renderer": "skyline",
+	"componentFramework": "glass-easel",
+	"rendererOptions": {
+		"skyline": {
+			"defaultDisplayBlock": true,
+			"defaultContentBox": true,
+			"tagNameStyleIsolation": "legacy",
+			"enableScrollViewAutoSize": true,
+			"keyframeStyleIsolation": "legacy"
+		}
 	}
 }

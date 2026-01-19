@@ -8366,10 +8366,26 @@ const tabBar = {
     }
   ]
 };
+const lazyCodeLoading = "requiredComponents";
+const renderer = "skyline";
+const componentFramework = "glass-easel";
+const rendererOptions = {
+  skyline: {
+    defaultDisplayBlock: true,
+    defaultContentBox: true,
+    tagNameStyleIsolation: "legacy",
+    enableScrollViewAutoSize: true,
+    keyframeStyleIsolation: "legacy"
+  }
+};
 const e = {
   pages,
   globalStyle,
-  tabBar
+  tabBar,
+  lazyCodeLoading,
+  renderer,
+  componentFramework,
+  rendererOptions
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {

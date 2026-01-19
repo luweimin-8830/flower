@@ -23,10 +23,8 @@
 		<!-- 图片上传 -->
 		<view class="upload-section">
 			<view class="avatar-wrapper">
-				<!-- 图片：如果没有src显示背景色，有src显示图片 :src="plant.cover" -->
-				<image class="plant-img"
-					:src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"
-					mode="aspectFill" />
+				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
+				<image class="plant-img" :src="plant.cover" mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImage">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
@@ -225,13 +223,15 @@ export default {
 				const timestamp = Math.floor(new Date().getTime() / 1000);
 				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
 				const name = `${timestamp}${random}.jpg`;
-				const imageUrl = await callContainer("/api/upload",{
-					familyId:this.familyId,
-					fileName:name,
-					image:upload.data
+				const imageUrl = await callContainer("/api/upload", {
+					familyId: this.familyId,
+					fileName: name,
+					image: upload.data
 				})
-				console.log("后台返回url:",imageUrl)
-				this.plant.cover = imageUrl.data.url
+				console.log("后台返回url:", imageUrl)
+				this.plant.cover = String(imageUrl.data.url).trim()
+				console.log("前端url:", this.plant.cover)
+
 			} catch (error) {
 				console.error(error)
 			}

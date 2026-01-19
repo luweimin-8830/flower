@@ -81,7 +81,7 @@ func UploadImage(ctx context.Context, fileData io.ReadSeeker, originalName strin
 		return nil, err
 	}
 
-	url := fmt.Sprintf("cloud://%s.%s/%s", WxEnvID, WxBucketName, objectKey)
+	url := fmt.Sprintf("cloud\\://%s.%s/%s", WxEnvID, WxBucketName, objectKey)
 
 	// 7. 入库
 	newImg := &model.Image{
