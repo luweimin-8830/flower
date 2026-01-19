@@ -72,6 +72,7 @@ func UploadImage(ctx context.Context, fileData io.ReadSeeker, originalName strin
 	// utils.UploadToCOS 内部应该接收 io.Reader
 	url, err := utils.UploadToCOS(fileData, objectKey)
 	if err != nil {
+		fmt.Printf("COS Upload Error: %v\n", err)
 		return nil, err
 	}
 
