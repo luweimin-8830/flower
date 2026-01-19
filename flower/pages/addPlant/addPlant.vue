@@ -221,7 +221,6 @@ export default {
 						fail: reject
 					})
 				})
-				console.log("base64:", upload)
 				const timestamp = Math.floor(new Date().getTime() / 1000);
 				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
 				const name = `${timestamp}${random}.jpg`;
@@ -232,24 +231,6 @@ export default {
 				})
 				console.log("后台返回url:", imageUrl)
 				this.plant.cover = imageUrl.data.url
-
-				// wx.cloud.getTempFileURL({
-				// 	fileList: ['cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/families/1/f096ce450e0b18fa8ec79dfdef0aa7f7353cafae92766ddfc5b845faced28536.jpg'],
-				// 	success: res => {
-				// 		if (res.fileList && res.fileList[0].tempFileURL) {
-				// 			console.log("成功复活链接:", res.fileList[0].tempFileURL);
-				// 			// 赋值给页面显示
-				// 			this.plant.cover = res.fileList[0].tempFileURL;
-				// 		} else {
-				// 			console.error("换取结果为空", res);
-				// 		}
-				// 	},
-				// 	fail: err => {
-				// 		console.error("换取失败", err);
-				// 	}
-				// });
-
-
 			} catch (error) {
 				console.error(error)
 			}
