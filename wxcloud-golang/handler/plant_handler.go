@@ -176,5 +176,14 @@ func GetPlantHandler(c *gin.Context) {
 		response.Fail(c, "获取失败:"+err.Error())
 		return
 	}
+	//生日计算
+	if !plant.Birthday.IsZero() {
+		duration := time.Since(plant.Birthday)
+		days := int64(duration.Hours() / 24)
+		if days < 0 {
+			days = 0
+		}
+		plant.DaysCount = days
+	}
 	response.Success(c, plant)
 }

@@ -3,7 +3,7 @@
 		<navBar />
 
 		<!-- 占位符，防止内容被导航栏遮挡 -->
-		<view :style="{ height: (statusBarHeight + 44) + 'px' }"></view>
+		<view :style="{ height: topBarHeight + 'px' }"></view>
 
 		<scroll-view scroll-y class="main-scroll" :enable-back-to-top="true">
 
@@ -132,9 +132,9 @@ export default {
 	},
 	data() {
 		return {
-			statusBarHeight: 20, // 默认值，created 中会更新
+			topBarHeight: 0, // 默认值，created 中会更新
 			plant: {
-				name: "梦瑶",
+				name: "name",
 				cover: "", // 替换为你的真实图片
 				arrivalDate: "2026.01.01",
 				days: 18,
@@ -165,10 +165,11 @@ export default {
 		};
 	},
 	created() {
-		const sys = uni.getSystemInfoSync();
-		this.statusBarHeight = sys.statusBarHeight;
+		
 	},
 	onLoad(options){
+		const app = getApp()
+		this.topBarHeight = app.globalData.topBarHeight;
 		console.log("传递参数为:",options)
 	},
 	methods: {
