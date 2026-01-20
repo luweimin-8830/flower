@@ -255,10 +255,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       item
     }, s0, i0) => {
       return common_vendor.e({
-        a: item.cover,
+        a: item.cover.url,
         b: item.isLoaded ? 1 : "",
         c: common_vendor.o(($event) => $options.onImgLoad(item)),
-        d: item.height / item.width * 100 + "%",
+        d: item.cover.height / item.cover.width * 100 + "%",
         e: common_vendor.t(item.name),
         f: item.tags
       }, item.tags ? {} : {}, {

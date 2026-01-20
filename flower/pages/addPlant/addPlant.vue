@@ -204,6 +204,8 @@ export default {
 				console.log("call container plant add",plant)
 			} catch (error) {
 				console.error(error)
+			} finally {
+				uni.navigateBack()
 			}
 
 

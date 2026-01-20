@@ -44,8 +44,8 @@
         <WaterfallBox :list="plantsList" idKey="ID" cols="2">
             <template #item="{ item }">
                 <view class="plant-card">
-                    <view class="image-wrapper" :style="{ paddingBottom: (item.height / item.width * 100) + '%' }">
-                        <image :src="item.cover" mode="aspectFill" class="plant-image" lazy-load
+                    <view class="image-wrapper" :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
+                        <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
                             :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
                     </view>
                     <!-- 文字内容 -->

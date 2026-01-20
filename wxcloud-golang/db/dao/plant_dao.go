@@ -17,7 +17,7 @@ func CreatePlant(ctx context.Context, plant *model.Plant) error {
 func GetPlantByID(ctx context.Context, id uint) (*model.Plant, error) {
 	var plant model.Plant
 	err := execWithSpan(ctx, "SELECT", "plant", func(conn *gorm.DB) error {
-		return conn.Preload("Tags").First(&plant, id).Error
+		return conn.Preload("Cover").Preload("Tags").First(&plant, id).Error
 	})
 	return &plant, err
 }
@@ -25,7 +25,7 @@ func GetPlantByID(ctx context.Context, id uint) (*model.Plant, error) {
 func GetPlantByFamilyID(ctx context.Context, familyID uint) ([]model.Plant, error) {
 	var plants []model.Plant
 	err := execWithSpan(ctx, "SELECT", "plant", func(conn *gorm.DB) error {
-		return conn.Where("family_id = ?", familyID).Preload("Tags").Find(&plants).Error
+		return conn.Where("family_id = ?", familyID).Preload("Cover").Preload("Tags").Find(&plants).Error
 	})
 	return plants, err
 }
