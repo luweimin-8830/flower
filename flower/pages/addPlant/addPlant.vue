@@ -232,25 +232,19 @@ export default {
 					})
 					return
 				}
-				const upload = await new Promise((resolve, reject) => {
-					wx.getFileSystemManager().readFile({
-						filePath: file.tempFilePath,
-						encoding: 'base64',
-						success: resolve,
-						fail: reject
-					})
-				})
-				const timestamp = Math.floor(new Date().getTime() / 1000);
-				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-				const name = `${timestamp}${random}.jpg`;
-				const imageUrl = await callContainer("/api/upload", {
-					familyId: this.familyId,
-					fileName: name,
-					image: upload.data
-				})
-				console.log("后台返回url:", imageUrl)
-				this.plant.cover = imageUrl.data.url
-				this.plant.coverId = imageUrl.data.ID
+				
+				
+				// const timestamp = Math.floor(new Date().getTime() / 1000);
+				// const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+				// const name = `${timestamp}${random}.jpg`;
+				// const imageUrl = await callContainer("/api/upload", {
+				// 	familyId: this.familyId,
+				// 	fileName: name,
+				// 	image: upload.data
+				// })
+				// console.log("后台返回url:", imageUrl)
+				// this.plant.cover = imageUrl.data.url
+				// this.plant.coverId = imageUrl.data.ID
 			} catch (error) {
 				console.error(error)
 			}
