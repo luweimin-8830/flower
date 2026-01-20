@@ -24,9 +24,7 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img" 
-				:src="plant.cover" 
-				mode="aspectFill" />
+				<image class="plant-img" :src="plant.cover" mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImage">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
@@ -108,6 +106,7 @@ export default {
 			plant: {
 				name: '',
 				cover: '',
+				coverId: 0,
 				desc: '',
 				birthday: '',
 				tags: [],
@@ -176,7 +175,7 @@ export default {
 			wx.vibrateShort({ type: "medium" })
 			wx.navigateBack()
 		},
-		save() {
+		async save() {
 			wx.vibrateShort({ type: "medium" })
 			if (!this.plant.name) {
 				uni.showToast({
@@ -186,11 +185,28 @@ export default {
 				})
 				return;
 			}
+			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.ID })) || []
 			console.log("name", this.plant.name)
 			console.log("cover", this.plant.cover)
+			console.log("coverId", this.plant.coverId)
 			console.log("desc", this.plant.desc)
 			console.log("birthday", this.plant.birthday)
 			console.log("tags", this.plant.tags)
+			try {
+				const plant = await callContainer("/api/plant/add", {
+					"name": this.plant.name,
+					"familyId": this.familyId,
+					"coverId": this.plant.coverId,
+					"desc": this.plant.desc,
+					"birthday": this.plant.birthday,
+					"tags": this.plant.tags
+				})
+				console.log("call container plant add",plant)
+			} catch (error) {
+				console.error(error)
+			}
+
+
 		},
 		async uploadImage() {
 			try {
@@ -231,6 +247,7 @@ export default {
 				})
 				console.log("后台返回url:", imageUrl)
 				this.plant.cover = imageUrl.data.url
+				this.plant.coverId = imageUrl.data.ID
 			} catch (error) {
 				console.error(error)
 			}

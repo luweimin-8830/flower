@@ -16,10 +16,10 @@ type CreatePlantRequest struct {
 	Tags     []struct {
 		ID uint `json:"id"`
 	} `json:"tags"`
-	CoverID  uint      `json:"coverId"`
-	Desc     string    `json:"desc"`
-	Birthday time.Time `json:"birthday"`
-	OpenId   string    `json:"openId"`
+	CoverID  uint   `json:"coverId"`
+	Desc     string `json:"desc"`
+	Birthday string `json:"birthday"`
+	OpenId   string `json:"openId"`
 }
 
 // {
@@ -29,11 +29,11 @@ type CreatePlantRequest struct {
 //   }
 
 type UpdatePlantRequest struct {
-	ID       uint      `json:"id" binding:"required"`
-	Name     string    `json:"name"`
-	Desc     string    `json:"desc"`
-	CoverID  uint      `json:"coverId"`
-	Birthday time.Time `json:"birthday"`
+	ID       uint   `json:"id" binding:"required"`
+	Name     string `json:"name"`
+	Desc     string `json:"desc"`
+	CoverID  uint   `json:"coverId"`
+	Birthday string `json:"birthday"`
 	Tags     []struct {
 		ID uint `json:"id"`
 	} `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
@@ -54,8 +54,16 @@ func CreatePlantHandler(c *gin.Context) {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
 		return
 	}
-	birthday := req.Birthday
-	if birthday.IsZero() {
+	var birthday time.Time
+	if req.Birthday != "" {
+		t, err := time.Parse("2006-01-02", req.Birthday)
+		if err != nil {
+			// 如果解析失败，尝试解析完整格式，或者直接报错
+			response.Fail(c, "日期格式错误，应为 YYYY-MM-DD")
+			return
+		}
+		birthday = t
+	} else {
 		birthday = time.Now()
 	}
 
@@ -102,8 +110,13 @@ func UpdatePlantHandler(c *gin.Context) {
 	if req.CoverID > 0 {
 		updateData["cover_id"] = req.CoverID
 	}
-	if !req.Birthday.IsZero() {
-		updateData["birthday"] = req.Birthday
+	if req.Birthday != "" {
+		t, err := time.Parse("2006-01-02", req.Birthday)
+		if err != nil {
+			response.Fail(c, "日期格式错误，应为 YYYY-MM-DD")
+			return
+		}
+		updateData["birthday"] = t
 	}
 
 	var tagIDs []uint
