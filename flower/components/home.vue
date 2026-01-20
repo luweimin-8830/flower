@@ -15,7 +15,7 @@
     <!-- 搜索框 -->
     <view class="header-action-container">
         <view class="search-box-wrapper">
-            <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="true" v-model="searchValue"
+            <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false" v-model="searchValue"
                 bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
             </uni-search-bar>
         </view>

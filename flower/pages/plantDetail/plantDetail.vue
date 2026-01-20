@@ -259,7 +259,7 @@ export default {
 		.vertical-line {
 			width: 1px;
 			height: 20px;
-			background-color: #eee;
+			background-color: #d5d5d5;
 		}
 	}
 }

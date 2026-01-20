@@ -272,7 +272,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     j: common_vendor.p({
       placeholder: "输入植物名称",
       radius: "20",
-      focus: true,
+      focus: false,
       bgColor: "rgba(255,255,255,0.5)",
       clearButton: "auto",
       cancelButton: "none",
