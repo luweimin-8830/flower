@@ -8343,6 +8343,15 @@ const pages = [
       enablePullDownRefresh: false,
       disableScroll: true
     }
+  },
+  {
+    path: "pages/plantDetail/plantDetail",
+    style: {
+      navigationBarTitleText: "",
+      navigationStyle: "custom",
+      enablePullDownRefresh: false,
+      disableScroll: true
+    }
   }
 ];
 const globalStyle = {

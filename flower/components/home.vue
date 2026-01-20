@@ -16,8 +16,8 @@
     <view class="header-action-container">
         <view class="search-box-wrapper">
             <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="true" v-model="searchValue"
-            bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
-        </uni-search-bar>
+                bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
+            </uni-search-bar>
         </view>
         <view class="add-btn" @click="goAddPage">
             <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
@@ -29,7 +29,7 @@
             :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)" scroll-with-animation>
             <!-- 必须给 flex 容器一个 id，用于计算相对位置 -->
             <view class="tag-flex-box" id="tag-container">
-                <view v-for="(item, index) in tagList" :key="index" :id="'tag-item-' + index" class="tag-item"
+                <view v-for="(item, index) in tagList" :key="item.ID" :id="'tag-item-' + index" class="tag-item"
                     :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
                     <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
                 </view>
@@ -43,8 +43,9 @@
     <view>
         <WaterfallBox :list="plantsList" idKey="ID" cols="2">
             <template #item="{ item }">
-                <view class="plant-card">
-                    <view class="image-wrapper" :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
+                <view class="plant-card" @click="gotoDetail(item)">
+                    <view class="image-wrapper"
+                        :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
                         <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
                             :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
                     </view>
@@ -61,6 +62,7 @@
 </template>
 
 <script>
+import { url } from 'inspector';
 import { callContainer } from '../utils/request';
 import WaterfallBox from './WaterfallBox.vue'
 export default {
@@ -103,6 +105,7 @@ export default {
             sliderWidth: 0,
             sliderTimer: null,
             plantsList: [],
+            allPlantsList: [],
         }
     },
     computed: {
@@ -130,8 +133,8 @@ export default {
     methods: {
         async loadFamilyData() {
             try {
-                const familyList = await new Promise((resolve,reject) => {
-                    uni.getStorage({ key: 'family', success: resolve ,fail:reject})
+                const familyList = await new Promise((resolve, reject) => {
+                    uni.getStorage({ key: 'family', success: resolve, fail: reject })
                 })
                 this.familyRange = []
                 familyList?.data?.forEach(item => {
@@ -153,16 +156,30 @@ export default {
                     "familyId": this.value
                 })
                 console.log("plants list:", plants)
-                this.plantsList = plants?.data
-
-                //测试,删除
-                this.plantsList.forEach((item,index)=>{
-                    item.width = 256;
-                    item.height = 256;
-                })
+                this.allPlantsList = plants?.data
+                this.filterPlants()
             } catch (error) {
-
+                console.error(error)
             }
+        },
+        filterPlants() {
+            const currentTag = this.tagList[this.currentTagIndex];
+            const tagId = currentTag ? currentTag.ID : 0;
+            let filtered = [];
+            if (tagId === 0) {
+                filtered = [...this.allPlantsList];
+            } else {
+                filtered = this.allPlantsList.filter(plant => {
+                    return plant.tags && plant.tags.some(t => t.ID === tagId)
+                })
+            }
+            this.plantsList = filtered.map(item => {
+                const newItem = { ...item };
+                if (Array.isArray(item.tags)) {
+                    newItem.tags = [...item.tags];
+                }
+                return newItem
+            })
         },
         changeFamily(e) {
             console.log(e)
@@ -198,7 +215,10 @@ export default {
             console.log("search:", this.searchValue)
         },
         selectTag(index, item) {
+            if (this.currentTagIndex === index) return;
+            wx.vibrateShort({ type: "medium" })
             this.currentTagIndex = index;
+            this.filterPlants();
             const query = uni.createSelectorQuery().in(this);
             query.select('#tag-container').boundingClientRect();
             query.select('#tag-text-' + index).boundingClientRect();
@@ -241,12 +261,23 @@ export default {
         },
         onImgLoad(item) {
             item.isLoaded = true
+            if (this.allPlantsList && this.allPlantsList.length > 0) {
+                const sourceItem = this.allPlantsList.find(i => i.ID === item.ID);
+                if (sourceItem) {
+                    sourceItem.isLoaded = true;
+                }
+            }
         },
         goAddPage() {
-            wx.vibrateShort({type:"medium"})
+            wx.vibrateShort({ type: "medium" })
             // 传入当前家庭ID
             uni.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
         },
+        gotoDetail(item){
+            uni.navigateTo({
+                url:`/pages/plantDetail/plantDetail?id=${item.ID}`
+            })
+        }
         /**
       * 内部使用的组件方法
       */
@@ -264,7 +295,14 @@ export default {
         const app = getApp()
         this.topBarHeight = app.globalData.topBarHeight;
         this.windowWidth = app.globalData.windowWidth;
-        await app.globalData.initPromise;
+        const user = await callContainer("/api/login")
+        console.log("callContainer login:", user)
+        await new Promise((resolve) => {
+            uni.setStorage({ key: "family", data: user.data.family, success: resolve })
+        })
+        await new Promise((resolve) => {
+            uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
+        })
         this.loadFamilyData()
 
     },
@@ -305,43 +343,48 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 10px; /* 左右留白 */
-    margin-bottom: 5px; /* 和下方 Tag 保持一点距离 */
+    padding: 0 10px;
+    /* 左右留白 */
+    margin-bottom: 5px;
+    /* 和下方 Tag 保持一点距离 */
 }
 
 .search-box-wrapper {
     /* 核心：搜索框占 82% (稍微多一点看起来更协调，留 18% 给按钮) */
-    width: 86%; 
+    width: 86%;
 }
 
 .add-btn {
-    width: 74rpx; /* 稍微加大一点点，更易点击 */
+    width: 74rpx;
+    /* 稍微加大一点点，更易点击 */
     height: 74rpx;
-    
+
     /* 1. 微弱的线性渐变，模拟光照（上亮下暗） */
     // background: linear-gradient(145deg, #7da066, #607a4e);
-    background: rgba(255,255,255,0.55);
+    background: rgba(255, 255, 255, 0.55);
     /* 如果不支持渐变回退到纯色 */
     // background-color: #6B8857; 
-    
+
     border-radius: 50%;
-    
+
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    
+
     /* 3. 增加一点边框让轮廓更清晰 */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    
+
     &:active {
-        transform: scale(0.92) translateY(2px); /* 点击时下沉 */
+        transform: scale(0.92) translateY(2px);
+        /* 点击时下沉 */
     }
 }
 
 ::v-deep .uni-searchbar {
-    padding: 10px 0 !important; /* 去掉左右默认 padding */
+    padding: 10px 0 !important;
+    /* 去掉左右默认 padding */
 }
 
 /* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */

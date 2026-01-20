@@ -1,6 +1,11 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_assets = require("../../common/assets.js");
+new Proxy({}, {
+  get(_, key) {
+    throw new Error(`Module "process" has been externalized for browser compatibility. Cannot access "process.${key}" in client code.  See https://vitejs.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.`);
+  }
+});
 let flag;
 const {
   windowWidth
@@ -71,7 +76,7 @@ const _sfc_main = {
     tabbarPageScrollLower() {
     },
     init(e) {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:160", "Tabbar init elements:", e);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:161", "Tabbar init elements:", e);
       if (!e || e.length === 0)
         return;
       const keys = Object.keys(this.list);
@@ -87,7 +92,7 @@ const _sfc_main = {
       if (item && item.style) {
         this.onTabbar(item, this.onKey);
       } else {
-        common_vendor.index.__f__("warn", "at pages/index/index.vue:180", "初始化匹配失败，尝试使用默认值");
+        common_vendor.index.__f__("warn", "at pages/index/index.vue:181", "初始化匹配失败，尝试使用默认值");
         const defaultWidth = windowWidth / 5;
         this.ballStyleLeft = defaultWidth * 2 + defaultWidth / 2 - 22;
         this.liquidStyleLeft = defaultWidth * 2 + defaultWidth / 2 - windowWidth / 2;
@@ -96,7 +101,7 @@ const _sfc_main = {
     onTabbar(item, key) {
       this.throttle(() => {
         if (!item || !item.style) {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:191", "onTabbar error: item or item.style is undefined");
+          common_vendor.index.__f__("error", "at pages/index/index.vue:192", "onTabbar error: item or item.style is undefined");
           return;
         }
         this.switchTabbarPage(key);
@@ -170,6 +175,12 @@ const _sfc_main = {
         }
       });
     });
+  },
+  onShareAppMessage() {
+    return {
+      title: "分享我的植物",
+      path: "/pages/index/index"
+    };
   }
 };
 if (!Array) {
@@ -221,5 +232,6 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
+_sfc_main.__runtimeHooks = 2;
 wx.createPage(MiniProgramPage);
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/index/index.js.map

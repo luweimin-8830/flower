@@ -1,7 +1,7 @@
 <template>
 	<view class="container">
 		<view>
-			
+
 		</view>
 		<view class="flex_c_c page">
 			<!-- Tabbar页面 -->
@@ -94,6 +94,7 @@ const {
 } = uni.getSystemInfoSync();
 import navBar from '@/components/navBar.vue';
 import home from '@/components/home.vue';
+import { title } from "process"
 export default {
 	components: {
 		navBar,
@@ -262,6 +263,12 @@ export default {
 				}
 			})
 		})
+	},
+	onShareAppMessage() {
+		return {
+			title: '分享我的植物',
+			path: '/pages/index/index',
+		}
 	}
 }
 </script>

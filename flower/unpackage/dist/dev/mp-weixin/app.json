@@ -3,7 +3,8 @@
     "pages/index/index",
     "pages/my/my",
     "pages/system/system",
-    "pages/addPlant/addPlant"
+    "pages/addPlant/addPlant",
+    "pages/plantDetail/plantDetail"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",

@@ -2,7 +2,6 @@
 import { callContainer } from './utils/request';
 export default {
 	globalData: {
-		initPromise: null,
 		topBarHeight: 0,
 		bottomSafeAreaHeight: 0,
 		windowWidth: 0,
@@ -30,14 +29,7 @@ export default {
 		const bottomSafeAreaHeight = systemInfo.screenHeight - systemInfo.safeArea.bottom
 		this.globalData.bottomSafeAreaHeight = bottomSafeAreaHeight
 		// uni.hideTabBar()
-		const user = await callContainer("/api/login")
-		console.log("callContainer login:", user)
-		await new Promise((resolve) => {
-			uni.setStorage({ key: "family", data: user.data.family, success: resolve })
-		})
-		await new Promise((resolve) => {
-			uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
-		})
+		
 	},
 	onShow: function () {
 

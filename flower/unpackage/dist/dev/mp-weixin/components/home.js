@@ -1,6 +1,11 @@
 "use strict";
 const common_vendor = require("../common/vendor.js");
 const utils_request = require("../utils/request.js");
+new Proxy({}, {
+  get(_, key) {
+    throw new Error(`Module "inspector" has been externalized for browser compatibility. Cannot access "inspector.${key}" in client code.  See https://vitejs.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.`);
+  }
+});
 const WaterfallBox = () => "./WaterfallBox.js";
 const _sfc_main = {
   components: {
@@ -40,7 +45,8 @@ const _sfc_main = {
       sliderLeft: 0,
       sliderWidth: 0,
       sliderTimer: null,
-      plantsList: []
+      plantsList: [],
+      allPlantsList: []
     };
   },
   computed: {
@@ -81,7 +87,7 @@ const _sfc_main = {
         this.getTagList();
         this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:147", error);
+        common_vendor.index.__f__("error", "at components/home.vue:150", error);
       }
     },
     async getPlantsList() {
@@ -89,24 +95,41 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:155", "plants list:", plants);
-        this.plantsList = plants == null ? void 0 : plants.data;
-        this.plantsList.forEach((item, index) => {
-          item.width = 256;
-          item.height = 256;
-        });
+        common_vendor.index.__f__("log", "at components/home.vue:158", "plants list:", plants);
+        this.allPlantsList = plants == null ? void 0 : plants.data;
+        this.filterPlants();
       } catch (error) {
+        common_vendor.index.__f__("error", "at components/home.vue:162", error);
       }
     },
+    filterPlants() {
+      const currentTag = this.tagList[this.currentTagIndex];
+      const tagId = currentTag ? currentTag.ID : 0;
+      let filtered = [];
+      if (tagId === 0) {
+        filtered = [...this.allPlantsList];
+      } else {
+        filtered = this.allPlantsList.filter((plant) => {
+          return plant.tags && plant.tags.some((t) => t.ID === tagId);
+        });
+      }
+      this.plantsList = filtered.map((item) => {
+        const newItem = { ...item };
+        if (Array.isArray(item.tags)) {
+          newItem.tags = [...item.tags];
+        }
+        return newItem;
+      });
+    },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:168", e);
+      common_vendor.index.__f__("log", "at components/home.vue:185", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:175", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:192", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -116,22 +139,26 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:185", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:202", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:193", error);
+        common_vendor.index.__f__("error", "at components/home.vue:210", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:197", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:198", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:214", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:215", "search:", this.searchValue);
     },
     selectTag(index, item) {
+      if (this.currentTagIndex === index)
+        return;
+      common_vendor.wx$1.vibrateShort({ type: "medium" });
       this.currentTagIndex = index;
+      this.filterPlants();
       const query = common_vendor.index.createSelectorQuery().in(this);
       query.select("#tag-container").boundingClientRect();
       query.select("#tag-text-" + index).boundingClientRect();
@@ -170,10 +197,21 @@ const _sfc_main = {
     },
     onImgLoad(item) {
       item.isLoaded = true;
+      if (this.allPlantsList && this.allPlantsList.length > 0) {
+        const sourceItem = this.allPlantsList.find((i) => i.ID === item.ID);
+        if (sourceItem) {
+          sourceItem.isLoaded = true;
+        }
+      }
     },
     goAddPage() {
       common_vendor.wx$1.vibrateShort({ type: "medium" });
       common_vendor.index.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
+    },
+    gotoDetail(item) {
+      common_vendor.index.navigateTo({
+        url: `/pages/plantDetail/plantDetail?id=${item.ID}`
+      });
     }
     /**
     * 内部使用的组件方法
@@ -192,7 +230,14 @@ const _sfc_main = {
     const app = getApp();
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
-    await app.globalData.initPromise;
+    const user = await utils_request.callContainer("/api/login");
+    common_vendor.index.__f__("log", "at components/home.vue:299", "callContainer login:", user);
+    await new Promise((resolve) => {
+      common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
+    });
+    await new Promise((resolve) => {
+      common_vendor.index.setStorage({ key: "userInfo", data: user.data.user, success: resolve });
+    });
     this.loadFamilyData();
   }
 };
@@ -243,10 +288,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       return {
         a: common_vendor.t(item.name),
         b: "tag-text-" + index,
-        c: index,
+        c: item.ID,
         d: "tag-item-" + index,
         e: $data.currentTagIndex === index ? 1 : "",
-        f: common_vendor.o(($event) => $options.selectTag(index, item), index)
+        f: common_vendor.o(($event) => $options.selectTag(index, item), item.ID)
       };
     }),
     n: common_vendor.s($options.sliderStyle),
@@ -262,8 +307,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         e: common_vendor.t(item.name),
         f: item.tags
       }, item.tags ? {} : {}, {
-        g: i0,
-        h: s0
+        g: common_vendor.o(($event) => $options.gotoDetail(item)),
+        h: i0,
+        i: s0
       });
     }, {
       name: "item",

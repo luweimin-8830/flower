@@ -24,7 +24,7 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img" :src="plant.cover" mode="aspectFill" />
+				<image class="plant-img" :src="plant.cover || 'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'" mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImage">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
@@ -186,6 +186,7 @@ export default {
 				return;
 			}
 			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.ID })) || []
+			if(this.plant.coverId === 0){this.plant.coverId = 6 }
 			console.log("name", this.plant.name)
 			console.log("cover", this.plant.cover)
 			console.log("coverId", this.plant.coverId)
