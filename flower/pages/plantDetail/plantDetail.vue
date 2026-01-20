@@ -10,23 +10,23 @@
 			<!-- 2. 植物基本信息卡片 -->
 			<view class="plant-header-card">
 				<view class="header-top">
-					<image :src="plant.cover" mode="aspectFill" class="plant-avatar"></image>
+					<image v-if="plant.cover" :src="plant.cover.url" mode="aspectFill" class="plant-avatar"></image>
 					<text class="plant-name">{{ plant.name }}</text>
 				</view>
 
 				<view class="stats-row">
 					<view class="stat-item">
-						<text class="stat-val">{{ plant.arrivalDate }}</text>
+						<text class="stat-val">{{ plant.birthday }}</text>
 						<text class="stat-label">到家日期</text>
 					</view>
 					<view class="vertical-line"></view>
 					<view class="stat-item">
-						<text class="stat-val">{{ plant.days }}</text>
+						<text class="stat-val">{{ plant.daysCount }}</text>
 						<text class="stat-label">养护天数</text>
 					</view>
 					<view class="vertical-line"></view>
 					<view class="stat-item">
-						<text class="stat-val">{{ plant.logCount }}</text>
+						<text class="stat-val">{{ 0 }}</text>
 						<text class="stat-label">植物日志</text>
 					</view>
 				</view>
@@ -124,8 +124,8 @@
 </template>
 
 <script>
-	import navBar from '@/components/navBar.vue'
-
+import navBar from '@/components/navBar.vue'
+import { callContainer } from '../../utils/request';
 export default {
 	components: {
 		navBar,
@@ -133,14 +133,8 @@ export default {
 	data() {
 		return {
 			topBarHeight: 0, // 默认值，created 中会更新
-			plant: {
-				name: "name",
-				cover: "", // 替换为你的真实图片
-				arrivalDate: "2026.01.01",
-				days: 18,
-				logCount: 2,
-				photoCount: 2
-			},
+			plantId: 0,
+			plant: {},
 			careActions: [
 				{ name: "Fertilizing", icon: "", img: "", color: "#DCECC9" }, // 施肥
 				{ name: "Pruning", icon: "scissors", color: "#F2D7D5" }, // 修剪
@@ -165,16 +159,29 @@ export default {
 		};
 	},
 	created() {
-		
+
 	},
-	onLoad(options){
+	onLoad(options) {
 		const app = getApp()
 		this.topBarHeight = app.globalData.topBarHeight;
-		console.log("传递参数为:",options)
+		console.log("传递参数为:", options)
+		if (options) {
+			this.plantId = options.id
+			this.getPlant()
+		}
 	},
 	methods: {
-		goBack() {
-			uni.navigateBack();
+		async getPlant() {
+			try {
+				const result = await callContainer("/api/plant/",{
+					id:Number(this.plantId)
+				})
+				console.log("call container plant:",result)
+				this.plant = result.data
+				this.plant.birthday = this.plant.birthday.split('T')[0]
+			} catch (error) {
+				console.error(error)
+			}
 		},
 		handleCare(item) {
 			console.log("点击护理:", item.name);
@@ -194,58 +201,13 @@ export default {
 /* 全局背景色 */
 .container {
 	min-height: 100vh;
-	/* 浅绿色背景 */
-}
-
-/* 1. 顶部导航栏 */
-.custom-nav {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	z-index: 999;
-	background-color: rgba(245, 249, 245, 0.8);
-	/* 毛玻璃背景 */
-	backdrop-filter: blur(10px);
-}
-
-.nav-content {
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 16px;
-}
-
-.nav-actions {
-	.action-pill {
-		display: flex;
-		align-items: center;
-		background-color: rgba(255, 255, 255, 0.6);
-		padding: 6px 12px;
-		border-radius: 20px;
-		border: 1px solid rgba(0, 0, 0, 0.05);
-
-		.divider {
-			width: 1px;
-			height: 14px;
-			background-color: #ccc;
-			margin: 0 10px;
-		}
-
-		.edit-text {
-			font-size: 14px;
-			font-weight: bold;
-			color: #333;
-		}
-	}
 }
 
 /* 2. 植物头部卡片 */
 .plant-header-card {
 	margin: 10px 16px;
 	padding: 20px;
-	background-color: #fff;
+	background-color: rgba(255,255,255,0.55);
 	/* 这里的背景色可能需要稍微透一点绿 */
 	border-radius: 24px;
 	box-shadow: 0 4px 20px rgba(107, 136, 87, 0.05);
