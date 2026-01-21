@@ -35,7 +35,6 @@
                 </view>
                 <!-- 独立的滑动下划线 -->
                 <view class="slider-bar" :style="sliderStyle"></view>
-
             </view>
         </scroll-view>
     </view>
