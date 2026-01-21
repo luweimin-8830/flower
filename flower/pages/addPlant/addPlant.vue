@@ -24,9 +24,11 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img" :src="plant.cover || 'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'" mode="aspectFill" />
+				<image class="plant-img"
+					:src="plant.cover || 'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"
+					mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
-				<view class="camera-badge" @click="uploadImage">
+				<view class="camera-badge" @click="uploadImages">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
 				</view>
 			</view>
@@ -111,6 +113,13 @@ export default {
 				birthday: '',
 				tags: [],
 			},
+			uploadImage:{
+				url:"",
+				height:"",
+				width:0,
+				sha256:0,
+				size:0
+			},
 			nameFocus: false,
 			descFocus: false,
 			tags: [],
@@ -186,7 +195,7 @@ export default {
 				return;
 			}
 			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.ID })) || []
-			if(this.plant.coverId === 0){this.plant.coverId = 6 }
+			if (this.plant.coverId === 0) { this.plant.coverId = 6 }
 			console.log("name", this.plant.name)
 			console.log("cover", this.plant.cover)
 			console.log("coverId", this.plant.coverId)
@@ -202,7 +211,7 @@ export default {
 					"birthday": this.plant.birthday,
 					"tags": this.plant.tags
 				})
-				console.log("call container plant add",plant)
+				console.log("call container plant add", plant)
 			} catch (error) {
 				console.error(error)
 			} finally {
@@ -211,7 +220,7 @@ export default {
 
 
 		},
-		async uploadImage() {
+		async uploadImages() {
 			try {
 				const result = await new Promise((resolve, reject) => {
 					wx.chooseMedia({
@@ -223,6 +232,8 @@ export default {
 				})
 				console.log("tmp image", result)
 				const file = result.tempFiles[0]
+				this.uploadImage.url = file.tempFilePath;
+				this.uploadImage.size = file.size;
 				const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 				if (file.size > MAX_SIZE) {
 					wx.showToast({
@@ -232,11 +243,32 @@ export default {
 					})
 					return
 				}
-				
-				
-				// const timestamp = Math.floor(new Date().getTime() / 1000);
-				// const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-				// const name = `${timestamp}${random}.jpg`;
+				this.plant.cover = file.tempFilePath;
+				const timestamp = Math.floor(new Date().getTime() / 1000);
+				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+				const name = `${timestamp}${random}.jpg`;
+				console.log("name", name)
+				const imageInfo = await new Promise((resolve, reject) => {
+					wx.getImageInfo({
+						src: file.tempFilePath,
+						success: resolve,
+						fail: reject
+					})
+				})
+				console.log("imageInfo",imageInfo)
+				this.uploadImage.width = imageInfo.width
+				this.uploadImage.height = imageInfo.height
+				const sha256 = await new Promise((resolve,reject)=>{
+					wx.getFileSystemManager().getFileInfo({
+						filePath:file.tempFilePath,
+						digestAlgorithm:"sha256",
+						success:resolve,
+						fail:reject
+					})
+				})
+				console.log("sha256",sha256)
+				this.uploadImage.sha256 = sha256.digest;
+				console.log(this.uploadImage)
 				// const imageUrl = await callContainer("/api/upload", {
 				// 	familyId: this.familyId,
 				// 	fileName: name,
@@ -327,7 +359,7 @@ $text-color: #566C44;
 .plant-img {
 	width: 100%;
 	height: 100%;
-	border-radius: 50%;
+	border-radius: 50rpx;
 }
 
 .camera-badge {

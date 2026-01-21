@@ -1,51 +1,80 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/base64"
-	"strings"
+	"wxcloud-golang/db/model"
 	"wxcloud-golang/response"
 	"wxcloud-golang/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-type UploadJSONRequest struct {
-	FamilyID    uint   `json:"familyId"`
-	FileName    string `json:"fileName"` // 需要文件名来获取后缀
-	ImageBase64 string `json:"image"`    // Base64 字符串
+// CheckRequest 检查请求
+type CheckRequest struct {
+	Hash string `json:"hash" binding:"required"`
 }
 
-func UploadHandler(c *gin.Context) {
-	var req UploadJSONRequest
+// SaveImageRequest 保存请求
+type SaveImageRequest struct {
+	URL    string `json:"url" binding:"required"` // 云存储 FileID
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+	Size   int64  `json:"size"`
+	Hash   string `json:"hash" binding:"required"`
+}
+
+// CheckImageHandler 1. 检查图片是否已存在
+func CheckImageHandler(c *gin.Context) {
+	var req CheckRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.FailWithCode(c, 401, "参数错误"+err.Error())
+		response.Fail(c, "参数错误")
 		return
 	}
 
-	if req.ImageBase64 == "" {
-		response.FailWithCode(c, 401, "image不能为空")
-	}
-
-	b64Data := req.ImageBase64
-	if idx := strings.Index(b64Data, ","); idx > -1 {
-		b64Data = b64Data[idx+1:]
-	}
-
-	imgBytes, err := base64.StdEncoding.DecodeString(b64Data)
+	img, needUpload, err := service.CheckImageExist(c.Request.Context(), req.Hash)
 	if err != nil {
-		response.FailWithCode(c, 500, "图片Base64解码失败")
+		response.Fail(c, "查询失败")
 		return
 	}
 
-	fileReader := bytes.NewReader(imgBytes)
-
-	imgModel, err := service.UploadImage(c.Request.Context(), fileReader, req.FileName, req.FamilyID)
-	if err != nil {
-		response.Fail(c, "上传失败"+err.Error())
+	if !needUpload {
+		// 图片已存在，直接返回 ID 和 URL
+		// 前端拿到这个 ID 后，直接去调创建日志接口，跳过上传步骤
+		response.Success(c, gin.H{
+			"uploadRequired": false,
+			"id":             img.ID,
+			"url":            img.URL,
+		})
 		return
 	}
 
-	// 3. 返回成功
-	response.Success(c, imgModel)
+	// 图片不存在，告诉前端去上传
+	response.Success(c, gin.H{
+		"uploadRequired": true,
+	})
+}
+
+// SaveImageHandler 2. 上传完成后，保存元数据
+func SaveImageHandler(c *gin.Context) {
+	var req SaveImageRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, "参数错误")
+		return
+	}
+	img := &model.Image{
+		URL:    req.URL,
+		Width:  req.Width,
+		Height: req.Height,
+		Hash:   req.Hash,
+		Size:   req.Size, // 赋值 size
+	}
+
+	if err := service.SaveImageMetadata(c.Request.Context(), img); err != nil {
+		response.Fail(c, "保存失败: "+err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{
+		"id":  img.ID,
+		"url": img.URL,
+	})
 }
