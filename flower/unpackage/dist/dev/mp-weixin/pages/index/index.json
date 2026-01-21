@@ -4,6 +4,7 @@
   "enablePullDownRefresh": false,
   "disableScroll": true,
   "usingComponents": {
-    "home": "../../components/home"
+    "home": "../../components/home",
+    "my": "../../components/my"
   }
 }

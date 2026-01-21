@@ -8352,6 +8352,15 @@ const pages = [
       enablePullDownRefresh: false,
       disableScroll: true
     }
+  },
+  {
+    path: "pages/tagEdit/tagEdit",
+    style: {
+      navigationBarTitleText: "",
+      navigationStyle: "custom",
+      enablePullDownRefresh: false,
+      disableScroll: true
+    }
   }
 ];
 const globalStyle = {

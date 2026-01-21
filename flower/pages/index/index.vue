@@ -34,6 +34,7 @@
 				:style="{ display: onKey === 'e' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面e -->
+					<my />
 				</scroll-view>
 			</view>
 
@@ -94,11 +95,12 @@ const {
 } = uni.getSystemInfoSync();
 import navBar from '@/components/navBar.vue';
 import home from '@/components/home.vue';
-import { title } from "process"
+import my from '@/components/my.vue';
 export default {
 	components: {
 		navBar,
 		home,
+		my,
 	},
 	data() {
 		return {
