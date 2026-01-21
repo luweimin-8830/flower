@@ -1,67 +1,81 @@
 <template>
-    <!-- 家庭选择框 -->
-    <view class="family-select" :style="{
-        width: 'auto',
-        // height: menuButtonInfo.height + 'px', 
-        borderRadius: menuButtonInfo.height / 2 + 'px',
-        top: menuButtonInfo.top + 'px',
-        left: paddingLeft + 'px'
-    }">
-        <uni-data-select class="custom-select" v-model="value" :localdata="familyRange" @change="changeFamily"
-            :clear="false">
-        </uni-data-select>
-    </view>
-    <view :style="{ height: topBarHeight + 'px' }"></view>
-    <!-- 搜索框 -->
-    <view class="header-action-container">
-        <view class="search-box-wrapper">
-            <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false" v-model="searchValue"
-                bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
-            </uni-search-bar>
+    <!-- 🌟 1. 最外层包裹一个全屏容器 -->
+    <view class="home-container">
+        
+        <!-- 🌟 2. 悬浮的家庭选择按钮 (保持原样，它是 fixed 定位，不受 flex 影响) -->
+        <view class="family-select" :style="{
+            width: 'auto',
+            borderRadius: menuButtonInfo.height / 2 + 'px',
+            top: menuButtonInfo.top + 'px',
+            left: paddingLeft + 'px'
+        }">
+            <uni-data-select class="custom-select" v-model="value" :localdata="familyRange" @change="changeFamily"
+                :clear="false">
+            </uni-data-select>
         </view>
-        <view class="add-btn" @click="goAddPage">
-            <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
-        </view>
-    </view>
-    <!-- 横向滚动列表 -->
-    <view class="tag-scroll-container">
-        <scroll-view scroll-x="true" class="tag-scroll-view" :show-scrollbar="false"
-            :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)" scroll-with-animation>
-            <!-- 必须给 flex 容器一个 id，用于计算相对位置 -->
-            <view class="tag-flex-box" id="tag-container">
-                <view v-for="(item, index) in tagList" :key="item.ID" :id="'tag-item-' + index" class="tag-item"
-                    :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
-                    <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
+
+        <!-- 🌟 3. 顶部固定区域 (包含占位符、搜索框、标签栏) -->
+        <view class="fixed-header-group">
+            <!-- 顶部占位 (状态栏高度) -->
+            <view :style="{ height: topBarHeight + 'px' }"></view>
+
+            <!-- 搜索框 -->
+            <view class="header-action-container">
+                <view class="search-box-wrapper">
+                    <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false" v-model="searchValue"
+                        bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
+                    </uni-search-bar>
                 </view>
-                <!-- 独立的滑动下划线 -->
-                <view class="slider-bar" :style="sliderStyle"></view>
+                <view class="add-btn" @click="goAddPage">
+                    <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
+                </view>
+            </view>
+
+            <!-- 横向滚动标签 -->
+            <view class="tag-scroll-container">
+                <scroll-view scroll-x="true" class="tag-scroll-view" :show-scrollbar="false"
+                    :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)" scroll-with-animation>
+                    <view class="tag-flex-box" id="tag-container">
+                        <view v-for="(item, index) in tagList" :key="item.ID" :id="'tag-item-' + index" class="tag-item"
+                            :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
+                            <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
+                        </view>
+                        <view class="slider-bar" :style="sliderStyle"></view>
+                    </view>
+                </scroll-view>
+            </view>
+        </view>
+
+        <!-- 🌟 4. 中间独立滚动区域 -->
+        <!-- flex:1 让它自动填满剩余空间，height:0 防止被内容撑大 -->
+        <scroll-view scroll-y class="content-scroll-view">
+            <view class="waterfall-wrapper">
+                <WaterfallBox :list="plantsList" idKey="ID" cols="2">
+                    <template #item="{ item }">
+                        <view class="plant-card" @click="gotoDetail(item)">
+                            <view class="image-wrapper"
+                                :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
+                                <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
+                                    :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
+                            </view>
+                            <view class="plant-info">
+                                <text class="plant-name">{{ item.name }}</text>
+                                <view class="plant-tags" v-if="item.tags"></view>
+                            </view>
+                        </view>
+                    </template>
+                </WaterfallBox>
+                
+                <!-- 底部垫片：防止内容被 TabBar 遮挡 -->
+                <view style="height: 20px;"></view> 
             </view>
         </scroll-view>
-    </view>
-    <!-- 植物列表瀑布流 -->
-    <view>
-        <WaterfallBox :list="plantsList" idKey="ID" cols="2">
-            <template #item="{ item }">
-                <view class="plant-card" @click="gotoDetail(item)">
-                    <view class="image-wrapper"
-                        :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
-                        <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
-                            :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
-                    </view>
-                    <!-- 文字内容 -->
-                    <view class="plant-info">
-                        <text class="plant-name">{{ item.name }}</text>
-                        <view class="plant-tags" v-if="item.tags"></view>
-                    </view>
-                </view>
-            </template>
 
-        </WaterfallBox>
     </view>
 </template>
 
+
 <script>
-import { url } from 'inspector';
 import { callContainer } from '../utils/request';
 import WaterfallBox from './WaterfallBox.vue'
 export default {
@@ -272,9 +286,9 @@ export default {
             // 传入当前家庭ID
             uni.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
         },
-        gotoDetail(item){
+        gotoDetail(item) {
             uni.navigateTo({
-                url:`/pages/plantDetail/plantDetail?id=${item.ID}`
+                url: `/pages/plantDetail/plantDetail?id=${item.ID}`
             })
         }
         /**
@@ -303,12 +317,48 @@ export default {
             uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
         })
         this.loadFamilyData()
-
+        uni.$off('refreshHomeList');
+        uni.$on('refreshHomeList', (data) => {
+            console.log('收到刷新通知', data);
+            this.getPlantsList();
+        })
+    },
+    beforeDestroy() {
+        uni.$off('refreshHomeList');
     },
 }
 </script>
 
 <style scoped lang="scss">
+    /* 1. 页面容器：占满全屏，垂直排列 */
+.home-container {
+    height: 100vh; /* 关键：锁定高度 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 禁止整个页面拖动 */
+    box-sizing: border-box;
+    background-color: #C1D0B7; /* 建议加个背景色，防止列表滚动到底部露白 */
+}
+
+/* 2. 头部固定区域组 */
+.fixed-header-group {
+    flex-shrink: 0; /* 禁止压缩 */
+    z-index: 10;
+    background-color: #C1D0B7; /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
+    /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
+}
+
+/* 3. 滚动区域：自动填满剩余空间 */
+.content-scroll-view {
+    flex: 1; /* 占据剩余高度 */
+    height: 0; /* 🌟 关键：强制触发 Flex 计算，防止 scroll-view 被内容撑开导致失效 */
+    overflow: hidden;
+    margin-bottom: 160rpx; 
+}
+
+.waterfall-wrapper {
+    padding-bottom: env(safe-area-inset-bottom); /* 适配 iPhone 底部安全区 */
+}
 .family-select {
     position: fixed;
     z-index: 999;
@@ -345,6 +395,7 @@ export default {
     padding: 0 10px;
     /* 左右留白 */
     margin-bottom: 5px;
+    margin-top: 10px;
     /* 和下方 Tag 保持一点距离 */
 }
 
@@ -564,5 +615,8 @@ export default {
     .slider-bar {
         background-color: #8bb374;
     }
+}
+.waterfall-wrapper {
+    padding-bottom: env(safe-area-inset-bottom); /* 适配 iPhone 底部安全区 */
 }
 </style>

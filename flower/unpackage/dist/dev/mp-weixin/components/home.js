@@ -1,11 +1,6 @@
 "use strict";
 const common_vendor = require("../common/vendor.js");
 const utils_request = require("../utils/request.js");
-new Proxy({}, {
-  get(_, key) {
-    throw new Error(`Module "inspector" has been externalized for browser compatibility. Cannot access "inspector.${key}" in client code.  See https://vitejs.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.`);
-  }
-});
 const WaterfallBox = () => "./WaterfallBox.js";
 const _sfc_main = {
   components: {
@@ -87,7 +82,7 @@ const _sfc_main = {
         this.getTagList();
         this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:149", error);
+        common_vendor.index.__f__("error", "at components/home.vue:163", error);
       }
     },
     async getPlantsList() {
@@ -95,11 +90,11 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:157", "plants list:", plants);
+        common_vendor.index.__f__("log", "at components/home.vue:171", "plants list:", plants);
         this.allPlantsList = plants == null ? void 0 : plants.data;
         this.filterPlants();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:161", error);
+        common_vendor.index.__f__("error", "at components/home.vue:175", error);
       }
     },
     filterPlants() {
@@ -122,14 +117,14 @@ const _sfc_main = {
       });
     },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:184", e);
+      common_vendor.index.__f__("log", "at components/home.vue:198", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:191", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:205", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -139,19 +134,19 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:201", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:215", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:209", error);
+        common_vendor.index.__f__("error", "at components/home.vue:223", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:213", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:214", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:227", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:228", "search:", this.searchValue);
     },
     selectTag(index, item) {
       if (this.currentTagIndex === index)
@@ -231,7 +226,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:298", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:312", "callContainer login:", user);
     await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
     });
@@ -239,6 +234,14 @@ const _sfc_main = {
       common_vendor.index.setStorage({ key: "userInfo", data: user.data.user, success: resolve });
     });
     this.loadFamilyData();
+    common_vendor.index.$off("refreshHomeList");
+    common_vendor.index.$on("refreshHomeList", (data) => {
+      common_vendor.index.__f__("log", "at components/home.vue:322", "收到刷新通知", data);
+      this.getPlantsList();
+    });
+  },
+  beforeDestroy() {
+    common_vendor.index.$off("refreshHomeList");
   }
 };
 if (!Array) {

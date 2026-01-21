@@ -53,16 +53,17 @@
 			</view>
 
 			<view class="form-item textarea-box" :class="{ 'focused': descFocus }">
-				<uni-easyinput type="textarea" v-model="plant.desc" :inputBorder="false" placeholder="记录植物的状态..."
-					placeholderStyle="color:#8BA989; font-size:14px;" autoHeight @focus="descFocus = true"
-					@blur="descFocus = false"></uni-easyinput>
+				<uni-easyinput type="textarea" v-model="plant.desc" :disabled="isCalendarOpen" :inputBorder="false"
+					placeholder="记录植物的状态..." placeholderStyle="color:#8BA989; font-size:14px;" autoHeight
+					@focus="descFocus = true" @blur="descFocus = false"></uni-easyinput>
 			</view>
 
 			<!-- 3. 日期 (居中胶囊按钮) -->
 			<view class="date-section">
-				<uni-datetime-picker type="date" v-model="plant.birthday" :border="false" @change="onDateChange">
+				<uni-datetime-picker type="date" ref="datePicker" v-model="plant.birthday" :border="false"
+					@change="onDateChange" @maskClick="dateClear">
 					<!-- 自定义显示样式的插槽 -->
-					<view class="date-pill">
+					<view class="date-pill" @click.stop="openCalendar">
 						<uni-icons type="calendar-filled" size="18" color="#566C44"
 							style="margin-left: 8px;"></uni-icons>
 						<text>{{ plant.birthday || '选择日期' }}</text>
@@ -113,17 +114,20 @@ export default {
 				birthday: '',
 				tags: [],
 			},
-			uploadImage:{
-				url:"",
-				height:"",
-				width:0,
-				sha256:0,
-				size:0
+			uploadImage: {
+				url: "",
+				height: "",
+				width: 0,
+				sha256: 0,
+				size: 0,
+				isUpload: false,
 			},
 			nameFocus: false,
 			descFocus: false,
 			tags: [],
 			isCD: false,
+			isCalendarOpen: false,
+			isSave: true,
 		}
 	},
 	methods: {
@@ -141,21 +145,38 @@ export default {
 			this.plant.name = "未知-" + c
 			setTimeout(() => { this.isCD = false }, 1000)
 		},
+		dateClear() {
+			this.isCalendarOpen = false;
+		},
+		openCalendar() {
+			this.isCalendarOpen = true;
+			this.$refs.datePicker.show();
+		},
 		onDateChange(e) {
 			console.log("date", e)
 			this.plant.birthday = e
+			this.isCalendarOpen = false;
 		},
-		addTag() {
-			uni.showModal({
-				title: '添加标签',
-				editable: true,
-				placeholderText: '例如：房间、喜阳、品种...',
-				success: (res) => {
-					if (res.confirm && res.content) {
-						this.tags.push(res.content);
-					}
-				}
+		async addTag() {
+			const tag = await new Promise((resolve, reject) => {
+				uni.showModal({
+					title: '添加标签',
+					editable: true,
+					placeholderText: '例如：房间、喜阳、品种...',
+					success: resolve,
+					fail: reject
+				})
 			})
+			console.log("tag",tag)
+			if(tag.confirm){
+				const result = await callContainer("/api/tag/add",{
+					name:tag.content,
+					familyId:this.familyId
+				})
+				console.log("add tag",result)
+				this.getTagsList()
+			}
+
 		},
 		// 切换标签选中状态
 		toggleTag(index) {
@@ -185,6 +206,8 @@ export default {
 			wx.navigateBack()
 		},
 		async save() {
+			if (this.isSave) return;
+			this.isSave = false;
 			wx.vibrateShort({ type: "medium" })
 			if (!this.plant.name) {
 				uni.showToast({
@@ -194,10 +217,37 @@ export default {
 				})
 				return;
 			}
+			if (this.uploadImage.isUpload) {
+				const timestamp = Math.floor(new Date().getTime() / 1000);
+				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+				const name = `${timestamp}${random}.jpg`;
+
+				const uploadFile = await new Promise((resolve, reject) => {
+					wx.cloud.uploadFile({
+						cloudPath: this.familyId + '/' + name,
+						filePath: this.uploadImage.url,
+						config: {
+							env: 'prod-0gr2o3qpe533f1fb'
+						},
+						success: resolve,
+						fail: reject,
+					})
+				})
+				console.log("upload image", uploadFile)
+				const fileID = uploadFile.fileID
+				const addImage = await callContainer("/api/image/add", {
+					url: fileID,
+					width: Number(this.uploadImage.width),
+					height: Number(this.uploadImage.height),
+					size: Number(this.uploadImage.size),
+					hash: this.uploadImage.sha256,
+				})
+				console.log("save image", addImage)
+				this.plant.coverId = addImage.data.id;
+			}
 			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.ID })) || []
 			if (this.plant.coverId === 0) { this.plant.coverId = 6 }
 			console.log("name", this.plant.name)
-			console.log("cover", this.plant.cover)
 			console.log("coverId", this.plant.coverId)
 			console.log("desc", this.plant.desc)
 			console.log("birthday", this.plant.birthday)
@@ -212,13 +262,13 @@ export default {
 					"tags": this.plant.tags
 				})
 				console.log("call container plant add", plant)
+				uni.$emit('refreshHomeList', { needRefresh: true });
 			} catch (error) {
 				console.error(error)
 			} finally {
+				this.isSave = true;
 				uni.navigateBack()
 			}
-
-
 		},
 		async uploadImages() {
 			try {
@@ -230,7 +280,6 @@ export default {
 						fail: reject
 					})
 				})
-				console.log("tmp image", result)
 				const file = result.tempFiles[0]
 				this.uploadImage.url = file.tempFilePath;
 				this.uploadImage.size = file.size;
@@ -244,10 +293,6 @@ export default {
 					return
 				}
 				this.plant.cover = file.tempFilePath;
-				const timestamp = Math.floor(new Date().getTime() / 1000);
-				const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-				const name = `${timestamp}${random}.jpg`;
-				console.log("name", name)
 				const imageInfo = await new Promise((resolve, reject) => {
 					wx.getImageInfo({
 						src: file.tempFilePath,
@@ -255,28 +300,27 @@ export default {
 						fail: reject
 					})
 				})
-				console.log("imageInfo",imageInfo)
 				this.uploadImage.width = imageInfo.width
 				this.uploadImage.height = imageInfo.height
-				const sha256 = await new Promise((resolve,reject)=>{
+				const sha256 = await new Promise((resolve, reject) => {
 					wx.getFileSystemManager().getFileInfo({
-						filePath:file.tempFilePath,
-						digestAlgorithm:"sha256",
-						success:resolve,
-						fail:reject
+						filePath: file.tempFilePath,
+						digestAlgorithm: "sha256",
+						success: resolve,
+						fail: reject
 					})
 				})
-				console.log("sha256",sha256)
 				this.uploadImage.sha256 = sha256.digest;
-				console.log(this.uploadImage)
-				// const imageUrl = await callContainer("/api/upload", {
-				// 	familyId: this.familyId,
-				// 	fileName: name,
-				// 	image: upload.data
-				// })
-				// console.log("后台返回url:", imageUrl)
-				// this.plant.cover = imageUrl.data.url
-				// this.plant.coverId = imageUrl.data.ID
+				console.log("upload image", this.uploadImage)
+				const isImage = await callContainer("/api/image/check", {
+					hash: sha256.digest
+				})
+				console.log("last image info has image", isImage)
+				this.uploadImage.isUpload = isImage.data.uploadRequired
+				if (!isImage.data.uploadRequired) {
+					this.uploadImage.url = isImage.data.url;
+					this.plant.coverId = isImage.data.id;
+				}
 			} catch (error) {
 				console.error(error)
 			}

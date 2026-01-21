@@ -1,5 +1,41 @@
 /* 水平间距 */
 /* 水平间距 */
+/* 1. 页面容器：占满全屏，垂直排列 */
+.home-container.data-v-045d88fd {
+  height: 100vh;
+  /* 关键：锁定高度 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* 禁止整个页面拖动 */
+  box-sizing: border-box;
+  background-color: #C1D0B7;
+  /* 建议加个背景色，防止列表滚动到底部露白 */
+}
+
+/* 2. 头部固定区域组 */
+.fixed-header-group.data-v-045d88fd {
+  flex-shrink: 0;
+  /* 禁止压缩 */
+  z-index: 10;
+  background-color: #C1D0B7;
+  /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
+  /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
+}
+
+/* 3. 滚动区域：自动填满剩余空间 */
+.content-scroll-view.data-v-045d88fd {
+  flex: 1;
+  /* 占据剩余高度 */
+  height: 0;
+  /* 🌟 关键：强制触发 Flex 计算，防止 scroll-view 被内容撑开导致失效 */
+  overflow: hidden;
+  margin-bottom: 160rpx;
+}
+.waterfall-wrapper.data-v-045d88fd {
+  padding-bottom: env(safe-area-inset-bottom);
+  /* 适配 iPhone 底部安全区 */
+}
 .family-select.data-v-045d88fd {
   position: fixed;
   z-index: 999;
@@ -29,6 +65,7 @@
   padding: 0 10px;
   /* 左右留白 */
   margin-bottom: 5px;
+  margin-top: 10px;
   /* 和下方 Tag 保持一点距离 */
 }
 .search-box-wrapper.data-v-045d88fd {
@@ -208,4 +245,8 @@ to {
 .slider-bar.data-v-045d88fd {
     background-color: #8bb374;
 }
+}
+.waterfall-wrapper.data-v-045d88fd {
+  padding-bottom: env(safe-area-inset-bottom);
+  /* 适配 iPhone 底部安全区 */
 }
