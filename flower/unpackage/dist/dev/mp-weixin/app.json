@@ -3,7 +3,7 @@
     "pages/index/index",
     "pages/my/my",
     "pages/system/system",
-    "pages/addPlant/addPlant",
+    "pages/plantEdit/plantEdit",
     "pages/plantDetail/plantDetail",
     "pages/tagEdit/tagEdit"
   ],

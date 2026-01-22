@@ -8336,7 +8336,7 @@ const pages = [
     }
   },
   {
-    path: "pages/addPlant/addPlant",
+    path: "pages/plantEdit/plantEdit",
     style: {
       navigationBarTitleText: "",
       navigationStyle: "custom",

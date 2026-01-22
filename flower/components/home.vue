@@ -51,7 +51,7 @@
         <!-- flex:1 让它自动填满剩余空间，height:0 防止被内容撑大 -->
         <scroll-view scroll-y class="content-scroll-view">
             <view class="waterfall-wrapper">
-                <WaterfallBox :list="plantsList" idKey="ID" cols="2">
+                <WaterfallBox :list="plantsList" idKey="ID" cols="2" :key="currentTagIndex">
                     <template #item="{ item }">
                         <view class="plant-card" @click="gotoDetail(item)">
                             <view class="image-wrapper"
@@ -232,8 +232,11 @@ export default {
         selectTag(index, item) {
             if (this.currentTagIndex === index) return;
             wx.vibrateShort({ type: "medium" })
+            this.plantsList = [];
             this.currentTagIndex = index;
-            this.filterPlants();
+            this.$nextTick(() => {
+                this.filterPlants();
+            });
             const query = uni.createSelectorQuery().in(this);
             query.select('#tag-container').boundingClientRect();
             query.select('#tag-text-' + index).boundingClientRect();
@@ -286,7 +289,7 @@ export default {
         goAddPage() {
             wx.vibrateShort({ type: "medium" })
             // 传入当前家庭ID
-            uni.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
+            uni.navigateTo({ url: `/pages/plantEdit/plantEdit?type=add` });
         },
         gotoDetail(item) {
             uni.navigateTo({
@@ -303,7 +306,7 @@ export default {
      * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑
      */
     async created() {
-        
+
         const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
         this.menuButtonInfo = menuButtonInfo
         const systemInfo = uni.getWindowInfo()
@@ -328,7 +331,7 @@ export default {
             console.log('收到刷新通知', data);
             this.getPlantsList();
         })
-        
+
     },
     beforeDestroy() {
         uni.$off('refreshHomeList');

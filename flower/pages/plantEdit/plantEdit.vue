@@ -25,8 +25,8 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img"
-					:src="plant.cover || 'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"
+				<image class="plant-img" v-if="cover"
+					:src="cover"
 					mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImages">
@@ -111,7 +111,7 @@ export default {
 			familyId: 0,
 			plant: {
 				name: '',
-				cover: '',
+				cover: {},
 				coverId: 0,
 				desc: '',
 				birthday: '',
@@ -131,6 +131,9 @@ export default {
 			isCD: false,
 			isCalendarOpen: false,
 			isSave: true,
+			option: 'add',
+			plantId:0,
+			cover:'/static/020-plant.png',
 		}
 	},
 	methods: {
@@ -191,12 +194,17 @@ export default {
 					familyId: this.familyId
 				})
 				console.log("tagList:", tagList)
-				const apiTags = tagList?.data || []
+
+				const apiTags = tagList.data || []
+				const selectedIds = (this.plant && this.plant.tags)
+					? this.plant.tags.map(t => Number(t.ID || t.id))
+					: [];
+
 				this.tags = [
 					...apiTags.map((item) => ({
 						name: item.name,
 						ID: item.ID,
-						active: false
+						active: selectedIds.includes(Number(item.ID))
 					}))
 				]
 				console.log("tags", this.tags)
@@ -257,24 +265,46 @@ export default {
 			console.log("desc", this.plant.desc)
 			console.log("birthday", this.plant.birthday)
 			console.log("tags", this.plant.tags)
-			try {
-				const plant = await callContainer("/api/plant/add", {
-					"name": this.plant.name,
-					"familyId": this.familyId,
-					"coverId": this.plant.coverId,
-					"desc": this.plant.desc,
-					"birthday": this.plant.birthday,
-					"tags": this.plant.tags
-				})
-				console.log("call container plant add", plant)
-				uni.$emit('refreshHomeList', { needRefresh: true });
-			} catch (error) {
-				console.error(error)
-			} finally {
-				this.isSave = true;
-				this.$refs.loading.close();
-				uni.navigateBack()
+			if (this.option === 'edit' && this.plantId > 0) {
+				try {
+					const plant = await callContainer("/api/plant/update", {
+						"name": this.plant.name,
+						"id": Number(this.plantId),
+						"coverId": this.plant.coverId,
+						"desc": this.plant.desc,
+						"birthday": this.plant.birthday,
+						"tags": this.plant.tags
+					})
+					console.log("call container plant update", plant)
+					uni.$emit('refreshHomeList', { needRefresh: true });
+				} catch (error) {
+					console.error(error)
+				} finally {
+					this.isSave = true;
+					this.$refs.loading.close();
+					uni.navigateBack()
+				}
+			} else {
+				try {
+					const plant = await callContainer("/api/plant/add", {
+						"name": this.plant.name,
+						"familyId": Number(this.familyId),
+						"coverId": this.plant.coverId,
+						"desc": this.plant.desc,
+						"birthday": this.plant.birthday,
+						"tags": this.plant.tags
+					})
+					console.log("call container plant add", plant)
+					uni.$emit('refreshHomeList', { needRefresh: true });
+				} catch (error) {
+					console.error(error)
+				} finally {
+					this.isSave = true;
+					this.$refs.loading.close();
+					uni.navigateBack()
+				}
 			}
+
 		},
 		async uploadImages() {
 			try {
@@ -298,7 +328,8 @@ export default {
 					})
 					return
 				}
-				this.plant.cover = file.tempFilePath;
+				this.cover = file.tempFilePath;
+				this.plant.cover.url = file.tempFilePath;
 				const imageInfo = await new Promise((resolve, reject) => {
 					wx.getImageInfo({
 						src: file.tempFilePath,
@@ -330,19 +361,38 @@ export default {
 			} catch (error) {
 				console.error(error)
 			}
-		}
+		},
+		async getPlant() {
+			try {
+				const result = await callContainer("/api/plant/", {
+					id: Number(this.plantId)
+				})
+				console.log("call container get plant", result)
+				this.plant = result.data
+				this.cover = result.data.cover.url || '/static/020-plant.png'
+				this.plant.birthday = this.plant.birthday ? this.plant.birthday.split('T')[0] : '';
+			} catch (error) {
+				console.error(error)
+			}
+		},
 	},
-	onLoad(options) {
-		if (options) {
-			this.familyId = Number(options.familyId);
-			console.log("获取家庭ID", this.familyId)
-		}
+	async onLoad(options) {
+		console.log(options)
 		const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
 		this.menuButtonInfo = menuButtonInfo
 		const systemInfo = uni.getWindowInfo()
 		this.paddingLeft = systemInfo.screenWidth - menuButtonInfo.right
 		const app = getApp()
 		this.topBarHeight = app.globalData.topBarHeight;
+		const familyID = await new Promise((resolve, reject) => {
+			uni.getStorage({ key: 'familyId', success: resolve, fail: reject })
+		})
+		this.familyId = familyID.data
+		this.option = options.type
+		if (options.type === 'edit') {
+			this.plantId = options.id
+			await this.getPlant()
+		}
 		this.getTagsList()
 	}
 }

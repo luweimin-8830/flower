@@ -152,8 +152,11 @@ const _sfc_main = {
       if (this.currentTagIndex === index)
         return;
       common_vendor.wx$1.vibrateShort({ type: "medium" });
+      this.plantsList = [];
       this.currentTagIndex = index;
-      this.filterPlants();
+      this.$nextTick(() => {
+        this.filterPlants();
+      });
       const query = common_vendor.index.createSelectorQuery().in(this);
       query.select("#tag-container").boundingClientRect();
       query.select("#tag-text-" + index).boundingClientRect();
@@ -201,7 +204,7 @@ const _sfc_main = {
     },
     goAddPage() {
       common_vendor.wx$1.vibrateShort({ type: "medium" });
-      common_vendor.index.navigateTo({ url: `/pages/addPlant/addPlant?familyId=${this.value}` });
+      common_vendor.index.navigateTo({ url: `/pages/plantEdit/plantEdit?type=add` });
     },
     gotoDetail(item) {
       common_vendor.index.navigateTo({
@@ -226,7 +229,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:315", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:318", "callContainer login:", user);
     await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
     });
@@ -239,7 +242,7 @@ const _sfc_main = {
     this.loadFamilyData();
     common_vendor.index.$off("refreshHomeList");
     common_vendor.index.$on("refreshHomeList", (data) => {
-      common_vendor.index.__f__("log", "at components/home.vue:328", "收到刷新通知", data);
+      common_vendor.index.__f__("log", "at components/home.vue:331", "收到刷新通知", data);
       this.getPlantsList();
     });
   },
@@ -322,7 +325,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       path: "p",
       vueId: "045d88fd-3"
     }),
-    q: common_vendor.p({
+    q: $data.currentTagIndex,
+    r: common_vendor.p({
       list: $data.plantsList,
       idKey: "ID",
       cols: "2"

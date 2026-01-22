@@ -5,7 +5,7 @@ if (!Math) {
   "./pages/index/index.js";
   "./pages/my/my.js";
   "./pages/system/system.js";
-  "./pages/addPlant/addPlant.js";
+  "./pages/plantEdit/plantEdit.js";
   "./pages/plantDetail/plantDetail.js";
   "./pages/tagEdit/tagEdit.js";
 }

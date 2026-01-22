@@ -82,7 +82,7 @@ export default {
 .icon-box {
     width: 50px;
     height: 50px;
-    background-color: #4A6139;
+    background-color: #566C44;
     /* 深绿色实心圆 */
     border-radius: 50%;
     display: flex;
@@ -105,7 +105,7 @@ export default {
 .loading-text {
     margin-top: 20px;
     font-size: 14px;
-    color: #4A6139;
+    color: #566C44;
     font-weight: 500;
     letter-spacing: 1px;
     animation: fadeIn 1s infinite alternate;

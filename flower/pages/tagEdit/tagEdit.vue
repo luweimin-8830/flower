@@ -222,9 +222,11 @@ export default {
             console.log('新的顺序 ID:', sortedIds);
 
             try {
+                
                 // 这里调用你的后端接口保存顺序
-                // await callContainer("/api/tag/sort", { ids: sortedIds });
-                uni.showToast({ title: '顺序已保存', icon: 'success' });
+                const tagSort = await callContainer("/api/tag/sort", { tagIds: sortedIds });
+                console.log("call container tag sort:",tagSort)
+                // uni.showToast({ title: '顺序已保存', icon: 'success' });
             } catch (e) {
                 console.error(e);
             }
