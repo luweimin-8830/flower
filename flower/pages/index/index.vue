@@ -1,5 +1,6 @@
 <template>
 	<view class="container">
+		 <loadingPage ref="loading" />
 		<view>
 
 		</view>
@@ -96,11 +97,13 @@ const {
 import navBar from '@/components/navBar.vue';
 import home from '@/components/home.vue';
 import my from '@/components/my.vue';
+import loadingPage from '@/components/loading.vue';
 export default {
 	components: {
 		navBar,
 		home,
 		my,
+		loadingPage,
 	},
 	data() {
 		return {
@@ -257,6 +260,10 @@ export default {
 	async onLoad() {
 		const app = getApp()
 		await app.globalData.initPromise;
+		this.$refs.loading.open();
+        setTimeout(() => {
+            this.$refs.loading.close();
+        }, 1500);
 		this.$nextTick(() => {
 			this.getDemRefAll({
 				selector: '.pan-tabbar-item',

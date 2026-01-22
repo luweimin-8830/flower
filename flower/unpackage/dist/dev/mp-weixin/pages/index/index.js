@@ -8,11 +8,13 @@ const {
 const navBar = () => "../../components/navBar.js";
 const home = () => "../../components/home.js";
 const my = () => "../../components/my.js";
+const loadingPage = () => "../../components/loading.js";
 const _sfc_main = {
   components: {
     navBar,
     home,
-    my
+    my,
+    loadingPage
   },
   data() {
     return {
@@ -73,7 +75,7 @@ const _sfc_main = {
     tabbarPageScrollLower() {
     },
     init(e) {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:163", "Tabbar init elements:", e);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:166", "Tabbar init elements:", e);
       if (!e || e.length === 0)
         return;
       const keys = Object.keys(this.list);
@@ -89,7 +91,7 @@ const _sfc_main = {
       if (item && item.style) {
         this.onTabbar(item, this.onKey);
       } else {
-        common_vendor.index.__f__("warn", "at pages/index/index.vue:183", "初始化匹配失败，尝试使用默认值");
+        common_vendor.index.__f__("warn", "at pages/index/index.vue:186", "初始化匹配失败，尝试使用默认值");
         const defaultWidth = windowWidth / 5;
         this.ballStyleLeft = defaultWidth * 2 + defaultWidth / 2 - 22;
         this.liquidStyleLeft = defaultWidth * 2 + defaultWidth / 2 - windowWidth / 2;
@@ -98,7 +100,7 @@ const _sfc_main = {
     onTabbar(item, key) {
       this.throttle(() => {
         if (!item || !item.style) {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:194", "onTabbar error: item or item.style is undefined");
+          common_vendor.index.__f__("error", "at pages/index/index.vue:197", "onTabbar error: item or item.style is undefined");
           return;
         }
         this.switchTabbarPage(key);
@@ -164,6 +166,10 @@ const _sfc_main = {
   async onLoad() {
     const app = getApp();
     await app.globalData.initPromise;
+    this.$refs.loading.open();
+    setTimeout(() => {
+      this.$refs.loading.close();
+    }, 1500);
     this.$nextTick(() => {
       this.getDemRefAll({
         selector: ".pan-tabbar-item",
@@ -181,42 +187,44 @@ const _sfc_main = {
   }
 };
 if (!Array) {
+  const _component_loadingPage = common_vendor.resolveComponent("loadingPage");
   const _component_home = common_vendor.resolveComponent("home");
   const _component_my = common_vendor.resolveComponent("my");
-  (_component_home + _component_my)();
+  (_component_loadingPage + _component_home + _component_my)();
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: $data.list["a"].is
+    a: common_vendor.sr("loading", "24547230-0"),
+    b: $data.list["a"].is
   }, $data.list["a"].is ? {
-    b: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    c: $data.onKey === "a" ? "" : "none"
+    c: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    d: $data.onKey === "a" ? "" : "none"
   } : {}, {
-    d: $data.list["b"].is
+    e: $data.list["b"].is
   }, $data.list["b"].is ? {
-    e: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    f: $data.onKey === "b" ? "" : "none"
+    f: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    g: $data.onKey === "b" ? "" : "none"
   } : {}, {
-    g: $data.list["c"].is
+    h: $data.list["c"].is
   }, $data.list["c"].is ? {
-    h: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    i: $data.onKey === "c" ? "" : "none"
+    i: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    j: $data.onKey === "c" ? "" : "none"
   } : {}, {
-    j: $data.list["d"].is
+    k: $data.list["d"].is
   }, $data.list["d"].is ? {
-    k: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    l: $data.onKey === "d" ? "" : "none"
+    l: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    m: $data.onKey === "d" ? "" : "none"
   } : {}, {
-    m: $data.list["e"].is
+    n: $data.list["e"].is
   }, $data.list["e"].is ? {
-    n: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    o: $data.onKey === "e" ? "" : "none"
+    o: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    p: $data.onKey === "e" ? "" : "none"
   } : {}, {
-    p: $data.animation01 ? 1 : "",
-    q: common_vendor.s($options.liquidStyle),
-    r: $data.animation02 ? 1 : "",
-    s: common_vendor.s($options.ballStyle),
-    t: common_vendor.f($data.list, (item, key, i0) => {
+    q: $data.animation01 ? 1 : "",
+    r: common_vendor.s($options.liquidStyle),
+    s: $data.animation02 ? 1 : "",
+    t: common_vendor.s($options.ballStyle),
+    v: common_vendor.f($data.list, (item, key, i0) => {
       return {
         a: item.iconOff,
         b: item.iconOn,

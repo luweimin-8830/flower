@@ -5,6 +5,7 @@
   "disableScroll": true,
   "usingComponents": {
     "home": "../../components/home",
-    "my": "../../components/my"
+    "my": "../../components/my",
+    "loading-page": "../../components/loading"
   }
 }

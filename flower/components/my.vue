@@ -46,6 +46,7 @@ export default {
         handleNav(type) {
             // 这里处理点击事件
             console.log('点击了:', type);
+            wx.vibrateShort({ type: "medium" })
             if (type === 'tag') {
                 uni.navigateTo({ url: '/pages/tagEdit/tagEdit' })
             } else if (type === 'care') {

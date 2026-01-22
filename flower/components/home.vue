@@ -1,7 +1,8 @@
 <template>
+   
     <!-- 🌟 1. 最外层包裹一个全屏容器 -->
     <view class="home-container">
-        
+
         <!-- 🌟 2. 悬浮的家庭选择按钮 (保持原样，它是 fixed 定位，不受 flex 影响) -->
         <view class="family-select" :style="{
             width: 'auto',
@@ -22,8 +23,8 @@
             <!-- 搜索框 -->
             <view class="header-action-container">
                 <view class="search-box-wrapper">
-                    <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false" v-model="searchValue"
-                        bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
+                    <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false"
+                        v-model="searchValue" bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
                     </uni-search-bar>
                 </view>
                 <view class="add-btn" @click="goAddPage">
@@ -34,7 +35,8 @@
             <!-- 横向滚动标签 -->
             <view class="tag-scroll-container">
                 <scroll-view scroll-x="true" class="tag-scroll-view" :show-scrollbar="false"
-                    :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)" scroll-with-animation>
+                    :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)"
+                    scroll-with-animation>
                     <view class="tag-flex-box" id="tag-container">
                         <view v-for="(item, index) in tagList" :key="item.ID" :id="'tag-item-' + index" class="tag-item"
                             :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
@@ -65,9 +67,9 @@
                         </view>
                     </template>
                 </WaterfallBox>
-                
+
                 <!-- 底部垫片：防止内容被 TabBar 遮挡 -->
-                <view style="height: 20px;"></view> 
+                <view style="height: 20px;"></view>
             </view>
         </scroll-view>
 
@@ -77,7 +79,8 @@
 
 <script>
 import { callContainer } from '../utils/request';
-import WaterfallBox from './WaterfallBox.vue'
+import WaterfallBox from './WaterfallBox.vue';
+
 export default {
     components: {
         WaterfallBox,
@@ -301,6 +304,7 @@ export default {
      * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑
      */
     async created() {
+        
         const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
         this.menuButtonInfo = menuButtonInfo
         const systemInfo = uni.getWindowInfo()
@@ -313,8 +317,8 @@ export default {
         await new Promise((resolve) => {
             uni.setStorage({ key: "family", data: user.data.family, success: resolve })
         })
-        await new Promise((resolve)=>{
-            uni.setStorage({key:"familyId",data:user.data.family[0].ID,success:resolve})
+        await new Promise((resolve) => {
+            uni.setStorage({ key: "familyId", data: user.data.family[0].ID, success: resolve })
         })
         await new Promise((resolve) => {
             uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
@@ -325,6 +329,7 @@ export default {
             console.log('收到刷新通知', data);
             this.getPlantsList();
         })
+        
     },
     beforeDestroy() {
         uni.$off('refreshHomeList');
@@ -333,35 +338,44 @@ export default {
 </script>
 
 <style scoped lang="scss">
-    /* 1. 页面容器：占满全屏，垂直排列 */
+/* 1. 页面容器：占满全屏，垂直排列 */
 .home-container {
-    height: 100vh; /* 关键：锁定高度 */
+    height: 100vh;
+    /* 关键：锁定高度 */
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* 禁止整个页面拖动 */
+    overflow: hidden;
+    /* 禁止整个页面拖动 */
     box-sizing: border-box;
-    background-color: #C1D0B7; /* 建议加个背景色，防止列表滚动到底部露白 */
+    background-color: #C1D0B7;
+    /* 建议加个背景色，防止列表滚动到底部露白 */
 }
 
 /* 2. 头部固定区域组 */
 .fixed-header-group {
-    flex-shrink: 0; /* 禁止压缩 */
+    flex-shrink: 0;
+    /* 禁止压缩 */
     z-index: 10;
-    background-color: #C1D0B7; /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
+    background-color: #C1D0B7;
+    /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
     /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
 
 /* 3. 滚动区域：自动填满剩余空间 */
 .content-scroll-view {
-    flex: 1; /* 占据剩余高度 */
-    height: 0; /* 🌟 关键：强制触发 Flex 计算，防止 scroll-view 被内容撑开导致失效 */
+    flex: 1;
+    /* 占据剩余高度 */
+    height: 0;
+    /* 🌟 关键：强制触发 Flex 计算，防止 scroll-view 被内容撑开导致失效 */
     overflow: hidden;
-    margin-bottom: 160rpx; 
+    margin-bottom: 160rpx;
 }
 
 .waterfall-wrapper {
-    padding-bottom: env(safe-area-inset-bottom); /* 适配 iPhone 底部安全区 */
+    padding-bottom: env(safe-area-inset-bottom);
+    /* 适配 iPhone 底部安全区 */
 }
+
 .family-select {
     position: fixed;
     z-index: 999;
@@ -619,7 +633,9 @@ export default {
         background-color: #8bb374;
     }
 }
+
 .waterfall-wrapper {
-    padding-bottom: env(safe-area-inset-bottom); /* 适配 iPhone 底部安全区 */
+    padding-bottom: env(safe-area-inset-bottom);
+    /* 适配 iPhone 底部安全区 */
 }
 </style>

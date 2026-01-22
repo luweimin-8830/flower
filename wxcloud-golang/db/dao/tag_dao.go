@@ -30,12 +30,13 @@ func GetTagByFamilyID(ctx context.Context, familyID uint) ([]model.Tag, error) {
 	var tags []model.Tag
 	err := db.DB.WithContext(ctx).
 		Table("tag").
-		Select("tag.*, count(plant_tags.plant_id) as plant_count").
-		// 注意：'plant_tags' 是你的多对多中间表表名，请去数据库确认一下是否叫这个
+		Select("tag.*, count(plant.id) as plant_count").
 		Joins("LEFT JOIN plant_tags ON plant_tags.tag_id = tag.id").
-		Where("tag.family_id = ?", familyID).
+		Joins("LEFT JOIN plant ON plant.id = plant_tags.plant_id AND plant.deleted_at IS NULL").
+		Where("tag.family_id = ? AND tag.deleted_at IS NULL", familyID).
 		Group("tag.id").
 		Scan(&tags).Error
+
 	return tags, err
 }
 

@@ -1,6 +1,6 @@
 <template>
     <navBar />
-    <view :style="{height:topBarHeight+'px'}"></view>
+    <view :style="{ height: topBarHeight + 'px' }"></view>
     <view class="page-container">
 
         <!-- 1. 创建新标签区域 -->
@@ -21,15 +21,12 @@
             <view class="card-box list-card">
                 <!-- 🌟 1. 外层包裹 uni-swipe-action -->
                 <uni-swipe-action>
-                    <block v-for="(item, index) in tagList" :key="item.id">
-                        
+                    <block v-for="(item, index) in tagsList" :key="item.ID">
+
                         <!-- 🌟 2. 每一个项包裹 uni-swipe-action-item -->
                         <!-- right-options 定义左滑出现的按钮 -->
-                        <uni-swipe-action-item 
-                            :right-options="swipeOptions" 
-                            @click="swipeClick($event, index)"
-                            :auto-close="true"
-                        >
+                        <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)"
+                            :auto-close="true">
                             <view class="list-item">
                                 <!-- A. 编辑模式 -->
                                 <template v-if="item.isEditing">
@@ -52,14 +49,14 @@
                                     </view>
                                     <!-- 数量徽标 -->
                                     <view class="count-badge">
-                                        <text>{{ item.count }}</text>
+                                        <text>{{ item.plantCount }}</text>
                                     </view>
                                 </template>
                             </view>
                         </uni-swipe-action-item>
 
                         <!-- 分割线 (最后一项不显示) -->
-                        <view v-if="index < tagList.length - 1" class="divider"></view>
+                        <view v-if="index < tagsList.length - 1" class="divider"></view>
                     </block>
                 </uni-swipe-action>
 
@@ -73,11 +70,11 @@ import navBar from '@/components/navBar.vue'
 import { callContainer } from '../../utils/request';
 export default {
     components: {
-		navBar,
-	},
+        navBar,
+    },
     data() {
         return {
-            familyId:0,
+            familyId: 0,
             newTagName: '',
             // 🌟 3. 定义左滑按钮样式
             swipeOptions: [
@@ -91,19 +88,15 @@ export default {
                 }
             ],
             // 模拟数据
-            tagList: [
-                { id: 1, name: '窗台', count: 0, isEditing: false, tempName: '' },
-                { id: 2, name: '花架', count: 0, isEditing: false, tempName: '' },
-                { id: 3, name: '多肉', count: 12, isEditing: false, tempName: '' },
-            ],
+            tagsList: [],
             topBarHeight: 0
         }
     },
     methods: {
-        async loadData(){
+        async loadData() {
             try {
-                const familyID = await new Promise((resolve,reject)=>{
-                    uni.getStorage({key: 'familyId',success:resolve,fail:reject })
+                const familyID = await new Promise((resolve, reject) => {
+                    uni.getStorage({ key: 'familyId', success: resolve, fail: reject })
                 })
                 this.familyId = familyID.data
                 this.getTagsList()
@@ -111,74 +104,88 @@ export default {
                 console.error(error)
             }
         },
-        async getTagsList(){
+        async getTagsList() {
             try {
-                const tagsList = await callContainer("/api/tag/",{
-                    familyId:this.familyId
+                const tagsList = await callContainer("/api/tag/", {
+                    familyId: this.familyId
                 })
-                console.log("call container tag list:",tagsList)
+                console.log("call container tag list:", tagsList)
+                this.tagsList = tagsList.data
             } catch (error) {
                 console.error(error)
             }
         },
         // 🌟 4. 处理左滑按钮点击
-        swipeClick(e, index) {
+        async swipeClick(e, index) {
             // e.content.text 是按钮的文字，比如 '删除'
             if (e.content.text === '删除') {
                 // 可以在这里加一个弹窗确认
-                uni.showModal({
-                    title: '提示',
-                    content: '确定要删除这个标签吗？',
-                    success: (res) => {
-                        if (res.confirm) {
-                            this.tagList.splice(index, 1);
-                            uni.showToast({ title: '已删除', icon: 'none' });
-                        }
-                    }
-                });
+                const result = await new Promise((resolve, reject) => {
+                    uni.showModal({
+                        title: '提示',
+                        content: '确定要删除这个标签吗？',
+                        success: resolve,
+                        fail: reject
+                    });
+                })
+                if (result.confirm) {
+                    const item = this.tagsList[index];
+                    const delTag = await callContainer("/api/tag/delete", {
+                        id: item.ID
+                    })
+                    this.tagsList.splice(index, 1);
+                    console.log("call container del tag:",delTag)
+                }
             }
         },
 
         // 添加标签
-        handleAddTag() {
+        async handleAddTag() {
             if (!this.newTagName.trim()) return;
-
-            this.tagList.push({
-                id: Date.now(),
-                name: this.newTagName,
-                count: 0,
-                isEditing: false,
-                tempName: ''
-            });
-
-            this.newTagName = ''; // 清空输入框
-            uni.showToast({ title: '添加成功', icon: 'none' });
+            try {
+                const newTag = await callContainer("/api/tag/add", {
+                    name: this.newTagName,
+                    familyId: this.familyId
+                })
+                console.log("call container add tag:", newTag)
+                if (newTag.code === 0) {
+                    this.getTagsList()
+                }
+            } catch (error) {
+                console.error(error)
+            }
+            this.newTagName = '';
         },
 
         // 开始编辑
         startEdit(index) {
             // 先把其他正在编辑的关掉
-            this.tagList.forEach(item => item.isEditing = false);
+            this.tagsList.forEach(item => item.isEditing = false);
 
-            const item = this.tagList[index];
+            const item = this.tagsList[index];
             item.tempName = item.name; // 备份当前名字
             item.isEditing = true;
         },
 
         // 保存编辑
-        saveEdit(index) {
-            const item = this.tagList[index];
+        async saveEdit(index) {
+            const item = this.tagsList[index];
             if (!item.tempName.trim()) {
                 uni.showToast({ title: '名称不能为空', icon: 'none' });
                 return;
             }
             item.name = item.tempName;
             item.isEditing = false;
+            const updateTag = await callContainer("/api/tag/update", {
+                id: item.ID,
+                name: item.name
+            })
+            console.log("call container update tag", updateTag)
         },
 
         // 取消编辑
         cancelEdit(index) {
-            this.tagList[index].isEditing = false;
+            this.tagsList[index].isEditing = false;
         }
     },
     onLoad() {
@@ -213,19 +220,20 @@ export default {
 .card-box {
     background-color: rgba(255, 255, 255, 0.55);
     border-radius: 16px;
-    overflow: hidden; /* 关键：保证圆角不被子元素撑破 */
+    overflow: hidden;
+    /* 关键：保证圆角不被子元素撑破 */
     margin-bottom: 24px;
 }
 
 /* 🌟 修复 uni-swipe-action 可能自带的背景色问题 */
 ::v-deep .uni-swipe_button-group {
     /* 确保删除按钮高度撑满 */
-    height: 100%; 
+    height: 100%;
 }
 
 ::v-deep .uni-swipe {
     /* 让滑动组件背景透明，透出 card-box 的豆沙绿 */
-    background-color: transparent !important; 
+    background-color: transparent !important;
 }
 
 /* --- 创建新标签区域 --- */
@@ -274,7 +282,7 @@ export default {
 .list-card {
     /* 列表卡片不需要 padding，因为 padding 会导致滑动条也被挤进去 */
     /* 我们把 padding 移到 list-item 内部 */
-    padding: 0; 
+    padding: 0;
 }
 
 .list-item {
@@ -283,10 +291,11 @@ export default {
     justify-content: space-between;
     height: 54px;
     /* 🌟 关键：因为 list-card 去掉了 padding，这里要补回来 */
-    padding: 0 16px; 
+    padding: 0 16px;
     width: 100%;
     box-sizing: border-box;
-    background-color: transparent; /* 确保透明 */
+    background-color: transparent;
+    /* 确保透明 */
 }
 
 /* 左侧：名字+图标 */
@@ -358,6 +367,6 @@ export default {
     background-color: rgba(0, 0, 0, 0.05);
     width: 100%;
     /* 稍微缩进一点，看起来更像 iOS 风格 */
-    margin-left: 16px; 
+    margin-left: 16px;
 }
 </style>
