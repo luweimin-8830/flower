@@ -1,4 +1,5 @@
 <template>
+    <navBar />
     <view :style="{height:topBarHeight+'px'}"></view>
     <view class="page-container">
 
@@ -68,9 +69,15 @@
 </template>
 
 <script>
+import navBar from '@/components/navBar.vue'
+import { callContainer } from '../../utils/request';
 export default {
+    components: {
+		navBar,
+	},
     data() {
         return {
+            familyId:0,
             newTagName: '',
             // 🌟 3. 定义左滑按钮样式
             swipeOptions: [
@@ -93,6 +100,27 @@ export default {
         }
     },
     methods: {
+        async loadData(){
+            try {
+                const familyID = await new Promise((resolve,reject)=>{
+                    uni.getStorage({key: 'familyId',success:resolve,fail:reject })
+                })
+                this.familyId = familyID.data
+                this.getTagsList()
+            } catch (error) {
+                console.error(error)
+            }
+        },
+        async getTagsList(){
+            try {
+                const tagsList = await callContainer("/api/tag/",{
+                    familyId:this.familyId
+                })
+                console.log("call container tag list:",tagsList)
+            } catch (error) {
+                console.error(error)
+            }
+        },
         // 🌟 4. 处理左滑按钮点击
         swipeClick(e, index) {
             // e.content.text 是按钮的文字，比如 '删除'
@@ -156,6 +184,7 @@ export default {
     onLoad() {
         const app = getApp()
         this.topBarHeight = app.globalData.topBarHeight;
+        this.loadData()
     }
 }
 </script>

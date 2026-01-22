@@ -231,12 +231,15 @@ const _sfc_main = {
       common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
     });
     await new Promise((resolve) => {
+      common_vendor.index.setStorage({ key: "familyId", data: user.data.family[0].ID, success: resolve });
+    });
+    await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "userInfo", data: user.data.user, success: resolve });
     });
     this.loadFamilyData();
     common_vendor.index.$off("refreshHomeList");
     common_vendor.index.$on("refreshHomeList", (data) => {
-      common_vendor.index.__f__("log", "at components/home.vue:322", "收到刷新通知", data);
+      common_vendor.index.__f__("log", "at components/home.vue:325", "收到刷新通知", data);
       this.getPlantsList();
     });
   },

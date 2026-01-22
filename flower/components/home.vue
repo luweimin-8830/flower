@@ -313,6 +313,9 @@ export default {
         await new Promise((resolve) => {
             uni.setStorage({ key: "family", data: user.data.family, success: resolve })
         })
+        await new Promise((resolve)=>{
+            uni.setStorage({key:"familyId",data:user.data.family[0].ID,success:resolve})
+        })
         await new Promise((resolve) => {
             uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
         })

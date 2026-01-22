@@ -29,12 +29,12 @@ func UpdateTag(ctx context.Context, tagID uint, name string) error {
 func GetTagByFamilyID(ctx context.Context, familyID uint) ([]model.Tag, error) {
 	var tags []model.Tag
 	err := db.DB.WithContext(ctx).
-		Table("tags").
-		Select("tags.*, count(plant_tags.plant_id) as plant_count").
+		Table("tag").
+		Select("tag.*, count(plant_tags.plant_id) as plant_count").
 		// 注意：'plant_tags' 是你的多对多中间表表名，请去数据库确认一下是否叫这个
-		Joins("LEFT JOIN plant_tags ON plant_tags.tag_id = tags.id").
-		Where("tags.family_id = ?", familyID).
-		Group("tags.id").
+		Joins("LEFT JOIN plant_tags ON plant_tags.tag_id = tag.id").
+		Where("tag.family_id = ?", familyID).
+		Group("tag.id").
 		Scan(&tags).Error
 	return tags, err
 }
