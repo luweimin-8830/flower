@@ -18,38 +18,49 @@
         <view class="section">
             <text class="section-title">可用标签</text>
             <view class="card-box list-card">
+                <!-- 🌟 1. 外层包裹 uni-swipe-action -->
+                <uni-swipe-action>
+                    <block v-for="(item, index) in tagList" :key="item.id">
+                        
+                        <!-- 🌟 2. 每一个项包裹 uni-swipe-action-item -->
+                        <!-- right-options 定义左滑出现的按钮 -->
+                        <uni-swipe-action-item 
+                            :right-options="swipeOptions" 
+                            @click="swipeClick($event, index)"
+                            :auto-close="true"
+                        >
+                            <view class="list-item">
+                                <!-- A. 编辑模式 -->
+                                <template v-if="item.isEditing">
+                                    <input class="edit-input" v-model="item.tempName" :focus="true" />
+                                    <view class="action-group">
+                                        <!-- 注意：这里加了 @click.stop 防止触发其他点击事件 -->
+                                        <view class="mini-btn save-btn" @click.stop="saveEdit(index)">保存</view>
+                                        <view class="mini-btn cancel-btn" @click.stop="cancelEdit(index)">取消</view>
+                                    </view>
+                                </template>
 
-                <view v-for="(item, index) in tagList" :key="item.id">
-
-                    <view class="list-item">
-                        <!-- A. 编辑模式 -->
-                        <template v-if="item.isEditing">
-                            <input class="edit-input" v-model="item.tempName" :focus="true" />
-                            <view class="action-group">
-                                <view class="mini-btn save-btn" @click="saveEdit(index)">保存</view>
-                                <view class="mini-btn cancel-btn" @click="cancelEdit(index)">取消</view>
+                                <!-- B. 普通展示模式 -->
+                                <template v-else>
+                                    <view class="left-info">
+                                        <text class="tag-name">{{ item.name }}</text>
+                                        <!-- 编辑图标 -->
+                                        <view class="icon-wrapper" @click.stop="startEdit(index)">
+                                            <uni-icons type="compose" size="18" color="#2F3E25"></uni-icons>
+                                        </view>
+                                    </view>
+                                    <!-- 数量徽标 -->
+                                    <view class="count-badge">
+                                        <text>{{ item.count }}</text>
+                                    </view>
+                                </template>
                             </view>
-                        </template>
+                        </uni-swipe-action-item>
 
-                        <!-- B. 普通展示模式 -->
-                        <template v-else>
-                            <view class="left-info">
-                                <text class="tag-name">{{ item.name }}</text>
-                                <!-- 编辑图标 -->
-                                <view class="icon-wrapper" @click="startEdit(index)">
-                                    <uni-icons type="compose" size="18" color="#2F3E25"></uni-icons>
-                                </view>
-                            </view>
-                            <!-- 数量徽标 -->
-                            <view class="count-badge">
-                                <text>{{ item.count }}</text>
-                            </view>
-                        </template>
-                    </view>
-
-                    <!-- 分割线 (最后一项不显示) -->
-                    <view v-if="index < tagList.length - 1" class="divider"></view>
-                </view>
+                        <!-- 分割线 (最后一项不显示) -->
+                        <view v-if="index < tagList.length - 1" class="divider"></view>
+                    </block>
+                </uni-swipe-action>
 
             </view>
         </view>
@@ -61,16 +72,45 @@ export default {
     data() {
         return {
             newTagName: '',
+            // 🌟 3. 定义左滑按钮样式
+            swipeOptions: [
+                {
+                    text: '删除',
+                    style: {
+                        backgroundColor: '#dd524d', // 红色背景
+                        color: '#fff',
+                        fontSize: '14px'
+                    }
+                }
+            ],
             // 模拟数据
             tagList: [
                 { id: 1, name: '窗台', count: 0, isEditing: false, tempName: '' },
                 { id: 2, name: '花架', count: 0, isEditing: false, tempName: '' },
                 { id: 3, name: '多肉', count: 12, isEditing: false, tempName: '' },
             ],
-            topBarHeight:0
+            topBarHeight: 0
         }
     },
     methods: {
+        // 🌟 4. 处理左滑按钮点击
+        swipeClick(e, index) {
+            // e.content.text 是按钮的文字，比如 '删除'
+            if (e.content.text === '删除') {
+                // 可以在这里加一个弹窗确认
+                uni.showModal({
+                    title: '提示',
+                    content: '确定要删除这个标签吗？',
+                    success: (res) => {
+                        if (res.confirm) {
+                            this.tagList.splice(index, 1);
+                            uni.showToast({ title: '已删除', icon: 'none' });
+                        }
+                    }
+                });
+            }
+        },
+
         // 添加标签
         handleAddTag() {
             if (!this.newTagName.trim()) return;
@@ -89,7 +129,7 @@ export default {
 
         // 开始编辑
         startEdit(index) {
-            // 先把其他正在编辑的关掉（可选逻辑）
+            // 先把其他正在编辑的关掉
             this.tagList.forEach(item => item.isEditing = false);
 
             const item = this.tagList[index];
@@ -126,13 +166,14 @@ export default {
     min-height: 100vh;
     padding: 20px 16px;
     box-sizing: border-box;
+    /* 这里的背景色很重要，防止滑动时露出奇怪的底色 */
+    // background-color: #F7F9F5; 
 }
 
 /* 通用标题样式 */
 .section-title {
     font-size: 14px;
     color: #4A6139;
-    /* 深绿色标题 */
     font-weight: bold;
     margin-bottom: 10px;
     margin-left: 4px;
@@ -141,11 +182,21 @@ export default {
 
 /* 通用卡片样式 */
 .card-box {
-    background-color: rgba(255,255,255,0.55);
-    /* 豆沙绿背景 */
+    background-color: rgba(255, 255, 255, 0.55);
     border-radius: 16px;
-    overflow: hidden;
+    overflow: hidden; /* 关键：保证圆角不被子元素撑破 */
     margin-bottom: 24px;
+}
+
+/* 🌟 修复 uni-swipe-action 可能自带的背景色问题 */
+::v-deep .uni-swipe_button-group {
+    /* 确保删除按钮高度撑满 */
+    height: 100%; 
+}
+
+::v-deep .uni-swipe {
+    /* 让滑动组件背景透明，透出 card-box 的豆沙绿 */
+    background-color: transparent !important; 
 }
 
 /* --- 创建新标签区域 --- */
@@ -153,7 +204,6 @@ export default {
     display: flex;
     align-items: center;
     padding: 6px 6px 6px 16px;
-    /* 右侧padding小一点为了放按钮 */
     height: 50px;
     box-sizing: border-box;
 }
@@ -167,12 +217,10 @@ export default {
 
 .placeholder-style {
     color: #8FA385;
-    /* 输入框提示文字颜色 */
 }
 
 .add-btn {
     background-color: rgba(0, 0, 0, 0.1);
-    /* 默认半透明黑 */
     padding: 6px 16px;
     border-radius: 14px;
     margin-left: 10px;
@@ -195,7 +243,9 @@ export default {
 
 /* --- 列表区域 --- */
 .list-card {
-    padding: 0 16px;
+    /* 列表卡片不需要 padding，因为 padding 会导致滑动条也被挤进去 */
+    /* 我们把 padding 移到 list-item 内部 */
+    padding: 0; 
 }
 
 .list-item {
@@ -203,7 +253,11 @@ export default {
     align-items: center;
     justify-content: space-between;
     height: 54px;
-    /* 列表项高度 */
+    /* 🌟 关键：因为 list-card 去掉了 padding，这里要补回来 */
+    padding: 0 16px; 
+    width: 100%;
+    box-sizing: border-box;
+    background-color: transparent; /* 确保透明 */
 }
 
 /* 左侧：名字+图标 */
@@ -221,7 +275,6 @@ export default {
 
 .icon-wrapper {
     padding: 4px;
-    /* 增加点击热区 */
     display: flex;
 }
 
@@ -245,8 +298,6 @@ export default {
     font-size: 16px;
     color: #333;
     height: 100%;
-    /* 加上底部光标线，模拟输入状态 */
-    // border-bottom: 1px solid #4A6139; 
     margin-right: 10px;
 }
 
@@ -254,7 +305,6 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* 按钮间距 */
 }
 
 .mini-btn {
@@ -278,5 +328,7 @@ export default {
     height: 1px;
     background-color: rgba(0, 0, 0, 0.05);
     width: 100%;
+    /* 稍微缩进一点，看起来更像 iOS 风格 */
+    margin-left: 16px; 
 }
 </style>
