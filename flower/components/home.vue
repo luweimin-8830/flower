@@ -1,5 +1,4 @@
 <template>
-   
     <!-- 🌟 1. 最外层包裹一个全屏容器 -->
     <view class="home-container">
 

@@ -33,6 +33,10 @@ func UpdateTag(ctx context.Context, tagID uint, name string) error {
 	return dao.UpdateTag(ctx, tagID, name)
 }
 
+func SortTag(ctx context.Context, tagIDs []uint) error {
+	return dao.UpdateSortOrder(ctx, tagIDs)
+}
+
 func GetFamilyTag(ctx context.Context, familyID uint) ([]model.Tag, error) {
 	return dao.GetTagByFamilyID(ctx, familyID)
 }

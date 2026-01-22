@@ -26,6 +26,19 @@ func UpdateTag(ctx context.Context, tagID uint, name string) error {
 	})
 }
 
+func UpdateSortOrder(ctx context.Context, tagIDs []uint) error {
+	return db.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for index, id := range tagIDs {
+			if err := tx.Model(&model.Tag{}).
+				Where("id = ?", id).
+				Update("sort_order", index).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func GetTagByFamilyID(ctx context.Context, familyID uint) ([]model.Tag, error) {
 	var tags []model.Tag
 	err := db.DB.WithContext(ctx).
@@ -34,6 +47,7 @@ func GetTagByFamilyID(ctx context.Context, familyID uint) ([]model.Tag, error) {
 		Joins("LEFT JOIN plant_tags ON plant_tags.tag_id = tag.id").
 		Joins("LEFT JOIN plant ON plant.id = plant_tags.plant_id AND plant.deleted_at IS NULL").
 		Where("tag.family_id = ? AND tag.deleted_at IS NULL", familyID).
+		Order("tag.sort_order ASC, tag.id ASC").
 		Group("tag.id").
 		Scan(&tags).Error
 

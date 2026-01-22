@@ -68,6 +68,7 @@ func main() {
 			tag.POST("/add", handler.CreateTagHandler)
 			tag.POST("/delete", handler.DeleteTagHandler)
 			tag.POST("/update", handler.UpdateTagHandler)
+			tag.POST("/sort", handler.SortTagHandler)
 		}
 		image := api.Group("/image")
 		{

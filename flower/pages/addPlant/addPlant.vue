@@ -1,5 +1,6 @@
 <template>
 	<view class="container">
+		<loadingPage ref="loading" />
 		<!-- 头部 -->
 		<navBar />
 		<view class="plant-title" :style="{ top: menuButtonInfo.top + 'px' }">添加植物</view>
@@ -96,9 +97,11 @@
 <script>
 import navBar from '@/components/navBar.vue'
 import { callContainer } from '../../utils/request';
+import loadingPage from '@/components/loading.vue';
 export default {
 	components: {
 		navBar,
+		loadingPage,
 	},
 	data() {
 		return {
@@ -167,13 +170,13 @@ export default {
 					fail: reject
 				})
 			})
-			console.log("tag",tag)
-			if(tag.confirm){
-				const result = await callContainer("/api/tag/add",{
-					name:tag.content,
-					familyId:this.familyId
+			console.log("tag", tag)
+			if (tag.confirm) {
+				const result = await callContainer("/api/tag/add", {
+					name: tag.content,
+					familyId: this.familyId
 				})
-				console.log("add tag",result)
+				console.log("add tag", result)
 				this.getTagsList()
 			}
 
@@ -206,8 +209,10 @@ export default {
 			wx.navigateBack()
 		},
 		async save() {
-			if (this.isSave) return;
+			if (!this.isSave) return;
 			this.isSave = false;
+			this.$refs.loading.open();
+
 			wx.vibrateShort({ type: "medium" })
 			if (!this.plant.name) {
 				uni.showToast({
@@ -267,6 +272,7 @@ export default {
 				console.error(error)
 			} finally {
 				this.isSave = true;
+				this.$refs.loading.close();
 				uni.navigateBack()
 			}
 		},

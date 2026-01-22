@@ -25,6 +25,10 @@ type UpdateTagRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
+type SortTagRequest struct {
+	TagIDs []uint `json:"tagIds" binding:"required"`
+}
+
 func GetTagListHandler(c *gin.Context) {
 	var req GetTagListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -82,4 +86,19 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 	response.Success(c, "更新成功")
+}
+
+func SortTagHandler(c *gin.Context) {
+	var req SortTagRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误")
+		return
+	}
+	ctx := c.Request.Context()
+	err := service.SortTag(ctx, req.TagIDs)
+	if err != nil {
+		response.Fail(c, "排序失败:"+err.Error())
+		return
+	}
+	response.Success(c, "排序保存成功")
 }
