@@ -66,8 +66,13 @@ func GetFamilyList(ctx context.Context, OPENID string) ([]model.Family, error) {
 	var family []model.Family
 	err := execWithSpan(ctx, "SELECT", "family", func(conn *gorm.DB) error {
 		return conn.Model(&model.Family{}).
-			Select(`family.*, (SELECT count(1) FROM family_member fm 
-				WHERE fm.family_id = family.id) as member_count`).
+			Select(`
+				family.*,
+				(SELECT count(1) FROM family_member fm WHERE fm.family_id = family.id) as member_count,
+				family_member.role as my_role,
+				family_member.sort_order as my_sort_order,
+				family_member.created_at as join_time
+			`).
 			Joins("INNER JOIN family_member ON family_member.family_id = family.id").
 			Where("family_member.open_id = ?", OPENID).
 			Order("family_member.sort_order ASC, family.id ASC").

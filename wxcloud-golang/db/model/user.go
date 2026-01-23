@@ -19,9 +19,12 @@ type User struct {
 
 type Family struct {
 	gorm.Model
-	Name        string `json:"name" gorm:"type:varchar(50)"`
-	OwnerOpenId string `json:"ownerOpenId" gorm:"index"`
-	MemberCount int64  `json:"menmberCount" gorm:"->"`
+	Name        string    `json:"name" gorm:"type:varchar(50)"`
+	OwnerOpenId string    `json:"ownerOpenId" gorm:"index"`
+	MemberCount int64     `json:"memberCount" gorm:"->"`
+	MyRole      string    `json:"myRole" gorm:"->"`
+	MySortOrder int       `json:"mySortOrder" gorm:"->"`
+	JoinTime    time.Time `json:"joinTime" gorm:"->"`
 }
 
 type FamilyMember struct {
