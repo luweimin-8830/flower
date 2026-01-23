@@ -86,3 +86,7 @@ func SwitchFamily(ctx context.Context, openID string, familyID uint) error {
 func DeleteFamily(ctx context.Context, familyID uint) error {
 	return dao.DeleteFamilyWithData(ctx, familyID)
 }
+
+func GetFamilyList(ctx context.Context, OPENID string) ([]model.Family, error) {
+	return dao.GetFamilyList(ctx, OPENID)
+}

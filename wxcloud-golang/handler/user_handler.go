@@ -106,3 +106,14 @@ func DeleteFamilyHandler(c *gin.Context) {
 	}
 	response.Success(c, "删除成功")
 }
+
+func GetFamilyHandler(c *gin.Context) {
+	OPENID := c.GetHeader("X-WX-OPENID")
+	ctx := c.Request.Context()
+	family, err := service.GetFamilyList(ctx, OPENID)
+	if err != nil {
+		response.Fail(c, "获取失败:"+err.Error())
+		return
+	}
+	response.Success(c, family)
+}

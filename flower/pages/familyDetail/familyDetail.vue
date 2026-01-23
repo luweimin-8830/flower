@@ -28,10 +28,8 @@
                             <uni-icons type="compose" size="16" color="#999"></uni-icons>
                         </view>
                     </view>
-
                     <!-- 右侧：操作图标 + 权限 + 数量 -->
                     <view class="right-content">
-
                         <!-- 1. 邀请按钮 (户主 & 管理员) -->
                         <view class="icon-btn" v-if="item.role === 'owner' || item.role === 'admin'"
                             @click.stop="handleInvite(item)">
