@@ -53,6 +53,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": true
 			}
+		},
+		{
+			"path": "pages/familyDetail/familyDetail",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": true
+			}
 		}
 	],
 	"globalStyle": {

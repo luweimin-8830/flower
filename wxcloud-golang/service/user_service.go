@@ -74,3 +74,11 @@ func Login(ctx context.Context, openId string) (*model.User, []model.Family, err
 	}
 	return user, family, nil
 }
+
+func UpdateFamilySort(ctx context.Context, familyIDs []uint, OPENID string) error {
+	return dao.UpdateFamilySortOrder(ctx, familyIDs, OPENID)
+}
+
+func SwitchFamily(ctx context.Context, openID string, familyID uint) error {
+	return dao.SwitchCurrentFamily(ctx, openID, familyID)
+}

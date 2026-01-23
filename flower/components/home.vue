@@ -167,11 +167,27 @@ export default {
         },
         async getPlantsList() {
             try {
+                const loadedMap = new Map();
+                if (this.allPlantsList && this.allPlantsList.length > 0) {
+                    this.allPlantsList.forEach(item => {
+                        // 只有已经加载完(isLoaded=true)的才记录
+                        if (item.isLoaded) {
+                            loadedMap.set(item.ID, item.cover?.url);
+                        }
+                    });
+                }
                 const plants = await callContainer("/api/plant/list", {
                     "familyId": this.value
                 })
                 console.log("plants list:", plants)
-                this.allPlantsList = plants?.data
+                const newData = plants?.data || [];
+                this.allPlantsList = newData.map(item => {
+                    const oldUrl = loadedMap.get(item.ID);
+                    if (oldUrl && oldUrl === item.cover?.url) {
+                        return { ...item, isLoaded: true };
+                    }
+                    return item;
+                });
                 this.filterPlants()
             } catch (error) {
                 console.error(error)
@@ -295,7 +311,11 @@ export default {
             uni.navigateTo({
                 url: `/pages/plantDetail/plantDetail?id=${item.ID}`
             })
-        }
+        },
+        onPageShow() {
+            console.log("onShow:component-home")
+            this.loadFamilyData()
+        },
         /**
       * 内部使用的组件方法
       */
@@ -326,15 +346,15 @@ export default {
             uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
         })
         this.loadFamilyData()
-        uni.$off('refreshHomeList');
-        uni.$on('refreshHomeList', (data) => {
-            console.log('收到刷新通知', data);
-            this.getPlantsList();
-        })
+        // uni.$off('refreshHomeList');
+        // uni.$on('refreshHomeList', (data) => {
+        //     console.log('收到刷新通知', data);
+        //     this.getPlantsList();
+        // })
 
     },
     beforeDestroy() {
-        uni.$off('refreshHomeList');
+        // uni.$off('refreshHomeList');
     },
 }
 </script>

@@ -54,6 +54,8 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/login", handler.UserLoginHandler)
+		api.POST("/family/sort", handler.SortFamilyHandler)
+		api.POST("/family/switch", handler.SwitchFamilyHandler)
 		plant := api.Group("/plant")
 		{
 			plant.POST("/", handler.GetPlantHandler)

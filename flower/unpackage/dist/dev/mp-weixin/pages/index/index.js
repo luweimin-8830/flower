@@ -179,6 +179,11 @@ const _sfc_main = {
       });
     });
   },
+  onShow() {
+    this.$nextTick(() => {
+      this.$refs.homeComponent.onPageShow();
+    });
+  },
   onShareAppMessage() {
     return {
       title: "分享我的植物",
@@ -207,24 +212,25 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}, {
     h: $data.list["c"].is
   }, $data.list["c"].is ? {
-    i: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    j: $data.onKey === "c" ? "" : "none"
+    i: common_vendor.sr("homeComponent", "24547230-1"),
+    j: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    k: $data.onKey === "c" ? "" : "none"
   } : {}, {
-    k: $data.list["d"].is
+    l: $data.list["d"].is
   }, $data.list["d"].is ? {
-    l: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    m: $data.onKey === "d" ? "" : "none"
+    m: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    n: $data.onKey === "d" ? "" : "none"
   } : {}, {
-    n: $data.list["e"].is
+    o: $data.list["e"].is
   }, $data.list["e"].is ? {
-    o: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    p: $data.onKey === "e" ? "" : "none"
+    p: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    q: $data.onKey === "e" ? "" : "none"
   } : {}, {
-    q: $data.animation01 ? 1 : "",
-    r: common_vendor.s($options.liquidStyle),
-    s: $data.animation02 ? 1 : "",
-    t: common_vendor.s($options.ballStyle),
-    v: common_vendor.f($data.list, (item, key, i0) => {
+    r: $data.animation01 ? 1 : "",
+    s: common_vendor.s($options.liquidStyle),
+    t: $data.animation02 ? 1 : "",
+    v: common_vendor.s($options.ballStyle),
+    w: common_vendor.f($data.list, (item, key, i0) => {
       return {
         a: item.iconOff,
         b: item.iconOn,

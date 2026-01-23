@@ -8,6 +8,7 @@ if (!Math) {
   "./pages/plantEdit/plantEdit.js";
   "./pages/plantDetail/plantDetail.js";
   "./pages/tagEdit/tagEdit.js";
+  "./pages/familyDetail/familyDetail.js";
 }
 const _sfc_main = {
   globalData: {

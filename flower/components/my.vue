@@ -2,34 +2,48 @@
     <view :style="{height:topBarHeight+'px'}"></view>
     <view class="section-container">
         <!-- 标题 -->
-        <text class="section-title">数据管理</text>
-
+        <text class="section-title">个人信息</text>
         <!-- 卡片容器 -->
         <view class="card-box">
-
-            <!-- 列表项 1: 植物标签管理 -->
+            <view class="menu-item" hover-class="item-hover" @click="handleNav('family')">
+                <view class="left-content">
+                    <uni-icons type="staff" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                    <text class="menu-text">家庭管理</text>
+                </view>
+                <uni-icons type="right" size="16" color="#999"></uni-icons>
+            </view>
+            <!-- 分割线 -->
+            <!-- <view class="divider"></view> -->
+            <!-- <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
+                <view class="left-content">
+                    <uni-icons type="settings" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                    <text class="menu-text">日常养护管理</text>
+                </view>
+                <uni-icons type="right" size="16" color="#999"></uni-icons>
+            </view> -->
+        </view>
+    </view>
+    <view class="section-container">
+        <!-- 标题 -->
+        <text class="section-title">数据管理</text>
+        <!-- 卡片容器 -->
+        <view class="card-box">
             <view class="menu-item" hover-class="item-hover" @click="handleNav('tag')">
                 <view class="left-content">
-                    <!-- 图标：使用了 uni-icons 的 tag 图标 -->
                     <uni-icons type="flag" size="22" color="#4A6139" class="menu-icon"></uni-icons>
                     <text class="menu-text">植物标签管理</text>
                 </view>
                 <uni-icons type="right" size="16" color="#999"></uni-icons>
             </view>
-
             <!-- 分割线 -->
             <view class="divider"></view>
-
-            <!-- 列表项 2: 日常养护管理 -->
             <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
                 <view class="left-content">
-                    <!-- 图标：使用了 uni-icons 的 hand-up 图标作为替代 -->
                     <uni-icons type="settings" size="22" color="#4A6139" class="menu-icon"></uni-icons>
                     <text class="menu-text">日常养护管理</text>
                 </view>
                 <uni-icons type="right" size="16" color="#999"></uni-icons>
             </view>
-
         </view>
     </view>
 </template>
@@ -51,6 +65,8 @@ export default {
                 uni.navigateTo({ url: '/pages/tagEdit/tagEdit' })
             } else if (type === 'care') {
                 // uni.navigateTo({ url: '/pages/careManager/careManager' })
+            }else if (type === 'family') {
+                uni.navigateTo({ url: '/pages/familyDetail/familyDetail' })
             }
         }
     },

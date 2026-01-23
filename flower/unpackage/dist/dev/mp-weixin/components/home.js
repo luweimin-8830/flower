@@ -87,14 +87,31 @@ const _sfc_main = {
     },
     async getPlantsList() {
       try {
+        const loadedMap = /* @__PURE__ */ new Map();
+        if (this.allPlantsList && this.allPlantsList.length > 0) {
+          this.allPlantsList.forEach((item) => {
+            var _a;
+            if (item.isLoaded) {
+              loadedMap.set(item.ID, (_a = item.cover) == null ? void 0 : _a.url);
+            }
+          });
+        }
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:173", "plants list:", plants);
-        this.allPlantsList = plants == null ? void 0 : plants.data;
+        common_vendor.index.__f__("log", "at components/home.vue:182", "plants list:", plants);
+        const newData = (plants == null ? void 0 : plants.data) || [];
+        this.allPlantsList = newData.map((item) => {
+          var _a;
+          const oldUrl = loadedMap.get(item.ID);
+          if (oldUrl && oldUrl === ((_a = item.cover) == null ? void 0 : _a.url)) {
+            return { ...item, isLoaded: true };
+          }
+          return item;
+        });
         this.filterPlants();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:177", error);
+        common_vendor.index.__f__("error", "at components/home.vue:193", error);
       }
     },
     filterPlants() {
@@ -117,14 +134,14 @@ const _sfc_main = {
       });
     },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:200", e);
+      common_vendor.index.__f__("log", "at components/home.vue:216", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:207", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:223", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -134,19 +151,19 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:217", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:233", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:225", error);
+        common_vendor.index.__f__("error", "at components/home.vue:241", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:229", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:230", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:245", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:246", "search:", this.searchValue);
     },
     selectTag(index, item) {
       if (this.currentTagIndex === index)
@@ -210,6 +227,10 @@ const _sfc_main = {
       common_vendor.index.navigateTo({
         url: `/pages/plantDetail/plantDetail?id=${item.ID}`
       });
+    },
+    onPageShow() {
+      common_vendor.index.__f__("log", "at components/home.vue:316", "onShow:component-home");
+      this.loadFamilyData();
     }
     /**
     * 内部使用的组件方法
@@ -229,7 +250,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:318", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:338", "callContainer login:", user);
     await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
     });
@@ -240,14 +261,8 @@ const _sfc_main = {
       common_vendor.index.setStorage({ key: "userInfo", data: user.data.user, success: resolve });
     });
     this.loadFamilyData();
-    common_vendor.index.$off("refreshHomeList");
-    common_vendor.index.$on("refreshHomeList", (data) => {
-      common_vendor.index.__f__("log", "at components/home.vue:331", "收到刷新通知", data);
-      this.getPlantsList();
-    });
   },
   beforeDestroy() {
-    common_vendor.index.$off("refreshHomeList");
   }
 };
 if (!Array) {

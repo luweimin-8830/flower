@@ -5,7 +5,8 @@
     "pages/system/system",
     "pages/plantEdit/plantEdit",
     "pages/plantDetail/plantDetail",
-    "pages/tagEdit/tagEdit"
+    "pages/tagEdit/tagEdit",
+    "pages/familyDetail/familyDetail"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",

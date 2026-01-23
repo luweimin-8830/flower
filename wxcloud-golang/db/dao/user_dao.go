@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"time"
+	"wxcloud-golang/db"
 	"wxcloud-golang/db/model"
 
 	"gorm.io/gorm"
@@ -63,8 +64,13 @@ func CreateFamilyMember(ctx context.Context, familyMember *model.FamilyMember) e
 func GetFamilyList(ctx context.Context, OPENID string) ([]model.Family, error) {
 	var family []model.Family
 	err := execWithSpan(ctx, "SELECT", "family", func(conn *gorm.DB) error {
-		return conn.Model(&model.Family{}).Joins("INNER JOIN family_member ON family_member.family_id = family.id").
-			Where("family_member.open_id = ?", OPENID).Find(&family).Error
+		return conn.Model(&model.Family{}).
+			Select(`family.*, (SELECT count(1) FROM family_member fm 
+				WHERE fm.family_id = family.id) as member_count`).
+			Joins("INNER JOIN family_member ON family_member.family_id = family.id").
+			Where("family_member.open_id = ?", OPENID).
+			Order("family_member.sort_order ASC, family.id ASC").
+			Find(&family).Error
 	})
 	return family, err
 }
@@ -77,4 +83,52 @@ func GetFamilyByOpenId(ctx context.Context, OPENID string) (*model.Family, error
 			Where("family_member.open_id = ?", OPENID).First(&family).Error
 	})
 	return &family, err
+}
+
+func DeleteFamilyWithData(ctx context.Context, familyID uint) error {
+	// 开启事务
+	return db.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("family_id = ?", familyID).Delete(&model.Plant{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("family_id = ?", familyID).Delete(&model.Tag{}).Error; err != nil {
+			return err
+		}
+		// 3. (如果有) 删除该家庭下的所有 图片记录/生长记录
+		if err := tx.Where("family_id = ?", familyID).Delete(&model.Image{}).Error; err != nil {
+			return err
+		}
+		// 4. 删除 家庭与用户的关联 (如果有中间表 user_families)
+		if err := tx.Table("family_member").Where("family_id = ?", familyID).Delete(nil).Error; err != nil {
+			return err
+		}
+
+		// 5. 最后删除 家庭 (Family) 本身
+		if err := tx.Where("id = ?", familyID).Delete(&model.Family{}).Error; err != nil {
+			return err
+		}
+
+		// 事务提交
+		return nil
+	})
+}
+
+func UpdateFamilySortOrder(ctx context.Context, familyIDs []uint, currentOpenID string) error {
+	return execWithSpan(ctx, "UPDATE", "family_member", func(conn *gorm.DB) error {
+		return conn.Transaction(func(tx *gorm.DB) error {
+			for index, familyID := range familyIDs {
+				// SQL 逻辑:
+				// UPDATE family_member
+				// SET sort_order = index
+				// WHERE family_id = familyID AND open_id = currentOpenID
+
+				if err := tx.Model(&model.FamilyMember{}).
+					Where("family_id = ? AND open_id = ?", familyID, currentOpenID).
+					Update("sort_order", index).Error; err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	})
 }

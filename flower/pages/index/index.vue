@@ -1,6 +1,6 @@
 <template>
 	<view class="container">
-		 <loadingPage ref="loading" />
+		<loadingPage ref="loading" />
 		<view>
 
 		</view>
@@ -22,7 +22,7 @@
 				:style="{ display: onKey === 'c' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面c -->
-					<home />
+					<home ref="homeComponent"/>
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['d'].is"
@@ -271,6 +271,11 @@ export default {
 					this.init(e)
 				}
 			})
+		})
+	},
+	onShow(){
+		this.$nextTick(()=>{
+			this.$refs.homeComponent.onPageShow();
 		})
 	},
 	onShareAppMessage() {
