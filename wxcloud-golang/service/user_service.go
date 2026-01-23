@@ -82,3 +82,7 @@ func UpdateFamilySort(ctx context.Context, familyIDs []uint, OPENID string) erro
 func SwitchFamily(ctx context.Context, openID string, familyID uint) error {
 	return dao.SwitchCurrentFamily(ctx, openID, familyID)
 }
+
+func DeleteFamily(ctx context.Context, familyID uint) error {
+	return dao.DeleteFamilyWithData(ctx, familyID)
+}

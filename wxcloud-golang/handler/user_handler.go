@@ -16,6 +16,10 @@ type SwitchFamilyRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
 }
 
+type DeleteFamilyRequest struct {
+	FamilyID uint `json:"familyId" binding:"required"`
+}
+
 func IndexHandler(c *gin.Context) {
 	response.SuccessMsg(c, "Hello Succulent")
 }
@@ -86,4 +90,19 @@ func SwitchFamilyHandler(c *gin.Context) {
 		return
 	}
 	response.Success(c, "切换成功")
+}
+
+func DeleteFamilyHandler(c *gin.Context) {
+	var req DeleteFamilyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误")
+		return
+	}
+	ctx := c.Request.Context()
+	err := service.DeleteFamily(ctx, req.FamilyID)
+	if err != nil {
+		response.Fail(c, "删除失败:"+err.Error())
+		return
+	}
+	response.Success(c, "删除成功")
 }

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"wxcloud-golang/db"
 	"wxcloud-golang/db/model"
@@ -130,5 +131,27 @@ func UpdateFamilySortOrder(ctx context.Context, familyIDs []uint, currentOpenID 
 			}
 			return nil
 		})
+	})
+}
+
+func SwitchCurrentFamily(ctx context.Context, openID string, familyID uint) error {
+	return execWithSpan(ctx, "UPDATE", "user", func(conn *gorm.DB) error {
+		// 1. 安全检查：确认用户是该家庭成员
+		var count int64
+		err := conn.Model(&model.FamilyMember{}).
+			Where("family_id = ? AND open_id = ?", familyID, openID).
+			Count(&count).Error
+
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return fmt.Errorf("你不是该家庭成员，无法切换")
+		}
+
+		// 2. 更新用户表的 CurrentFamilyID
+		return conn.Model(&model.User{}).
+			Where("open_id = ?", openID).
+			Update("current_family_id", familyID).Error
 	})
 }
