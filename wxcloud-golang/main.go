@@ -61,6 +61,7 @@ func main() {
 			family.POST("/switch", handler.SwitchFamilyHandler)
 			family.POST("/delete", handler.DeleteFamilyHandler)
 			family.POST("/update", handler.UpdateFamilyHandler)
+			family.POST("/add", handler.CreateFamilyHandler)
 		}
 
 		plant := api.Group("/plant")

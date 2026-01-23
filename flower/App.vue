@@ -69,7 +69,7 @@ page {
 
 	:root,
 	page {
-		--bg-color: #202020;
+		--bg-color: #566C44;
 		--bg-btn-color: #151515 --card-bg: #1e1e1e;
 		--text-color: #ffffff;
 		--text-sub: #777777;

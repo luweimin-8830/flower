@@ -19,7 +19,7 @@
             <!-- A: 普通模式 -->
             <block v-if="!isSorting">
                 <view v-for="(item, index) in familyList" :key="item.ID" class="list-item"
-                    :class="{ 'has-border': index !== familyList.length - 1 }" @click="goDetail(item)">
+                    :class="{ 'has-border': index !== familyList.length - 1 }">
 
                     <!-- 左侧：名称 + 编辑 (仅户主) -->
                     <view class="left-content">
@@ -118,11 +118,11 @@ export default {
                     let rawList = family.data;
                     rawList.sort((a, b) => a.mySortOrder - b.mySortOrder);
                     this.familyList = rawList.map((item, index) => ({
-                        ID: item.id,
-                        name: item.name,            
-                        role: item.myRole,          
-                        memberCount: item.memberCount, 
-                        y: index * ITEM_HEIGHT      
+                        ID: item.ID,
+                        name: item.name,
+                        role: item.myRole,
+                        memberCount: item.memberCount,
+                        y: index * ITEM_HEIGHT
                     }));
 
                     // 4. 设置拖拽区域总高度
@@ -180,17 +180,40 @@ export default {
             });
         },
 
-        editName(item) {
-            uni.showModal({
-                title: '修改名称',
-                content: item.name,
-                editable: true,
-                success: (res) => {
-                    if (res.confirm && res.content) {
-                        item.name = res.content;
+        async editName(item) {
+            const res = await new Promise((resolve, reject) => {
+                uni.showModal({
+                    title: '修改名称',
+                    content: item.name,
+                    editable: true,
+                    success: resolve,
+                    fail: reject
+                });
+            })
+            if (res.confirm && res.content) {
+                item.name = res.content;
+                const uploadName = await callContainer("/api/family/update", {
+                    familyId: item.ID,
+                    name: item.name
+                })
+                console.log("call container upload family:", uploadName)
+                // uni.$emit('refreshFamilyList', { needRefresh: true });
+                const result = await new Promise((resolve) => {
+                    uni.getStorage({ key: "family", success: resolve, fail: resolve });
+                })
+                let localList = result.data;
+                if (Array.isArray(localList)) {
+                    const targetIndex = localList.findIndex(f => (f.id === item.ID) || (f.ID === item.ID));
+                    if (targetIndex !== -1) {
+                        // 修改名称
+                        localList[targetIndex].name = item.name;
+                        // 写回缓存
+                        await new Promise((resolve) => {
+                            uni.setStorage({ key: "family", data: localList, success: resolve, fail: resolve });
+                        })
                     }
                 }
-            });
+            }
         },
 
         createNewFamily() {

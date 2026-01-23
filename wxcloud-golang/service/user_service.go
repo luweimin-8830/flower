@@ -29,9 +29,10 @@ func AddUser(ctx context.Context, openId string) (*model.User, error) {
 func Login(ctx context.Context, openId string) (*model.User, []model.Family, error) {
 	var user *model.User
 	var err error
+	// 1. 获取或创建用户
 	user, err = dao.GetUserByOpenID(ctx, openId)
 	if err != nil {
-		//未找到,新用户
+		// 未找到, 新用户
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			fmt.Printf("新用户: %+v\n", err)
 			user, err = AddUser(ctx, openId)
@@ -42,37 +43,33 @@ func Login(ctx context.Context, openId string) (*model.User, []model.Family, err
 			return nil, nil, err
 		}
 	} else {
+		// 老用户，更新登录时间
 		if updateErr := dao.UpdateUserLastLogin(ctx, user.ID); updateErr != nil {
 			fmt.Printf("更新登录时间失败: %v\n", updateErr)
 		}
 		user.LastDateAT = time.Now()
 	}
-
-	_, err = dao.GetFamilyByOpenId(ctx, openId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	families, err := dao.GetFamilyList(ctx, openId)
+	if err != nil {
+		return nil, nil, fmt.Errorf("查询家庭列表失败: %v", err)
+	}
+	if len(families) == 0 {
 		newFamily := &model.Family{
 			Name:        "我的花园",
 			OwnerOpenId: openId,
 		}
+		// 2. 在 family_member 表添加你为 owner
+		// 3. 更新 user 表的 current_family_id
 		if err := dao.CreateFamily(ctx, newFamily); err != nil {
-			return nil, nil, fmt.Errorf("创建家庭失败: %v", err)
+			return nil, nil, fmt.Errorf("创建默认家庭失败: %v", err)
 		}
-		newMember := &model.FamilyMember{
-			FamilyID: newFamily.ID,
-			OpenID:   openId,
-			Role:     "owner",
+		families, err = dao.GetFamilyList(ctx, openId)
+		if err != nil {
+			return nil, nil, fmt.Errorf("重新获取家庭列表失败: %v", err)
 		}
-		if err := dao.CreateFamilyMember(ctx, newMember); err != nil {
-			return nil, nil, fmt.Errorf("创建家庭成员失败: %v", err)
-		}
-	} else if err != nil {
-		return nil, nil, fmt.Errorf("查询家庭失败: %v", err)
+		user.CurrentFamilyID = &newFamily.ID
 	}
-	family, err := dao.GetFamilyList(ctx, openId)
-	if err != nil {
-		return nil, nil, fmt.Errorf("获取或创建家庭失败: %v", err)
-	}
-	return user, family, nil
+	return user, families, nil
 }
 
 func UpdateFamilySort(ctx context.Context, familyIDs []uint, OPENID string) error {
@@ -93,4 +90,16 @@ func GetFamilyList(ctx context.Context, OPENID string) ([]model.Family, error) {
 
 func UpdateFamily(ctx context.Context, openID string, familyID uint, newName string) error {
 	return dao.UpdateFamilyName(ctx, openID, familyID, newName)
+}
+
+func CreateFamily(ctx context.Context, openID string, name string) (*model.Family, error) {
+	family := &model.Family{
+		Name:        name,
+		OwnerOpenId: openID,
+	}
+	err := dao.CreateFamily(ctx, family)
+	if err != nil {
+		return nil, err
+	}
+	return family, nil
 }

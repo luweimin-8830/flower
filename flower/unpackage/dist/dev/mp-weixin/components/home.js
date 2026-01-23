@@ -66,15 +66,19 @@ const _sfc_main = {
   //expose: [''],
   methods: {
     async loadFamilyData() {
-      var _a;
       try {
         const familyList = await new Promise((resolve, reject) => {
           common_vendor.index.getStorage({ key: "family", success: resolve, fail: reject });
         });
-        this.familyRange = [];
-        (_a = familyList == null ? void 0 : familyList.data) == null ? void 0 : _a.forEach((item) => {
-          this.familyRange = [...this.familyRange, { "text": item.name, "value": item.ID, "disable": false }];
-        });
+        if (familyList.data && Array.isArray(familyList.data)) {
+          this.familyRange = familyList.data.map((item) => ({
+            text: item.name,
+            value: item.ID || item.id,
+            disable: false
+          }));
+        } else {
+          this.familyRange = [];
+        }
         const exists = this.familyRange.some((item) => item.value === this.value);
         if (!exists && this.familyRange.length > 0) {
           this.value = this.familyRange[0].value;
@@ -82,7 +86,7 @@ const _sfc_main = {
         this.getTagList();
         this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:165", error);
+        common_vendor.index.__f__("error", "at components/home.vue:173", error);
       }
     },
     async getPlantsList() {
@@ -99,7 +103,7 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:182", "plants list:", plants);
+        common_vendor.index.__f__("log", "at components/home.vue:190", "plants list:", plants);
         const newData = (plants == null ? void 0 : plants.data) || [];
         this.allPlantsList = newData.map((item) => {
           var _a;
@@ -111,7 +115,7 @@ const _sfc_main = {
         });
         this.filterPlants();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:193", error);
+        common_vendor.index.__f__("error", "at components/home.vue:201", error);
       }
     },
     filterPlants() {
@@ -134,14 +138,14 @@ const _sfc_main = {
       });
     },
     changeFamily(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:216", e);
+      common_vendor.index.__f__("log", "at components/home.vue:224", e);
     },
     async getTagList() {
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId: this.value
         });
-        common_vendor.index.__f__("log", "at components/home.vue:223", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:231", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -151,19 +155,19 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:233", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:241", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:241", error);
+        common_vendor.index.__f__("error", "at components/home.vue:249", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:245", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:246", "search:", this.searchValue);
+      common_vendor.index.__f__("log", "at components/home.vue:253", "e", e);
+      common_vendor.index.__f__("log", "at components/home.vue:254", "search:", this.searchValue);
     },
     selectTag(index, item) {
       if (this.currentTagIndex === index)
@@ -229,7 +233,7 @@ const _sfc_main = {
       });
     },
     onPageShow() {
-      common_vendor.index.__f__("log", "at components/home.vue:316", "onShow:component-home");
+      common_vendor.index.__f__("log", "at components/home.vue:324", "onShow:component-home");
       this.loadFamilyData();
     }
     /**
@@ -250,7 +254,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:338", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:346", "callContainer login:", user);
     await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "family", data: user.data.family, success: resolve });
     });
@@ -261,9 +265,10 @@ const _sfc_main = {
       common_vendor.index.setStorage({ key: "userInfo", data: user.data.user, success: resolve });
     });
     this.loadFamilyData();
-  },
-  beforeDestroy() {
   }
+  // beforeDestroy() {
+  //     uni.$off('refreshFamilyList');
+  // },
 };
 if (!Array) {
   const _easycom_uni_data_select2 = common_vendor.resolveComponent("uni-data-select");

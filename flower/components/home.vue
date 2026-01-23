@@ -151,10 +151,18 @@ export default {
                 const familyList = await new Promise((resolve, reject) => {
                     uni.getStorage({ key: 'family', success: resolve, fail: reject })
                 })
-                this.familyRange = []
-                familyList?.data?.forEach(item => {
-                    this.familyRange = [...this.familyRange, { "text": item.name, "value": item.ID, "disable": false }]
-                });
+                if (familyList.data && Array.isArray(familyList.data)) {
+                    this.familyRange = familyList.data.map(item => ({
+                        text: item.name,           
+                        value: item.ID || item.id, 
+                        disable: false
+                    }));
+                } else {
+                    this.familyRange = [];
+                }
+                // familyList?.data?.forEach(item => {
+                //     this.familyRange = [...this.familyRange, { "text": item.name, "value": item.ID, "disable": false }]
+                // });
                 const exists = this.familyRange.some(item => item.value === this.value);
                 if (!exists && this.familyRange.length > 0) {
                     this.value = this.familyRange[0].value;
@@ -346,16 +354,19 @@ export default {
             uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
         })
         this.loadFamilyData()
-        // uni.$off('refreshHomeList');
-        // uni.$on('refreshHomeList', (data) => {
-        //     console.log('收到刷新通知', data);
-        //     this.getPlantsList();
+        // uni.$off('refreshFamilyList');
+        // uni.$on('refreshFamilyList', (data) => {
+        //     const user = await callContainer("/api/login")
+        //     await new Promise((resolve) => {
+        //         uni.setStorage({ key: "family", data: user.data.family, success: resolve })
+        //     })
+        //     this.loadFamilyData()
         // })
 
     },
-    beforeDestroy() {
-        // uni.$off('refreshHomeList');
-    },
+    // beforeDestroy() {
+    //     uni.$off('refreshFamilyList');
+    // },
 }
 </script>
 

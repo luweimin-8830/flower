@@ -50,7 +50,27 @@ func DeleteUser(ctx context.Context, id int) error {
 // 创建家庭
 func CreateFamily(ctx context.Context, family *model.Family) error {
 	return execWithSpan(ctx, "INSERT", "family", func(conn *gorm.DB) error {
-		return conn.Create(family).Error
+		return conn.Transaction(func(tx *gorm.DB) error {
+			// 1. 创建家庭记录
+			if err := tx.Create(family).Error; err != nil {
+				return err
+			}
+			member := model.FamilyMember{
+				FamilyID:  family.ID,
+				OpenID:    family.OwnerOpenId,
+				Role:      "owner",
+				SortOrder: 0,
+			}
+			if err := tx.Create(&member).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(&model.User{}).
+				Where("open_id = ?", family.OwnerOpenId).
+				Update("current_family_id", family.ID).Error; err != nil {
+				return err
+			}
+			return nil
+		})
 	})
 }
 
