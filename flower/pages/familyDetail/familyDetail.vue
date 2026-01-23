@@ -148,13 +148,11 @@ export default {
                     if (res.confirm) {
                         try {
                             // await callContainer("/api/family/delete", { id: item.ID });
-
                             // 前端模拟删除
                             this.familyList.splice(index, 1);
                             // 重新计算高度和位置
                             this.areaHeight = this.familyList.length * ITEM_HEIGHT;
                             this.familyList.forEach((it, idx) => it.y = idx * ITEM_HEIGHT);
-
                             uni.showToast({ title: '已解散', icon: 'none' });
                         } catch (e) {
                             console.error(e);
@@ -163,7 +161,6 @@ export default {
                 }
             });
         },
-
         // 邀请成员
         handleInvite(item) {
             uni.vibrateShort();
@@ -179,7 +176,6 @@ export default {
                 }
             });
         },
-
         async editName(item) {
             const res = await new Promise((resolve, reject) => {
                 uni.showModal({
@@ -209,7 +205,7 @@ export default {
                         localList[targetIndex].name = item.name;
                         // 写回缓存
                         await new Promise((resolve) => {
-                            uni.setStorage({ key: "family", data: localList, success: resolve, fail: resolve });
+                            uni.setStorageSync({ key: "family", data: localList, success: resolve, fail: resolve });
                         })
                     }
                 }
