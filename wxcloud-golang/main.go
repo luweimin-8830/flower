@@ -60,6 +60,7 @@ func main() {
 			family.POST("/sort", handler.SortFamilyHandler)
 			family.POST("/switch", handler.SwitchFamilyHandler)
 			family.POST("/delete", handler.DeleteFamilyHandler)
+			family.POST("/update", handler.UpdateFamilyHandler)
 		}
 
 		plant := api.Group("/plant")

@@ -112,23 +112,22 @@ export default {
     methods: {
         async getFamilyList() {
             try {
-                // 模拟数据
-                // const mockData = [
-                //     { ID: 1, name: '呱唧呱唧', role: 'owner', memberCount: 2 },
-                //     { ID: 2, name: '清云梦境', role: 'admin', memberCount: 5 },
-                //     { ID: 3, name: '花架1', role: 'member', memberCount: 1 },
-                //     { ID: 4, name: '花架2', role: 'owner', memberCount: 3 },
-                //     { ID: 5, name: '窗台', role: 'member', memberCount: 4 },
-                // ];
+                const family = await callContainer("/api/family/", {})
+                console.log("call container get family", family)
+                if (family.data) {
+                    let rawList = family.data;
+                    rawList.sort((a, b) => a.mySortOrder - b.mySortOrder);
+                    this.familyList = rawList.map((item, index) => ({
+                        ID: item.id,
+                        name: item.name,            
+                        role: item.myRole,          
+                        memberCount: item.memberCount, 
+                        y: index * ITEM_HEIGHT      
+                    }));
 
-                // this.familyList = mockData.map((item, index) => ({
-                //     ...item,
-                //     y: index * ITEM_HEIGHT
-                // }));
-                // this.areaHeight = this.familyList.length * ITEM_HEIGHT;
-
-                const family = await callContainer("/api/family/",{})
-                console.log("call container get family",family)
+                    // 4. 设置拖拽区域总高度
+                    this.areaHeight = this.familyList.length * ITEM_HEIGHT;
+                }
 
             } catch (e) { console.error(e); }
         },

@@ -90,3 +90,7 @@ func DeleteFamily(ctx context.Context, familyID uint) error {
 func GetFamilyList(ctx context.Context, OPENID string) ([]model.Family, error) {
 	return dao.GetFamilyList(ctx, OPENID)
 }
+
+func UpdateFamily(ctx context.Context, openID string, familyID uint, newName string) error {
+	return dao.UpdateFamilyName(ctx, openID, familyID, newName)
+}

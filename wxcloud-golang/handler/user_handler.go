@@ -20,6 +20,11 @@ type DeleteFamilyRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
 }
 
+type UpdateFamilyRequest struct {
+	FamilyID uint   `json:"familyId" binding:"required"`
+	Name     string `json:"name" binding:"required,min=1,max=50"`
+}
+
 func IndexHandler(c *gin.Context) {
 	response.SuccessMsg(c, "Hello Succulent")
 }
@@ -116,4 +121,21 @@ func GetFamilyHandler(c *gin.Context) {
 		return
 	}
 	response.Success(c, family)
+}
+
+func UpdateFamilyHandler(c *gin.Context) {
+	var req UpdateFamilyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误")
+		return
+	}
+	OPENID := c.GetHeader("X-WX-OPENID")
+	ctx := c.Request.Context()
+	err := service.UpdateFamily(ctx, OPENID, req.FamilyID, req.Name)
+	if err != nil {
+		response.Fail(c, "更新失败:"+err.Error())
+		return
+	}
+	response.Success(c, "更新成功")
+
 }

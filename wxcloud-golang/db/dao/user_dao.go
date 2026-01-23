@@ -160,3 +160,28 @@ func SwitchCurrentFamily(ctx context.Context, openID string, familyID uint) erro
 			Update("current_family_id", familyID).Error
 	})
 }
+
+func UpdateFamilyName(ctx context.Context, openID string, familyID uint, newName string) error {
+	return execWithSpan(ctx, "UPDATE", "family", func(conn *gorm.DB) error {
+		var role string
+		err := conn.Model(&model.FamilyMember{}).
+			Select("role").
+			Where("family_id = ? AND open_id = ?", familyID, openID).
+			Scan(&role).Error
+
+		if err != nil {
+			return err
+		}
+		if role == "" {
+			return fmt.Errorf("你不是该家庭成员")
+		}
+		if role != "owner" && role != "admin" {
+			return fmt.Errorf("权限不足：只有户主或管理员可以修改名称")
+		}
+		result := conn.Model(&model.Family{}).
+			Where("id = ?", familyID).
+			Update("name", newName)
+
+		return result.Error
+	})
+}
