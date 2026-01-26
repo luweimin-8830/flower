@@ -29,6 +29,10 @@ type CreateFamilyRequest struct {
 	Name string `json:"name" binding:"required,min=1,max=50"`
 }
 
+type JoinFamilyRequest struct {
+	FamilyID uint `json:"familyId" binding:"required"`
+}
+
 func IndexHandler(c *gin.Context) {
 	response.SuccessMsg(c, "Hello Succulent")
 }
@@ -161,4 +165,20 @@ func CreateFamilyHandler(c *gin.Context) {
 		"id":   family.ID,
 		"name": family.Name,
 	})
+}
+
+func JoinFamilyHandler(c *gin.Context) {
+	var req JoinFamilyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 400, "家庭ID不能为空")
+		return
+	}
+	OPENID := c.GetHeader("X-WX-OPENID")
+	ctx := c.Request.Context()
+	err := service.JoinFamily(ctx, OPENID, req.FamilyID)
+	if err != nil {
+		response.Fail(c, "加入失败: "+err.Error())
+		return
+	}
+	response.Success(c, "加入成功")
 }

@@ -103,3 +103,25 @@ func CreateFamily(ctx context.Context, openID string, name string) (*model.Famil
 	}
 	return family, nil
 }
+
+func JoinFamily(ctx context.Context, openID string, familyID uint) error {
+	// 1. 检查是否已经是成员
+	families, err := dao.GetFamilyList(ctx, openID)
+	if err != nil {
+		return err
+	}
+	for _, f := range families {
+		if f.ID == familyID {
+			return errors.New("你已经是该家庭成员了")
+		}
+	}
+
+	// 2. 加入家庭
+	member := &model.FamilyMember{
+		FamilyID:  familyID,
+		OpenID:    openID,
+		Role:      "member",
+		SortOrder: len(families),
+	}
+	return dao.CreateFamilyMember(ctx, member)
+}

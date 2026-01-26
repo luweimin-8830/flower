@@ -13,7 +13,8 @@
             <view class="family-select-icon" :class="{ 'selecting': isSelecting }">
                 <uni-icons type="home" size="18" color="#6B8857"></uni-icons>
             </view>
-            <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'" @change="handleFamilyChange">
+            <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'"
+                @change="handleFamilyChange">
                 <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
             </picker>
         </view>
@@ -55,7 +56,7 @@
         <!-- flex:1 让它自动填满剩余空间，height:0 防止被内容撑大 -->
         <scroll-view scroll-y class="content-scroll-view">
             <view class="waterfall-wrapper">
-                <WaterfallBox :list="plantsList" idKey="ID" cols="2" :key="currentTagIndex">
+                <WaterfallBox :list="plantsList" idKey="ID" cols="2">
                     <template #item="{ item }">
                         <view class="plant-card" @click="gotoDetail(item)">
                             <view class="image-wrapper"
@@ -128,6 +129,7 @@ export default {
             isFirstLoad: true,
             isSelecting: false,
             currentFamilyIndex: 0,
+            isFiltering: false, // 防止过滤期间的并发修改
         }
     },
     computed: {
@@ -143,7 +145,24 @@ export default {
      * 属性变化监听器实现
      */
     watch: {
-
+        allPlantsList: {
+            handler(newVal, oldVal) {
+                console.log("=== allPlantsList 变化 ===");
+                console.log("allPlantsList - 新值数量:", newVal?.length, "旧值数量:", oldVal?.length);
+                if (newVal) {
+                    newVal.forEach((plant, idx) => {
+                        console.log(`  [${idx}] ${plant.name} (ID: ${plant.ID}), tags:`, plant.tags ? `${plant.tags.length}个` : 'null');
+                        if (plant.tags) {
+                            plant.tags.forEach(tag => {
+                                console.log(`      - tag ID: ${tag.ID}, name: ${tag.name}`);
+                            });
+                        }
+                    });
+                }
+                console.log("=== allPlantsList 变化结束 ===");
+            },
+            deep: true
+        }
     },
     /**
      * 规则：如果没有配置expose，则methods中的方法均对外暴露，如果配置了expose，则以expose的配置为准向外暴露
@@ -249,6 +268,7 @@ export default {
         },
         async getPlantsList() {
             const familyId = this.value;
+            console.log("=== getPlantsList 开始 ===");
             console.log("获取植物列表，当前 familyId:", familyId);
 
             try {
@@ -258,14 +278,36 @@ export default {
                 console.log("plants list:", plants)
                 const newData = plants?.data || [];
 
-                // 直接设置新数据，不需要清空
-                this.allPlantsList = newData.map(item => ({
-                    ...item,
-                    isLoaded: false
-                }));
+                // 打印原始数据的 tags
+                console.log("getPlantsList - 原始数据的 tags:");
+                newData.forEach((item, idx) => {
+                    if (item.tags && item.tags.length > 0) {
+                        console.log(`  [${idx}] ${item.name} (ID: ${item.ID}) tags:`, item.tags.map(t => `ID:${t.ID}(${t.name})`));
+                    }
+                });
+
+                // 🔥 关键修复：完全冻结所有对象，防止被修改
+                this.allPlantsList = newData.map(item => {
+                    // 深拷贝 tags 数组
+                    let frozenTags = null;
+                    if (item.tags && Array.isArray(item.tags)) {
+                        frozenTags = item.tags.map(tag => ({ ...tag }));
+                        // 冻结每个 tag 对象
+                        frozenTags.forEach(tag => Object.freeze(tag));
+                        // 冻结 tags 数组
+                        Object.freeze(frozenTags);
+                    }
+
+                    // 创建新对象并冻结
+                    const newItem = { ...item, isLoaded: false, tags: frozenTags };
+                    return Object.freeze(newItem);
+                });
+
+                console.log("getPlantsList - allPlantsList 数量:", this.allPlantsList.length);
 
                 this.filterPlants();
                 console.log("植物列表更新完成，植物数量:", this.plantsList.length);
+                console.log("=== getPlantsList 结束 ===");
             } catch (error) {
                 console.error("获取植物列表失败:", error)
             }
@@ -275,19 +317,15 @@ export default {
             const tagId = currentTag ? currentTag.ID : 0;
             let filtered = [];
             if (tagId === 0) {
-                filtered = [...this.allPlantsList];
+
+                filtered = this.allPlantsList;
             } else {
+                // 🟢 只过滤，不 map
                 filtered = this.allPlantsList.filter(plant => {
-                    return plant.tags && plant.tags.some(t => t.ID === tagId)
-                })
+                    return plant.tags && plant.tags.some(t => t.ID === tagId);
+                });
             }
-            this.plantsList = filtered.map(item => {
-                const newItem = { ...item };
-                if (Array.isArray(item.tags)) {
-                    newItem.tags = [...item.tags];
-                }
-                return newItem
-            })
+            this.plantsList = filtered;
         },
         async handleFamilyChange(e) {
             console.log("家庭选择变化:", e);
@@ -404,11 +442,11 @@ export default {
         selectTag(index, item) {
             if (this.currentTagIndex === index) return;
             wx.vibrateShort({ type: "medium" })
-            
+
             // 优化标签切换逻辑：先更新索引，再过滤，避免中间状态
             this.currentTagIndex = index;
             this.filterPlants();
-            
+
             // 滑块动画逻辑
             const query = uni.createSelectorQuery().in(this);
             query.select('#tag-container').boundingClientRect();
@@ -422,8 +460,13 @@ export default {
                     const finalWidth = currentTextWidth * ratio;
                     const widthDiff = finalWidth - currentTextWidth;
                     const finalLeft = (currentTextLeft - containerLeft) - (widthDiff / 2);
-                    this.sliderWidth = finalWidth;
-                    this.sliderLeft = finalLeft;
+
+                    // 使用 Vue 的 nextTick 确保响应式更新
+                    this.$nextTick(() => {
+                        this.sliderWidth = finalWidth;
+                        this.sliderLeft = finalLeft;
+                    });
+
                     if (this.sliderTimer) clearTimeout(this.sliderTimer);
                     this.sliderTimer = setTimeout(() => {
                         this.updateSliderPosition(index);
@@ -431,7 +474,7 @@ export default {
                 }
             });
         },
-        
+
 
         updateSliderPosition(index) {
             const query = uni.createSelectorQuery().in(this);
@@ -452,13 +495,22 @@ export default {
             });
         },
         onImgLoad(item) {
-            item.isLoaded = true
-            if (this.allPlantsList && this.allPlantsList.length > 0) {
-                const sourceItem = this.allPlantsList.find(i => i.ID === item.ID);
-                if (sourceItem) {
-                    sourceItem.isLoaded = true;
-                }
+            if (!item.isLoaded) {
+                item.isLoaded = true;
             }
+
+        },
+        // 确保图片显示的方法（用于页面返回时恢复图片状态）
+        ensureImagesVisible() {
+            this.$nextTick(() => {
+                if (this.plantsList && this.plantsList.length > 0) {
+                    this.plantsList.forEach(plant => {
+                        if (plant.isLoaded !== true) {
+                            plant.isLoaded = false; // 重置状态，触发重新加载
+                        }
+                    });
+                }
+            });
         },
         goAddPage() {
             wx.vibrateShort({ type: "medium" })
@@ -480,6 +532,11 @@ export default {
 
             console.log("onShow:component-home - 刷新数据");
             this.loadFamilyData();
+
+            // 确保图片显示
+            setTimeout(() => {
+                this.ensureImagesVisible();
+            }, 500);
         },
     },
     async created() {
@@ -599,7 +656,8 @@ export default {
     /* 确保边框不撑大尺寸 */
 
     /* 交互状态 */
-    &:active, &.selecting {
+    &:active,
+    &.selecting {
         transform: scale(0.95);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     }
@@ -811,7 +869,7 @@ export default {
     width: 100%;
     height: 100%;
     // background-color: rgba(255,255,255,1); // 加载时的背景色
-    opacity: 0;
+    // opacity: 0;
     transition: opacity 0.4s ease-in-out;
 }
 

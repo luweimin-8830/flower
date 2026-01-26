@@ -6,7 +6,8 @@
     "pages/plantEdit/plantEdit",
     "pages/plantDetail/plantDetail",
     "pages/tagEdit/tagEdit",
-    "pages/familyDetail/familyDetail"
+    "pages/familyDetail/familyDetail",
+    "pages/shareMember/shareMember"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",

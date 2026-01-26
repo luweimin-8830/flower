@@ -41,11 +41,33 @@ const isRendering = ref(false);
 const instance = getCurrentInstance();
 
 watch(() => props.list, (newVal, oldVal) => {
-    if (newVal.length > (oldVal?.length || 0)) {
-        const newItems = newVal.slice(oldVal?.length || 0);
-        tempQueue.value.push(...newItems);
-    } else {
-        // 重置：清空每一列
+    console.log("WaterfallBox - watch triggered");
+    console.log("WaterfallBox - newVal length:", newVal?.length, "oldVal length:", oldVal?.length);
+
+    // 检查是否需要重新渲染
+    let needRebuild = false;
+
+    // 1. 如果是新数据或数量差异较大，需要重新构建
+    if (!oldVal || newVal.length !== oldVal.length) {
+        needRebuild = true;
+        console.log("WaterfallBox - 需要重新构建（长度不同）");
+    }
+    // 2. 如果数量相同，检查每个元素的 ID 是否相同
+    else {
+        for (let i = 0; i < newVal.length; i++) {
+            if (newVal[i][props.idKey] !== oldVal[i][props.idKey]) {
+                needRebuild = true;
+                console.log(`WaterfallBox - 需要重新构建（ID不同）: ${newVal[i][props.idKey]} !== ${oldVal[i][props.idKey]}`);
+                break;
+            }
+        }
+        if (!needRebuild) {
+            console.log("WaterfallBox - 数据完全相同，不需要重新构建");
+        }
+    }
+
+    if (needRebuild) {
+        console.log("WaterfallBox - 开始重新构建列");
         columns.value = Array.from({ length: props.cols }, () => []);
         tempQueue.value = [...newVal];
     }
@@ -55,7 +77,7 @@ watch(() => props.list, (newVal, oldVal) => {
             renderNext();
         });
     }
-}, {  immediate: true });
+}, { immediate: true });
 
 const renderNext = async () => {
     if (tempQueue.value.length === 0) {

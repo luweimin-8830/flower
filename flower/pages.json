@@ -62,6 +62,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": true
 			}
+		},
+		{
+			"path": "pages/shareMember/shareMember",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": true
+			}
 		}
 	],
 	"globalStyle": {

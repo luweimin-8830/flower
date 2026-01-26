@@ -31,10 +31,12 @@
                     <!-- 右侧：操作图标 + 权限 + 数量 -->
                     <view class="right-content">
                         <!-- 1. 邀请按钮 (户主 & 管理员) -->
-                        <view class="icon-btn" v-if="item.role === 'owner' || item.role === 'admin'"
-                            @click.stop="handleInvite(item)">
-                            <uni-icons type="personadd" size="18" color="#4A6139"></uni-icons>
-                        </view>
+                        <button class="icon-btn-reset" v-if="item.role === 'owner' || item.role === 'admin'"
+                            open-type="share" :data-id="item.ID" :data-name="item.name">
+                            <view class="icon-btn">
+                                <uni-icons type="personadd" size="18" color="#4A6139"></uni-icons>
+                            </view>
+                        </button>
 
                         <!-- 2. 🌟 删除按钮 (仅户主) -->
                         <view class="icon-btn delete-btn" v-if="item.role === 'owner'"
@@ -327,6 +329,19 @@ export default {
             }
         }
     },
+    onShareAppMessage(res) {
+        if (res.from === 'button') {
+            const { id, name } = res.target.dataset;
+            return {
+                title: `邀请你加入家庭 "${name}"`,
+                path: `/pages/shareMember/shareMember?familyId=${id}&familyName=${name}`
+            }
+        }
+        return {
+            title: '我的家庭',
+            path: '/pages/index/index'
+        }
+    },
     onLoad() {
         const app = getApp()
         this.topBarHeight = app.globalData.topBarHeight
@@ -417,6 +432,19 @@ export default {
 .right-content {
     display: flex;
     align-items: center;
+}
+
+.icon-btn-reset {
+    padding: 0;
+    margin: 0;
+    background: none;
+    line-height: normal;
+    border: none;
+    display: flex;
+    align-items: center;
+    &::after {
+        border: none;
+    }
 }
 
 /* 图标按钮 */
