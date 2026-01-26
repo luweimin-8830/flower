@@ -46,17 +46,55 @@
   /* 模糊背景 */
   -webkit-backdrop-filter: blur(10px);
   /* 兼容 iOS */
+  border-radius: 20px;
   border: 1px solid rgba(0, 0, 0, 0.08);
   /* 极细的浅色边框 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  /* 轻微阴影 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* 增强阴影效果 */
   /* 布局与过渡 */
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
+  justify-content: flex-start;
+  padding: 0 12px;
+  gap: 6px;
+  transition: all 0.3s ease;
   box-sizing: border-box;
   /* 确保边框不撑大尺寸 */
+  /* 交互状态 */
+}
+.family-select.data-v-045d88fd:active, .family-select.selecting.data-v-045d88fd {
+  transform: scale(0.95);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.family-select.selecting .family-select-icon.data-v-045d88fd {
+  transform: scale(0.9);
+  opacity: 1;
+}
+.family-select-icon.data-v-045d88fd {
+  flex-shrink: 0;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.family-select-icon uni-icons.data-v-045d88fd {
+  font-size: 16px;
+}
+
+/* 微信 picker 样式调整 */
+.custom-select.data-v-045d88fd {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+.family-select-text.data-v-045d88fd {
+  font-size: 14px;
+  color: #333;
+  opacity: 0.9;
+  font-weight: 500;
 }
 .header-action-container.data-v-045d88fd {
   display: flex;

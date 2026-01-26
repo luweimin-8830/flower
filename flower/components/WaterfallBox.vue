@@ -1,10 +1,5 @@
 <template>
     <view class="waterfall-container">
-        <!-- 
-      核心修改：
-      使用嵌套循环。外层循环列(columns)，内层循环数据(col)。
-      这样 <slot> 标签在代码里只出现了一次，避开了微信小程序的编译 Bug。
-    -->
         <view v-for="(col, colIndex) in columns" :key="colIndex" class="waterfall-column"
             :id="'waterfall-column-' + colIndex">
             <view v-for="(item, index) in col" :key="item[idKey] || index" class="waterfall-item">
@@ -120,12 +115,11 @@ const getContainerHeight = (selector) => {
 .waterfall-column {
     display: flex;
     flex-direction: column;
-    // 动态计算宽度：(100% - 间隙) / 列数
-    // 这里简化处理，假设是双列，留一点间隙
-    width: 48%;
-    flex: 0 0 48%;
-    max-width: 48%;
-    // max-height: 100px;
+    // 简化计算：直接使用 50% 宽度，确保每列均匀分布
+    width: 49%;  // 留一点间隙
+    flex: 0 0 49%;
+    max-width: 49%;
+    margin: 0 0.5%;  // 添加列之间的间距
 }
 
 @keyframes fadeInUp {

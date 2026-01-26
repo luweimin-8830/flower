@@ -231,10 +231,6 @@ export default {
                     }
                 }
                 
-                uni.showToast({
-                    title: '修改成功',
-                    icon: 'success'
-                });
             }
         },
 
@@ -278,11 +274,6 @@ export default {
             });
         },
 
-        goDetail(item) {
-            if (this.isSorting) return;
-            console.log('进入家庭详情', item.name);
-        },
-
         // --- 排序逻辑 ---
         toggleSortMode() {
             if (this.isSorting) {
@@ -308,11 +299,32 @@ export default {
                 const item = this.familyList[this.curDragIndex];
                 this.familyList.splice(this.curDragIndex, 1);
                 this.familyList.splice(target, 0, item);
+
+                // 调用后端排序接口
+                this.saveSortOrder();
             }
             this.$nextTick(() => {
                 this.familyList.forEach((item, index) => item.y = index * ITEM_HEIGHT);
                 this.curDragIndex = -1;
             });
+        },
+        async saveSortOrder() {
+            try {
+                const familyIds = this.familyList.map(item => item.ID);
+                await callContainer("/api/family/sort", {
+                    familyIds: familyIds
+                });
+                console.log("家庭排序保存成功:", familyIds);
+            } catch (error) {
+                console.error("保存排序失败:", error);
+                uni.showToast({
+                    title: '保存排序失败',
+                    icon: 'none',
+                    duration: 2000
+                });
+                // 重新加载列表恢复原始排序
+                await this.getFamilyList();
+            }
         }
     },
     onLoad() {

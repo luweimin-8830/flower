@@ -2,16 +2,20 @@
     <!-- 🌟 1. 最外层包裹一个全屏容器 -->
     <view class="home-container">
 
-        <!-- 🌟 2. 悬浮的家庭选择按钮 (保持原样，它是 fixed 定位，不受 flex 影响) -->
-        <view class="family-select" :style="{
+        <!-- 🌟 2. 优化后的家庭选择按钮 (毛玻璃效果 + 交互增强) - 使用微信原生 picker -->
+        <view class="family-select" :class="{ 'selecting': isSelecting }" :style="{
             width: 'auto',
+            height: menuButtonInfo.height + 'px',
             borderRadius: menuButtonInfo.height / 2 + 'px',
             top: menuButtonInfo.top + 'px',
             left: paddingLeft + 'px'
-        }">
-            <uni-data-select class="custom-select" v-model="value" :localdata="familyRange" @change="changeFamily"
-                :clear="false">
-            </uni-data-select>
+        }" @click="toggleFamilySelect" @touchstart="onTouchStart" @touchend="onTouchEnd">
+            <view class="family-select-icon" :class="{ 'selecting': isSelecting }">
+                <uni-icons type="home" size="18" color="#6B8857"></uni-icons>
+            </view>
+            <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'" @change="handleFamilyChange">
+                <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
+            </picker>
         </view>
 
         <!-- 🌟 3. 顶部固定区域 (包含占位符、搜索框、标签栏) -->
@@ -121,6 +125,9 @@ export default {
             sliderTimer: null,
             plantsList: [],
             allPlantsList: [],
+            isFirstLoad: true,
+            isSelecting: false,
+            currentFamilyIndex: 0,
         }
     },
     computed: {
@@ -148,57 +155,119 @@ export default {
     methods: {
         async loadFamilyData() {
             try {
-                const familyList = await new Promise((resolve, reject) => {
-                    uni.getStorage({ key: 'family', success: resolve, fail: reject })
-                })
-                if (familyList.data && Array.isArray(familyList.data)) {
-                    this.familyRange = familyList.data.map(item => ({
-                        text: item.name,           
-                        value: item.ID || item.id, 
+                // 同时获取家庭列表和当前选中的家庭ID
+                const [familyListResult, familyIdResult] = await Promise.all([
+                    new Promise((resolve, reject) => {
+                        uni.getStorage({ key: 'family', success: resolve, fail: reject })
+                    }),
+                    new Promise((resolve, reject) => {
+                        uni.getStorage({ key: 'familyId', success: resolve, fail: reject })
+                    })
+                ]);
+
+                const familyList = familyListResult?.data || [];
+                const cachedFamilyId = familyIdResult?.data;
+
+                console.log("loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
+
+                if (familyList && Array.isArray(familyList) && familyList.length > 0) {
+                    this.familyRange = familyList.map(item => ({
+                        text: item.name,
+                        value: item.ID || item.id,
                         disable: false
                     }));
+
+                    // 使用缓存的家庭ID，如果缓存不存在则使用第一个家庭
+                    this.value = cachedFamilyId || this.familyRange[0].value;
+
+                    // 设置当前选中的家庭索引
+                    this.currentFamilyIndex = this.familyRange.findIndex(item => item.value === this.value);
+                    if (this.currentFamilyIndex === -1) {
+                        this.currentFamilyIndex = 0;
+                        this.value = this.familyRange[0].value;
+                    }
+
+                    console.log("当前家庭ID:", this.value, "家庭索引:", this.currentFamilyIndex);
+                } else {
+                    this.familyRange = [];
+                    this.currentFamilyIndex = 0;
+                    this.value = null;
+                }
+
+                // 确保 this.value 设置完成后再加载数据
+                await this.$nextTick();
+
+                // 使用正确的 familyId 加载数据
+                await this.getTagList();
+                await this.getPlantsList();
+            } catch (error) {
+                console.error("加载家庭数据失败:", error);
+            }
+        },
+        async refreshFamilyList() {
+            try {
+                const user = await callContainer("/api/login");
+                const familyList = user.data.family || [];
+
+                // 更新缓存
+                await new Promise((resolve) => {
+                    uni.setStorage({ key: "family", data: familyList, success: resolve })
+                });
+
+                // 更新家庭选择器的选项
+                if (familyList && Array.isArray(familyList) && familyList.length > 0) {
+                    this.familyRange = familyList.map(item => ({
+                        text: item.name,
+                        value: item.ID || item.id,
+                        disable: false
+                    }));
+
+                    // 确保当前选择的家庭ID在新列表中
+                    const currentFamilyExists = this.familyRange.some(item => item.value === this.value);
+                    if (!currentFamilyExists && this.familyRange.length > 0) {
+                        // 如果当前家庭不在新列表中，切换到第一个
+                        this.value = this.familyRange[0].value;
+                        this.currentFamilyIndex = 0;
+
+                        // 更新缓存
+                        await new Promise((resolve) => {
+                            uni.setStorage({ key: "familyId", data: this.value, success: resolve })
+                        });
+
+                        // 刷新数据
+                        await this.getTagList();
+                        await this.getPlantsList();
+                    }
                 } else {
                     this.familyRange = [];
                 }
-                // familyList?.data?.forEach(item => {
-                //     this.familyRange = [...this.familyRange, { "text": item.name, "value": item.ID, "disable": false }]
-                // });
-                const exists = this.familyRange.some(item => item.value === this.value);
-                if (!exists && this.familyRange.length > 0) {
-                    this.value = this.familyRange[0].value;
-                }
-                this.getTagList()
-                this.getPlantsList()
+
+                console.log("家庭列表已刷新:", this.familyRange);
             } catch (error) {
-                console.error(error)
+                console.error("刷新家庭列表失败:", error);
             }
         },
         async getPlantsList() {
+            const familyId = this.value;
+            console.log("获取植物列表，当前 familyId:", familyId);
+
             try {
-                const loadedMap = new Map();
-                if (this.allPlantsList && this.allPlantsList.length > 0) {
-                    this.allPlantsList.forEach(item => {
-                        // 只有已经加载完(isLoaded=true)的才记录
-                        if (item.isLoaded) {
-                            loadedMap.set(item.ID, item.cover?.url);
-                        }
-                    });
-                }
                 const plants = await callContainer("/api/plant/list", {
-                    "familyId": this.value
+                    "familyId": familyId
                 })
                 console.log("plants list:", plants)
                 const newData = plants?.data || [];
-                this.allPlantsList = newData.map(item => {
-                    const oldUrl = loadedMap.get(item.ID);
-                    if (oldUrl && oldUrl === item.cover?.url) {
-                        return { ...item, isLoaded: true };
-                    }
-                    return item;
-                });
-                this.filterPlants()
+
+                // 直接设置新数据，不需要清空
+                this.allPlantsList = newData.map(item => ({
+                    ...item,
+                    isLoaded: false
+                }));
+
+                this.filterPlants();
+                console.log("植物列表更新完成，植物数量:", this.plantsList.length);
             } catch (error) {
-                console.error(error)
+                console.error("获取植物列表失败:", error)
             }
         },
         filterPlants() {
@@ -220,13 +289,92 @@ export default {
                 return newItem
             })
         },
-        changeFamily(e) {
-            console.log(e)
+        async handleFamilyChange(e) {
+            console.log("家庭选择变化:", e);
+            const selectedIndex = e.detail.value;
+            this.currentFamilyIndex = selectedIndex;
+            const newFamilyId = this.familyRange[selectedIndex].value;
+
+            console.log("准备切换到家庭ID:", newFamilyId, "当前家庭ID:", this.value);
+
+            try {
+                // 调用后端切换家庭接口
+                await callContainer("/api/family/switch", {
+                    familyId: newFamilyId
+                });
+                console.log("家庭切换成功");
+
+                // 更新storage中的familyId
+                await new Promise((resolve) => {
+                    uni.setStorage({ key: "familyId", data: newFamilyId, success: resolve })
+                });
+            } catch (error) {
+                console.error("切换家庭失败:", error);
+
+                // 显示错误提示
+                const errorMsg = error?.msg || error?.message || "切换家庭失败，请稍后重试";
+                uni.showToast({
+                    title: errorMsg,
+                    icon: 'none',
+                    duration: 2000
+                });
+
+                // 恢复之前的选择
+                this.currentFamilyIndex = this.familyRange.findIndex(item => item.value === this.value);
+
+                // 刷新家庭列表，移除无权限的家庭
+                await this.refreshFamilyList();
+                return;
+            }
+
+            // 使用新familyId更新数据
+            this.value = newFamilyId;
+            this.currentTagIndex = 0;
+
+            console.log("已更新 this.value 为:", this.value);
+
+            // 清空旧数据
+            this.tagList = [];
+            this.allPlantsList = [];
+            this.plantsList = [];
+
+            // 等待 DOM 更新
+            await this.$nextTick();
+
+            // 直接获取新家庭的标签和植物列表
+            await this.getTagList();
+            await this.getPlantsList();
+
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.updateSliderPosition(0);
+                }, 200);
+            });
+
+            wx.vibrateShort({ type: "light" });
+        },
+        toggleFamilySelect() {
+            // 微信原生 picker 会自动展开，无需额外触发
+            // 这里可以添加一些额外的逻辑，比如聚焦或高亮
+            console.log("触发家庭选择器");
+        },
+        onTouchStart() {
+            // 按钮按下时的样式变化
+            this.isSelecting = true;
+        },
+        onTouchEnd() {
+            // 按钮释放时的样式恢复
+            setTimeout(() => {
+                this.isSelecting = false;
+            }, 200);
         },
         async getTagList() {
+            const familyId = this.value;
+            console.log("getTagList - 当前 familyId:", familyId);
+
             try {
                 const tagList = await callContainer("/api/tag/", {
-                    familyId: this.value
+                    familyId: familyId
                 })
                 console.log("tagList:", tagList)
                 const apiTags = tagList?.data || []
@@ -246,7 +394,7 @@ export default {
                     }, 200);
                 });
             } catch (error) {
-                console.error(error)
+                console.error("获取标签列表失败:", error)
             }
         },
         searchPlant(e) {
@@ -256,11 +404,12 @@ export default {
         selectTag(index, item) {
             if (this.currentTagIndex === index) return;
             wx.vibrateShort({ type: "medium" })
-            this.plantsList = [];
+            
+            // 优化标签切换逻辑：先更新索引，再过滤，避免中间状态
             this.currentTagIndex = index;
-            this.$nextTick(() => {
-                this.filterPlants();
-            });
+            this.filterPlants();
+            
+            // 滑块动画逻辑
             const query = uni.createSelectorQuery().in(this);
             query.select('#tag-container').boundingClientRect();
             query.select('#tag-text-' + index).boundingClientRect();
@@ -282,6 +431,7 @@ export default {
                 }
             });
         },
+        
 
         updateSliderPosition(index) {
             const query = uni.createSelectorQuery().in(this);
@@ -321,18 +471,17 @@ export default {
             })
         },
         onPageShow() {
-            console.log("onShow:component-home")
-            this.loadFamilyData()
+            // 首次加载时不调用 loadFamilyData，避免重复加载
+            if (this.isFirstLoad) {
+                console.log("onShow:component-home - 首次加载，跳过");
+                this.isFirstLoad = false;
+                return;
+            }
+
+            console.log("onShow:component-home - 刷新数据");
+            this.loadFamilyData();
         },
-        /**
-      * 内部使用的组件方法
-      */
-        //privateMethod() {}
     },
-    /**
-     * [可选实现] 组件被创建，组件第一个生命周期，
-     * 在内存中被占用的时候被调用，开发者可以在这里执行一些需要提前执行的初始化逻辑
-     */
     async created() {
 
         const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
@@ -344,15 +493,31 @@ export default {
         this.windowWidth = app.globalData.windowWidth;
         const user = await callContainer("/api/login")
         console.log("callContainer login:", user)
+
+        const userInfo = user.data.user;
+        const familyList = user.data.family;
+
+        // 保存用户信息
         await new Promise((resolve) => {
-            uni.setStorage({ key: "family", data: user.data.family, success: resolve })
+            uni.setStorage({ key: "userInfo", data: userInfo, success: resolve })
         })
+
+        // 保存家庭列表
         await new Promise((resolve) => {
-            uni.setStorage({ key: "familyId", data: user.data.family[0].ID, success: resolve })
+            uni.setStorage({ key: "family", data: familyList, success: resolve })
         })
-        await new Promise((resolve) => {
-            uni.setStorage({ key: "userInfo", data: user.data.user, success: resolve })
-        })
+
+        // 确定默认家庭ID：优先使用 userInfo 中的 currentFamilyId，否则使用家庭列表的第一个
+        const defaultFamilyId = userInfo?.currentFamilyId || (familyList && familyList[0]?.ID);
+        console.log("默认家庭ID (userInfo.currentFamilyId):", userInfo?.currentFamilyId, "fallback:", (familyList && familyList[0]?.ID), "最终使用:", defaultFamilyId);
+
+        // 保存默认家庭ID到缓存
+        if (defaultFamilyId) {
+            await new Promise((resolve) => {
+                uni.setStorage({ key: "familyId", data: defaultFamilyId, success: resolve })
+            })
+        }
+
         this.loadFamilyData()
         // uni.$off('refreshFamilyList');
         // uni.$on('refreshFamilyList', (data) => {
@@ -363,10 +528,7 @@ export default {
         //     this.loadFamilyData()
         // })
 
-    },
-    // beforeDestroy() {
-    //     uni.$off('refreshFamilyList');
-    // },
+    }
 }
 </script>
 
@@ -420,20 +582,61 @@ export default {
     /* 模糊背景 */
     -webkit-backdrop-filter: blur(10px);
     /* 兼容 iOS */
-    // border-radius: 50%; /* 圆形 */
+    border-radius: 20px;
     border: 1px solid rgba(0, 0, 0, 0.08);
     /* 极细的浅色边框 */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    /* 轻微阴影 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* 增强阴影效果 */
 
     /* 布局与过渡 */
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
+    justify-content: flex-start;
+    padding: 0 12px;
+    gap: 6px;
+    transition: all 0.3s ease;
     box-sizing: border-box;
     /* 确保边框不撑大尺寸 */
-    //overflow: hidden; /* 超出圆角部分隐藏 */
+
+    /* 交互状态 */
+    &:active, &.selecting {
+        transform: scale(0.95);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    &.selecting .family-select-icon {
+        transform: scale(0.9);
+        opacity: 1;
+    }
+}
+
+.family-select-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.family-select-icon uni-icons {
+    font-size: 16px;
+}
+
+/* 微信 picker 样式调整 */
+.custom-select {
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.family-select-text {
+    font-size: 14px;
+    color: #333;
+    opacity: 0.9;
+    font-weight: 500;
 }
 
 
