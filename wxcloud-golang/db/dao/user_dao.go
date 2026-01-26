@@ -114,6 +114,15 @@ func GetFamilyByOpenId(ctx context.Context, OPENID string) (*model.Family, error
 func DeleteFamilyWithData(ctx context.Context, familyID uint) error {
 	// 开启事务
 	return db.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var plantIDs []uint
+		tx.Model(&model.Plant{}).Where("family_id = ?", familyID).Pluck("id", &plantIDs)
+
+		// 删除这些植物的日志记录
+		if len(plantIDs) > 0 {
+			if err := tx.Where("plant_id IN ?", plantIDs).Delete(&model.PlantLog{}).Error; err != nil {
+				return err
+			}
+		}
 		if err := tx.Where("family_id = ?", familyID).Delete(&model.Plant{}).Error; err != nil {
 			return err
 		}
@@ -121,9 +130,9 @@ func DeleteFamilyWithData(ctx context.Context, familyID uint) error {
 			return err
 		}
 		// 3. (如果有) 删除该家庭下的所有 图片记录/生长记录
-		if err := tx.Where("family_id = ?", familyID).Delete(&model.Image{}).Error; err != nil {
-			return err
-		}
+		// if err := tx.Where("family_id = ?", familyID).Delete(&model.Image{}).Error; err != nil {
+		// 	return err
+		// }
 		// 4. 删除 家庭与用户的关联 (如果有中间表 user_families)
 		if err := tx.Table("family_member").Where("family_id = ?", familyID).Delete(nil).Error; err != nil {
 			return err

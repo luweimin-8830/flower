@@ -138,7 +138,7 @@ export default {
         },
 
         // 🌟 删除家庭 (仅户主)
-        handleDelete(item, index) {
+        async handleDelete(item, index) {
             uni.showModal({
                 title: '危险操作',
                 content: `确定要解散家庭 "${item.name}" 吗？\n解散后所有数据将无法恢复！`,
@@ -147,15 +147,18 @@ export default {
                 success: async (res) => {
                     if (res.confirm) {
                         try {
-                            // await callContainer("/api/family/delete", { id: item.ID });
-                            // 前端模拟删除
+                            // 调用后端删除API
+                            await callContainer("/api/family/delete", {
+                                familyId: item.ID
+                            });
+                            
+                            // 前端移除该家庭
                             this.familyList.splice(index, 1);
                             // 重新计算高度和位置
                             this.areaHeight = this.familyList.length * ITEM_HEIGHT;
                             this.familyList.forEach((it, idx) => it.y = idx * ITEM_HEIGHT);
-                            uni.showToast({ title: '已解散', icon: 'none' });
                         } catch (e) {
-                            console.error(e);
+                            console.error("删除家庭失败:", e);
                         }
                     }
                 }
@@ -182,15 +185,33 @@ export default {
                     title: '修改名称',
                     content: item.name,
                     editable: true,
+                    placeholderText: '最多10个字符',
                     success: resolve,
                     fail: reject
                 });
             })
             if (res.confirm && res.content) {
-                item.name = res.content;
+                const newName = res.content.trim();
+                
+                // 字符长度校验
+                if (newName.length > 10) {
+                    uni.showToast({
+                        title: '家庭名称不能超过10个字符',
+                        icon: 'none',
+                        duration: 2000
+                    });
+                    return;
+                }
+                
+                // 如果名称未改变，直接返回
+                if (newName === item.name) {
+                    return;
+                }
+                
+                item.name = newName;
                 const uploadName = await callContainer("/api/family/update", {
                     familyId: item.ID,
-                    name: item.name
+                    name: newName
                 })
                 console.log("call container upload family:", uploadName)
                 // uni.$emit('refreshFamilyList', { needRefresh: true });
@@ -209,6 +230,11 @@ export default {
                         })
                     }
                 }
+                
+                uni.showToast({
+                    title: '修改成功',
+                    icon: 'success'
+                });
             }
         },
 
@@ -216,10 +242,37 @@ export default {
             uni.showModal({
                 title: '创建新家庭',
                 editable: true,
-                placeholderText: '请输入家庭名称',
-                success: (res) => {
+                placeholderText: '请输入家庭名称（最多10个字符）',
+                success: async (res) => {
                     if (res.confirm && res.content) {
-                        this.getFamilyList();
+                        const name = res.content.trim();
+                        
+                        // 字符长度校验
+                        if (name.length > 10) {
+                            uni.showToast({
+                                title: '家庭名称不能超过10个字符',
+                                icon: 'none',
+                                duration: 2000
+                            });
+                            return;
+                        }
+                        
+                        try {
+                            // 调用后端创建家庭API
+                            const result = await callContainer("/api/family/add", {
+                                name: name
+                            });
+                            console.log("创建家庭成功:", result);
+                            
+                            // 重新获取家庭列表
+                            await this.getFamilyList();
+                        } catch (e) {
+                            console.error("创建家庭失败:", e);
+                            uni.showToast({ 
+                                title: '创建失败', 
+                                icon: 'none' 
+                            });
+                        }
                     }
                 }
             });

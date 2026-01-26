@@ -8,7 +8,7 @@ import (
 type Tag struct {
 	gorm.Model
 	Name       string `json:"name" gorm:"type:varchar(50);not null"`
-	FamilyID   uint   `json:"faimilyId" gorm:"index;not null"`
+	FamilyID   uint   `json:"familyId" gorm:"index;not null"`
 	Color      string `json:"color"`
 	SortOrder  int    `json:"sortOrder" gorm:"default:0"`
 	PlantCount int64  `json:"plantCount" gorm:"->"`
