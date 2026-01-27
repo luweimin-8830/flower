@@ -23,6 +23,7 @@
     </view>
 </template>
 
+
 <script>
 import navBar from '@/components/navBar.vue'
 import { callContainer } from '../../utils/request';
@@ -100,7 +101,7 @@ export default {
 
 .card {
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.55);
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);

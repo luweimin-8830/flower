@@ -302,12 +302,7 @@ export default {
                     const newItem = { ...item, isLoaded: false, tags: frozenTags };
                     return Object.freeze(newItem);
                 });
-
-                console.log("getPlantsList - allPlantsList 数量:", this.allPlantsList.length);
-
                 this.filterPlants();
-                console.log("植物列表更新完成，植物数量:", this.plantsList.length);
-                console.log("=== getPlantsList 结束 ===");
             } catch (error) {
                 console.error("获取植物列表失败:", error)
             }
@@ -328,12 +323,9 @@ export default {
             this.plantsList = filtered;
         },
         async handleFamilyChange(e) {
-            console.log("家庭选择变化:", e);
             const selectedIndex = e.detail.value;
             this.currentFamilyIndex = selectedIndex;
             const newFamilyId = this.familyRange[selectedIndex].value;
-
-            console.log("准备切换到家庭ID:", newFamilyId, "当前家庭ID:", this.value);
 
             try {
                 // 调用后端切换家庭接口
@@ -369,7 +361,6 @@ export default {
             this.value = newFamilyId;
             this.currentTagIndex = 0;
 
-            console.log("已更新 this.value 为:", this.value);
 
             // 清空旧数据
             this.tagList = [];
@@ -408,7 +399,6 @@ export default {
         },
         async getTagList() {
             const familyId = this.value;
-            console.log("getTagList - 当前 familyId:", familyId);
 
             try {
                 const tagList = await callContainer("/api/tag/", {
@@ -436,8 +426,8 @@ export default {
             }
         },
         searchPlant(e) {
-            console.log("e", e)
-            console.log("search:", this.searchValue)
+
+        
         },
         selectTag(index, item) {
             if (this.currentTagIndex === index) return;
@@ -525,12 +515,12 @@ export default {
         onPageShow() {
             // 首次加载时不调用 loadFamilyData，避免重复加载
             if (this.isFirstLoad) {
-                console.log("onShow:component-home - 首次加载，跳过");
+                
                 this.isFirstLoad = false;
                 return;
             }
 
-            console.log("onShow:component-home - 刷新数据");
+        
             this.loadFamilyData();
 
             // 确保图片显示
@@ -566,7 +556,7 @@ export default {
 
         // 确定默认家庭ID：优先使用 userInfo 中的 currentFamilyId，否则使用家庭列表的第一个
         const defaultFamilyId = userInfo?.currentFamilyId || (familyList && familyList[0]?.ID);
-        console.log("默认家庭ID (userInfo.currentFamilyId):", userInfo?.currentFamilyId, "fallback:", (familyList && familyList[0]?.ID), "最终使用:", defaultFamilyId);
+        
 
         // 保存默认家庭ID到缓存
         if (defaultFamilyId) {

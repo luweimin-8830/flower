@@ -10,6 +10,7 @@
 				:style="{ display: onKey === 'a' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面a -->
+					
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['b'].is"
@@ -22,7 +23,7 @@
 				:style="{ display: onKey === 'c' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面c -->
-					<home ref="homeComponent"/>
+					<home ref="homeComponent" />
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['d'].is"
@@ -261,9 +262,9 @@ export default {
 		const app = getApp()
 		await app.globalData.initPromise;
 		this.$refs.loading.open();
-        setTimeout(() => {
-            this.$refs.loading.close();
-        }, 1500);
+		setTimeout(() => {
+			this.$refs.loading.close();
+		}, 1500);
 		this.$nextTick(() => {
 			this.getDemRefAll({
 				selector: '.pan-tabbar-item',
@@ -273,8 +274,8 @@ export default {
 			})
 		})
 	},
-	onShow(){
-		this.$nextTick(()=>{
+	onShow() {
+		this.$nextTick(() => {
 			this.$refs.homeComponent.onPageShow();
 		})
 	},

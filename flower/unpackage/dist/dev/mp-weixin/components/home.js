@@ -184,12 +184,9 @@ const _sfc_main = {
           const newItem = { ...item, isLoaded: false, tags: frozenTags };
           return Object.freeze(newItem);
         });
-        common_vendor.index.__f__("log", "at components/home.vue:306", "getPlantsList - allPlantsList 数量:", this.allPlantsList.length);
         this.filterPlants();
-        common_vendor.index.__f__("log", "at components/home.vue:309", "植物列表更新完成，植物数量:", this.plantsList.length);
-        common_vendor.index.__f__("log", "at components/home.vue:310", "=== getPlantsList 结束 ===");
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:312", "获取植物列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:307", "获取植物列表失败:", error);
       }
     },
     filterPlants() {
@@ -206,21 +203,19 @@ const _sfc_main = {
       this.plantsList = filtered;
     },
     async handleFamilyChange(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:331", "家庭选择变化:", e);
       const selectedIndex = e.detail.value;
       this.currentFamilyIndex = selectedIndex;
       const newFamilyId = this.familyRange[selectedIndex].value;
-      common_vendor.index.__f__("log", "at components/home.vue:336", "准备切换到家庭ID:", newFamilyId, "当前家庭ID:", this.value);
       try {
         await utils_request.callContainer("/api/family/switch", {
           familyId: newFamilyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:343", "家庭切换成功");
+        common_vendor.index.__f__("log", "at components/home.vue:335", "家庭切换成功");
         await new Promise((resolve) => {
           common_vendor.index.setStorage({ key: "familyId", data: newFamilyId, success: resolve });
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:350", "切换家庭失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:342", "切换家庭失败:", error);
         const errorMsg = (error == null ? void 0 : error.msg) || (error == null ? void 0 : error.message) || "切换家庭失败，请稍后重试";
         common_vendor.index.showToast({
           title: errorMsg,
@@ -233,7 +228,6 @@ const _sfc_main = {
       }
       this.value = newFamilyId;
       this.currentTagIndex = 0;
-      common_vendor.index.__f__("log", "at components/home.vue:372", "已更新 this.value 为:", this.value);
       this.tagList = [];
       this.allPlantsList = [];
       this.plantsList = [];
@@ -248,7 +242,7 @@ const _sfc_main = {
       common_vendor.wx$1.vibrateShort({ type: "light" });
     },
     toggleFamilySelect() {
-      common_vendor.index.__f__("log", "at components/home.vue:397", "触发家庭选择器");
+      common_vendor.index.__f__("log", "at components/home.vue:388", "触发家庭选择器");
     },
     onTouchStart() {
       this.isSelecting = true;
@@ -260,12 +254,11 @@ const _sfc_main = {
     },
     async getTagList() {
       const familyId = this.value;
-      common_vendor.index.__f__("log", "at components/home.vue:411", "getTagList - 当前 familyId:", familyId);
       try {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:417", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:407", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -275,19 +268,17 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:427", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:417", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:435", "获取标签列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:425", "获取标签列表失败:", error);
       }
     },
     searchPlant(e) {
-      common_vendor.index.__f__("log", "at components/home.vue:439", "e", e);
-      common_vendor.index.__f__("log", "at components/home.vue:440", "search:", this.searchValue);
     },
     selectTag(index, item) {
       if (this.currentTagIndex === index)
@@ -361,11 +352,9 @@ const _sfc_main = {
     },
     onPageShow() {
       if (this.isFirstLoad) {
-        common_vendor.index.__f__("log", "at components/home.vue:528", "onShow:component-home - 首次加载，跳过");
         this.isFirstLoad = false;
         return;
       }
-      common_vendor.index.__f__("log", "at components/home.vue:533", "onShow:component-home - 刷新数据");
       this.loadFamilyData();
       setTimeout(() => {
         this.ensureImagesVisible();
@@ -373,7 +362,7 @@ const _sfc_main = {
     }
   },
   async created() {
-    var _a, _b;
+    var _a;
     const menuButtonInfo = common_vendor.wx$1.getMenuButtonBoundingClientRect();
     this.menuButtonInfo = menuButtonInfo;
     const systemInfo = common_vendor.index.getWindowInfo();
@@ -382,7 +371,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:552", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:542", "callContainer login:", user);
     const userInfo = user.data.user;
     const familyList = user.data.family;
     await new Promise((resolve) => {
@@ -392,7 +381,6 @@ const _sfc_main = {
       common_vendor.index.setStorage({ key: "family", data: familyList, success: resolve });
     });
     const defaultFamilyId = (userInfo == null ? void 0 : userInfo.currentFamilyId) || familyList && ((_a = familyList[0]) == null ? void 0 : _a.ID);
-    common_vendor.index.__f__("log", "at components/home.vue:569", "默认家庭ID (userInfo.currentFamilyId):", userInfo == null ? void 0 : userInfo.currentFamilyId, "fallback:", familyList && ((_b = familyList[0]) == null ? void 0 : _b.ID), "最终使用:", defaultFamilyId);
     if (defaultFamilyId) {
       await new Promise((resolve) => {
         common_vendor.index.setStorage({ key: "familyId", data: defaultFamilyId, success: resolve });

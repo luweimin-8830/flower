@@ -1,5 +1,9 @@
 <template>
-    <view :style="{height:topBarHeight+'px'}"></view>
+    <page-container show="true" position="bottom">
+        <web-view src="https://docs.qq.com/doc/DU0pRd1VrS2ZzWUhQ?_t=1769417308236&nlc=1" />
+        <!-- <button>xxxxxxx</button> -->
+    </page-container>
+    <view :style="{ height: topBarHeight + 'px' }"></view>
     <view class="section-container">
         <!-- 标题 -->
         <text class="section-title">个人信息</text>
@@ -53,7 +57,7 @@ export default {
     name: 'my',
     data() {
         return {
-            topBarHeight:0,
+            topBarHeight: 0,
         }
     },
     methods: {
@@ -65,7 +69,7 @@ export default {
                 uni.navigateTo({ url: '/pages/tagEdit/tagEdit' })
             } else if (type === 'care') {
                 // uni.navigateTo({ url: '/pages/careManager/careManager' })
-            }else if (type === 'family') {
+            } else if (type === 'family') {
                 uni.navigateTo({ url: '/pages/familyDetail/familyDetail' })
             }
         }
@@ -99,7 +103,7 @@ export default {
 
 /* 卡片主体样式 */
 .card-box {
-    background-color: rgba(255,255,255,0.55);
+    background-color: rgba(255, 255, 255, 0.55);
     /* 截图中的浅绿色背景 */
     /* 如果觉得颜色太深，可以试试 rgba(214, 232, 208, 0.6) */
 
