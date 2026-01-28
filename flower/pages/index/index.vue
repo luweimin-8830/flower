@@ -78,17 +78,17 @@
 </template>
 
 <script>
-import a1 from "@/static/icon/a1.png"
-import b1 from "@/static/icon/b1.png"
-import c1 from "@/static/icon/c1.png"
-import d1 from "@/static/icon/d1.png"
-import e1 from "@/static/icon/e1.png"
+import a1 from "@/static/icon/a1m.svg"
+import b1 from "@/static/icon/b1m.svg"
+import c1 from "@/static/icon/c1m.svg"
+import d1 from "@/static/icon/d1m.svg"
+import e1 from "@/static/icon/e1m.svg"
 
-import a2 from "@/static/icon/a2.png"
-import b2 from "@/static/icon/b2.png"
-import c2 from "@/static/icon/c2.png"
-import d2 from "@/static/icon/d2.png"
-import e2 from "@/static/icon/e2.png"
+import a2 from "@/static/icon/a2m.svg"
+import b2 from "@/static/icon/b2m.svg"
+import c2 from "@/static/icon/c2m.svg"
+import d2 from "@/static/icon/d2m.svg"
+import e2 from "@/static/icon/e2m.svg"
 // 节流函数
 let timer;
 let flag;
@@ -167,7 +167,20 @@ export default {
 			console.log('Tabbar init elements:', e);
 			if (!e || e.length === 0) return;
 			const keys = Object.keys(this.list)
-			e.forEach((item, index) => {
+			/**
+ * 为遍历到的条目根据 keys 索引绑定样式信息，并进行位置修正。
+ * 流程：
+ * 1. 通过 index 从 keys 中获取对应的 key；
+ * 2. 校验 key 有效且在 this.list 中存在对应项；
+ * 3. 将 item.left 右移 20 像素以修正位置；
+ * 4. 将修正后的样式对象绑定到 this.list[key].style，供视图渲染使用。
+ *
+ * @param {Object} item 布局/样式对象，包含位置信息（如 left 等）
+ * @param {number} index 当前项在遍历中的索引，用于从 keys 中取出对应 key
+ *
+ * @remarks 仅在 key 有效且 list 中存在对应条目时才进行样式绑定；会直接修改传入的 item.left 值。
+ */
+e.forEach((item, index) => {
 				const key = keys[index]
 				// 确保获取到了 id 且 list 中有这个 key
 				if (key && this.list[key]) {

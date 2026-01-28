@@ -1,8 +1,4 @@
 <template>
-    <page-container show="true" position="bottom">
-        <web-view src="https://docs.qq.com/doc/DU0pRd1VrS2ZzWUhQ?_t=1769417308236&nlc=1" />
-        <!-- <button>xxxxxxx</button> -->
-    </page-container>
     <view :style="{ height: topBarHeight + 'px' }"></view>
     <view class="section-container">
         <!-- 标题 -->

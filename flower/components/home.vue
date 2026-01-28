@@ -62,7 +62,7 @@
                             <view class="image-wrapper"
                                 :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
                                 <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
-                                    :class="{ 'show': item.isLoaded }" @load="onImgLoad(item)"></image>
+                                    :class="{ 'show': loadedImagesMap[item.ID] }" @load="onImgLoad(item)"></image>
                             </view>
                             <view class="plant-info">
                                 <text class="plant-name">{{ item.name }}</text>
@@ -126,6 +126,7 @@ export default {
             sliderTimer: null,
             plantsList: [],
             allPlantsList: [],
+            loadedImagesMap: {}, // 用于追踪图片加载状态
             isFirstLoad: true,
             isSelecting: false,
             currentFamilyIndex: 0,
@@ -147,19 +148,14 @@ export default {
     watch: {
         allPlantsList: {
             handler(newVal, oldVal) {
-                console.log("=== allPlantsList 变化 ===");
-                console.log("allPlantsList - 新值数量:", newVal?.length, "旧值数量:", oldVal?.length);
                 if (newVal) {
                     newVal.forEach((plant, idx) => {
-                        console.log(`  [${idx}] ${plant.name} (ID: ${plant.ID}), tags:`, plant.tags ? `${plant.tags.length}个` : 'null');
                         if (plant.tags) {
                             plant.tags.forEach(tag => {
-                                console.log(`      - tag ID: ${tag.ID}, name: ${tag.name}`);
                             });
                         }
                     });
                 }
-                console.log("=== allPlantsList 变化结束 ===");
             },
             deep: true
         }
@@ -206,7 +202,6 @@ export default {
                         this.value = this.familyRange[0].value;
                     }
 
-                    console.log("当前家庭ID:", this.value, "家庭索引:", this.currentFamilyIndex);
                 } else {
                     this.familyRange = [];
                     this.currentFamilyIndex = 0;
@@ -261,15 +256,12 @@ export default {
                     this.familyRange = [];
                 }
 
-                console.log("家庭列表已刷新:", this.familyRange);
             } catch (error) {
                 console.error("刷新家庭列表失败:", error);
             }
         },
         async getPlantsList() {
             const familyId = this.value;
-            console.log("=== getPlantsList 开始 ===");
-            console.log("获取植物列表，当前 familyId:", familyId);
 
             try {
                 const plants = await callContainer("/api/plant/list", {
@@ -279,10 +271,8 @@ export default {
                 const newData = plants?.data || [];
 
                 // 打印原始数据的 tags
-                console.log("getPlantsList - 原始数据的 tags:");
                 newData.forEach((item, idx) => {
                     if (item.tags && item.tags.length > 0) {
-                        console.log(`  [${idx}] ${item.name} (ID: ${item.ID}) tags:`, item.tags.map(t => `ID:${t.ID}(${t.name})`));
                     }
                 });
 
@@ -298,8 +288,8 @@ export default {
                         Object.freeze(frozenTags);
                     }
 
-                    // 创建新对象并冻结
-                    const newItem = { ...item, isLoaded: false, tags: frozenTags };
+                    // 创建新对象并冻结（不再需要 isLoaded 属性）
+                    const newItem = { ...item, tags: frozenTags };
                     return Object.freeze(newItem);
                 });
                 this.filterPlants();
@@ -366,6 +356,7 @@ export default {
             this.tagList = [];
             this.allPlantsList = [];
             this.plantsList = [];
+            this.loadedImagesMap = {}; // 清空图片加载状态
 
             // 等待 DOM 更新
             await this.$nextTick();
@@ -485,8 +476,9 @@ export default {
             });
         },
         onImgLoad(item) {
-            if (!item.isLoaded) {
-                item.isLoaded = true;
+            // 使用独立的映射对象来追踪加载状态，避免修改冻结对象
+            if (item.ID && !this.loadedImagesMap[item.ID]) {
+                this.$set(this.loadedImagesMap, item.ID, true);
             }
 
         },
@@ -495,8 +487,9 @@ export default {
             this.$nextTick(() => {
                 if (this.plantsList && this.plantsList.length > 0) {
                     this.plantsList.forEach(plant => {
-                        if (plant.isLoaded !== true) {
-                            plant.isLoaded = false; // 重置状态，触发重新加载
+                        if (!this.loadedImagesMap[plant.ID]) {
+                            // 重置状态，触发重新加载
+                            this.$set(this.loadedImagesMap, plant.ID, false);
                         }
                     });
                 }
