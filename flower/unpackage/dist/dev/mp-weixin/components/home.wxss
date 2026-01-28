@@ -250,6 +250,26 @@
   color: #333;
   font-weight: bold;
 }
+
+/* 空状态样式 */
+.empty-wrapper.data-v-045d88fd {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 200rpx 0;
+}
+.empty-icon.data-v-045d88fd {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.4;
+  filter: grayscale(100%);
+}
+.empty-text.data-v-045d88fd {
+  font-size: 14px;
+  color: #999;
+}
 @keyframes scaleIn-045d88fd {
 from {
     transform: scaleX(0);

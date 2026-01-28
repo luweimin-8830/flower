@@ -55,7 +55,14 @@
         <!-- 🌟 4. 中间独立滚动区域 -->
         <!-- flex:1 让它自动填满剩余空间，height:0 防止被内容撑大 -->
         <scroll-view scroll-y class="content-scroll-view">
-            <view class="waterfall-wrapper">
+            <!-- 空状态 -->
+            <view v-if="plantsList.length === 0" class="empty-wrapper">
+                <image src="/static/icon/c2m.svg" class="empty-icon" mode="aspectFit"></image>
+                <text class="empty-text">点击右上方添加第一颗植物吧</text>
+            </view>
+            
+            <!-- 瀑布流列表 -->
+            <view v-else class="waterfall-wrapper">
                 <WaterfallBox :list="plantsList" idKey="ID" cols="2">
                     <template #item="{ item }">
                         <view class="plant-card" @click="gotoDetail(item)">
@@ -328,6 +335,10 @@ export default {
                 await new Promise((resolve) => {
                     uni.setStorage({ key: "familyId", data: newFamilyId, success: resolve })
                 });
+                
+                // 触发家庭切换事件，通知其他组件
+                uni.$emit('familyChanged', newFamilyId);
+                
             } catch (error) {
                 console.error("切换家庭失败:", error);
 
@@ -868,6 +879,28 @@ export default {
     font-size: 14px;
     color: #333;
     font-weight: bold;
+}
+
+/* 空状态样式 */
+.empty-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 200rpx 0;
+}
+
+.empty-icon {
+    width: 120rpx;
+    height: 120rpx;
+    margin-bottom: 20rpx;
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+.empty-text {
+    font-size: 14px;
+    color: #999;
 }
 
 @keyframes scaleIn {

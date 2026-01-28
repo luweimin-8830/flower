@@ -6,6 +6,7 @@
   "usingComponents": {
     "home": "../../components/home",
     "my": "../../components/my",
-    "loading-page": "../../components/loading"
+    "loading-page": "../../components/loading",
+    "plant-list": "../../components/plantList"
   }
 }

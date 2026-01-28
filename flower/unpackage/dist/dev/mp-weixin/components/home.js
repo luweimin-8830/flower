@@ -1,6 +1,7 @@
 "use strict";
 const common_vendor = require("../common/vendor.js");
 const utils_request = require("../utils/request.js");
+const common_assets = require("../common/assets.js");
 const WaterfallBox = () => "./WaterfallBox.js";
 const _sfc_main = {
   components: {
@@ -98,7 +99,7 @@ const _sfc_main = {
         ]);
         const familyList = (familyListResult == null ? void 0 : familyListResult.data) || [];
         const cachedFamilyId = familyIdResult == null ? void 0 : familyIdResult.data;
-        common_vendor.index.__f__("log", "at components/home.vue:186", "loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
+        common_vendor.index.__f__("log", "at components/home.vue:193", "loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
         if (familyList && Array.isArray(familyList) && familyList.length > 0) {
           this.familyRange = familyList.map((item) => ({
             text: item.name,
@@ -120,7 +121,7 @@ const _sfc_main = {
         await this.getTagList();
         await this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:218", "加载家庭数据失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:225", "加载家庭数据失败:", error);
       }
     },
     async refreshFamilyList() {
@@ -150,7 +151,7 @@ const _sfc_main = {
           this.familyRange = [];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:260", "刷新家庭列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:267", "刷新家庭列表失败:", error);
       }
     },
     async getPlantsList() {
@@ -159,7 +160,7 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": familyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:270", "plants list:", plants);
+        common_vendor.index.__f__("log", "at components/home.vue:277", "plants list:", plants);
         const newData = (plants == null ? void 0 : plants.data) || [];
         newData.forEach((item, idx) => {
           if (item.tags && item.tags.length > 0) {
@@ -177,7 +178,7 @@ const _sfc_main = {
         });
         this.filterPlants();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:297", "获取植物列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:304", "获取植物列表失败:", error);
       }
     },
     filterPlants() {
@@ -201,12 +202,13 @@ const _sfc_main = {
         await utils_request.callContainer("/api/family/switch", {
           familyId: newFamilyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:325", "家庭切换成功");
+        common_vendor.index.__f__("log", "at components/home.vue:332", "家庭切换成功");
         await new Promise((resolve) => {
           common_vendor.index.setStorage({ key: "familyId", data: newFamilyId, success: resolve });
         });
+        common_vendor.index.$emit("familyChanged", newFamilyId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:332", "切换家庭失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:343", "切换家庭失败:", error);
         const errorMsg = (error == null ? void 0 : error.msg) || (error == null ? void 0 : error.message) || "切换家庭失败，请稍后重试";
         common_vendor.index.showToast({
           title: errorMsg,
@@ -234,7 +236,7 @@ const _sfc_main = {
       common_vendor.wx$1.vibrateShort({ type: "light" });
     },
     toggleFamilySelect() {
-      common_vendor.index.__f__("log", "at components/home.vue:379", "触发家庭选择器");
+      common_vendor.index.__f__("log", "at components/home.vue:390", "触发家庭选择器");
     },
     onTouchStart() {
       this.isSelecting = true;
@@ -250,7 +252,7 @@ const _sfc_main = {
         const tagList = await utils_request.callContainer("/api/tag/", {
           familyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:398", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:409", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", ID: 0 },
@@ -260,14 +262,14 @@ const _sfc_main = {
             ...item
           }))
         ];
-        common_vendor.index.__f__("log", "at components/home.vue:408", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:419", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:416", "获取标签列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:427", "获取标签列表失败:", error);
       }
     },
     searchPlant(e) {
@@ -363,7 +365,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:535", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:546", "callContainer login:", user);
     const userInfo = user.data.user;
     const familyList = user.data.family;
     await new Promise((resolve) => {
@@ -394,7 +396,7 @@ if (!Math) {
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   var _a;
-  return {
+  return common_vendor.e({
     a: common_vendor.p({
       type: "home",
       size: "18",
@@ -443,7 +445,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     w: common_vendor.s($options.sliderStyle),
     x: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0),
-    y: common_vendor.w(({
+    y: $data.plantsList.length === 0
+  }, $data.plantsList.length === 0 ? {
+    z: common_assets._imports_0
+  } : {
+    A: common_vendor.w(({
       item
     }, s0, i0) => {
       return common_vendor.e({
@@ -460,15 +466,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     }, {
       name: "item",
-      path: "y",
+      path: "A",
       vueId: "045d88fd-3"
     }),
-    z: common_vendor.p({
+    B: common_vendor.p({
       list: $data.plantsList,
       idKey: "ID",
       cols: "2"
     })
-  };
+  });
 }
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-045d88fd"]]);
 wx.createComponent(Component);

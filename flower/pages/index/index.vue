@@ -10,13 +10,14 @@
 				:style="{ display: onKey === 'a' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面a -->
-					
+
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['b'].is"
 				:style="{ display: onKey === 'b' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面b -->
+					<plantList />
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['c'].is"
@@ -99,12 +100,14 @@ import navBar from '@/components/navBar.vue';
 import home from '@/components/home.vue';
 import my from '@/components/my.vue';
 import loadingPage from '@/components/loading.vue';
+import plantList from "@/components/plantList.vue"
 export default {
 	components: {
 		navBar,
 		home,
 		my,
 		loadingPage,
+		plantList,
 	},
 	data() {
 		return {
@@ -180,7 +183,7 @@ export default {
  *
  * @remarks 仅在 key 有效且 list 中存在对应条目时才进行样式绑定；会直接修改传入的 item.left 值。
  */
-e.forEach((item, index) => {
+			e.forEach((item, index) => {
 				const key = keys[index]
 				// 确保获取到了 id 且 list 中有这个 key
 				if (key && this.list[key]) {
