@@ -27,7 +27,6 @@ const _sfc_main = {
       ballStyleLeft: 0,
       liquidStyleLeft: 0,
       onKey: "c",
-      currentPlantId: 0,
       list: {
         a: {
           is: false,
@@ -80,7 +79,7 @@ const _sfc_main = {
     tabbarPageScrollLower() {
     },
     init(e) {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:174", "Tabbar init elements:", e);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:173", "Tabbar init elements:", e);
       if (!e || e.length === 0)
         return;
       const keys = Object.keys(this.list);
@@ -96,7 +95,7 @@ const _sfc_main = {
       if (item && item.style) {
         this.onTabbar(item, this.onKey);
       } else {
-        common_vendor.index.__f__("warn", "at pages/index/index.vue:207", "初始化匹配失败，尝试使用默认值");
+        common_vendor.index.__f__("warn", "at pages/index/index.vue:206", "初始化匹配失败，尝试使用默认值");
         const defaultWidth = windowWidth / 5;
         this.ballStyleLeft = defaultWidth * 2 + defaultWidth / 2 - 22;
         this.liquidStyleLeft = defaultWidth * 2 + defaultWidth / 2 - windowWidth / 2;
@@ -105,14 +104,11 @@ const _sfc_main = {
     onTabbar(item, key) {
       this.throttle(() => {
         if (!item || !item.style) {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:217", "onTabbar error: item or item.style is undefined");
+          common_vendor.index.__f__("error", "at pages/index/index.vue:216", "onTabbar error: item or item.style is undefined");
           return;
         }
         this.switchTabbarPage(key);
         this.onKey = key;
-        if (key === "d") {
-          this.currentPlantId = 0;
-        }
         let left = item.style.left;
         this.ballStyleLeft = left - 22;
         this.animation01 = true;
@@ -186,16 +182,8 @@ const _sfc_main = {
         }
       });
     });
-    common_vendor.index.$on("switchTab", (data) => {
-      let key, plantId = 0;
-      if (typeof data === "string") {
-        key = data;
-      } else {
-        key = data.key;
-        plantId = data.plantId || 0;
-      }
+    common_vendor.index.$on("switchTab", (key) => {
       if (this.list[key]) {
-        this.currentPlantId = plantId;
         const item = this.list[key];
         if (item.style) {
           this.onTabbar(item, key);
@@ -254,22 +242,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     l: $data.list["d"].is
   }, $data.list["d"].is ? {
     m: common_vendor.sr("calendarComponent", "24547230-3"),
-    n: common_vendor.p({
-      ["plant-id"]: $data.currentPlantId
-    }),
-    o: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    p: $data.onKey === "d" ? "" : "none"
+    n: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    o: $data.onKey === "d" ? "" : "none"
   } : {}, {
-    q: $data.list["e"].is
+    p: $data.list["e"].is
   }, $data.list["e"].is ? {
-    r: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    s: $data.onKey === "e" ? "" : "none"
+    q: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
+    r: $data.onKey === "e" ? "" : "none"
   } : {}, {
-    t: $data.animation01 ? 1 : "",
-    v: common_vendor.s($options.liquidStyle),
-    w: $data.animation02 ? 1 : "",
-    x: common_vendor.s($options.ballStyle),
-    y: common_vendor.f($data.list, (item, key, i0) => {
+    s: $data.animation01 ? 1 : "",
+    t: common_vendor.s($options.liquidStyle),
+    v: $data.animation02 ? 1 : "",
+    w: common_vendor.s($options.ballStyle),
+    x: common_vendor.f($data.list, (item, key, i0) => {
       return {
         a: item.iconOff,
         b: item.iconOn,

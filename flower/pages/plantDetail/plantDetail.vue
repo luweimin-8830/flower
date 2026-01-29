@@ -89,7 +89,7 @@
 			</view>
 
 			<!-- 4. 快捷入口 -->
-			<view class="quick-links">
+			<!-- <view class="quick-links">
 				<view class="link-card" @click="goCalendar">
 					<view class="link-left">
 						<uni-icons type="calendar-filled" size="20" color="#6B8857"></uni-icons>
@@ -97,14 +97,14 @@
 					</view>
 					<uni-icons type="right" size="14" color="#999"></uni-icons>
 				</view>
-				<!-- <view class="link-card" @click="goAlbum">
+				<view class="link-card" @click="goAlbum">
 					<view class="link-left">
 						<uni-icons type="image-filled" size="20" color="#6B8857"></uni-icons>
 						<text class="link-text">植物相册 ({{ plant.photoCount || 0 }})</text>
 					</view>
 					<uni-icons type="right" size="14" color="#999"></uni-icons>
-				</view> -->
-			</view>
+				</view>
+			</view> -->
 
 			<!-- 5. 植物日志 -->
 			<view class="log-section">
@@ -327,13 +327,6 @@ export default {
 					showCancel: false
 				});
 			}
-		},
-		goCalendar() {
-			uni.navigateBack({
-				success: () => {
-					uni.$emit('switchTab', { key: 'd', plantId: this.plantId });
-				}
-			});
 		},
 		goAlbum() { }
 	}

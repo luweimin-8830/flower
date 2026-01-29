@@ -4,7 +4,7 @@
 		<view class="fixed-header-group">
 			<navBar v-if="showNav" />
 			<view class="header-title-container" :style="{ paddingTop: statusBarHeight + 'px' }">
-				<text class="page-title">{{ (showNav || plantId) ? '养护历程' : '养护日历' }}</text>
+				<text class="page-title">养护历程</text>
 			</view>
 		</view>
 		
@@ -15,16 +15,13 @@
 					:insert="true" 
 					:lunar="false" 
 					:selected="selectedDates" 
+					color="#566C44"
 					@change="onDateChange"
 				/>
 				
 				<view class="day-detail">
 					<view class="detail-header">
 						<text class="detail-title">{{ selectedDate }} 记录</text>
-						<view class="add-btn" @click="goAdd" v-if="plantId">
-							<uni-icons type="plusempty" size="18" color="#4A6139"></uni-icons>
-							<text>新增</text>
-						</view>
 					</view>
 					
 					<view class="log-list">
@@ -62,10 +59,6 @@ export default {
 	name: 'logCalendar',
 	components: { navBar },
 	props: {
-		plantId: {
-			type: [Number, String],
-			default: 0
-		},
 		showNav: {
 			type: Boolean,
 			default: false
@@ -91,13 +84,8 @@ export default {
 			});
 		}
 	},
-	watch: {
-		plantId: {
-			handler() {
-				this.initData();
-			},
-			immediate: true
-		}
+	mounted() {
+		this.initData();
 	},
 	methods: {
 		async initData() {
@@ -126,12 +114,9 @@ export default {
 		},
 		async getLogs() {
 			try {
-				const params = {};
-				if (this.plantId) {
-					params.plantId = Number(this.plantId);
-				} else {
-					params.familyId = Number(this.familyId);
-				}
+				const params = {
+					familyId: Number(this.familyId)
+				};
 				
 				const res = await callContainer("/api/plant/log/list", params);
 				if (res.data) {
@@ -169,14 +154,9 @@ export default {
 			const date = new Date(timeStr);
 			return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 		},
-		goAdd() {
-			uni.navigateTo({
-				url: `/pages/logEdit/logEdit?plantId=${this.plantId}&date=${this.selectedDate}`
-			});
-		},
 		goEdit(log) {
 			uni.navigateTo({
-				url: `/pages/logEdit/logEdit?id=${log.ID}&plantId=${this.plantId}`
+				url: `/pages/logEdit/logEdit?id=${log.ID}&plantId=${log.plantId}`
 			});
 		}
 	}
@@ -200,7 +180,6 @@ export default {
     z-index: 998;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-	background-color: rgba(255, 255, 255, 0.5);
 }
 
 .header-title-container {
@@ -331,12 +310,12 @@ export default {
 	}
 }
 
-// 隐藏日历文字，确保显示红点
+// 隐藏日历文字，确保显示标记点
 ::v-deep .uni-calendar-item__weeks-box-item {
 	.uni-calendar-item__weeks-box-info {
 		display: none !important;
 	}
-	// 确保标记点显示
+	// 标记点保持红色
 	.uni-calendar-item__weeks-box-circle {
 		display: block !important;
 		background-color: #ff4d4f !important;

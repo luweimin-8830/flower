@@ -37,15 +37,6 @@
             </view>
             <!-- 分割线 -->
             <view class="divider"></view>
-            <view class="menu-item" hover-class="item-hover" @click="handleNav('calendar')">
-                <view class="left-content">
-                    <uni-icons type="calendar" size="22" color="#4A6139" class="menu-icon"></uni-icons>
-                    <text class="menu-text">家庭养护日历</text>
-                </view>
-                <uni-icons type="right" size="16" color="#999"></uni-icons>
-            </view>
-            <!-- 分割线 -->
-            <view class="divider"></view>
             <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
                 <view class="left-content">
                     <uni-icons type="settings" size="22" color="#4A6139" class="menu-icon"></uni-icons>
@@ -76,8 +67,6 @@ export default {
                 uni.navigateTo({ url: '/pages/careEdit/careEdit' })
             } else if (type === 'family') {
                 uni.navigateTo({ url: '/pages/familyDetail/familyDetail' })
-            } else if (type === 'calendar') {
-                uni.$emit('switchTab', { key: 'd', plantId: 0 });
             }
         }
     },
