@@ -1,0 +1,395 @@
+<template>
+	<view class="container">
+		<navBar :title="type === 'edit' ? '编辑日志' : '添加日志'" />
+		<view :style="{ height: topBarHeight + 'px' }"></view>
+
+		<view class="form-container">
+			<!-- 1. 选择类型 -->
+			<view class="section">
+				<text class="section-title">记录类型</text>
+				<scroll-view scroll-x class="care-scroll" :show-scrollbar="false">
+					<view class="care-list">
+						<view class="care-item" v-for="(item, index) in careOptions" :key="index"
+							@click="formData.actionType = item.type">
+							<view class="care-icon-box"
+								:class="{ 'active': formData.actionType === item.type }"
+								:style="{ backgroundColor: formData.actionType === item.type ? item.color : '#f5f5f5' }">
+								<uni-icons :type="item.icon" size="24" 
+									:color="formData.actionType === item.type ? '#fff' : '#999'"></uni-icons>
+							</view>
+							<text class="care-name" :class="{ 'active-text': formData.actionType === item.type }">{{ item.name }}</text>
+						</view>
+					</view>
+				</scroll-view>
+			</view>
+
+			<!-- 2. 日期选择 -->
+			<view class="section">
+				<text class="section-title">记录日期</text>
+				<picker mode="date" :value="formData.logTime" @change="onDateChange">
+					<view class="picker-box">
+						<text>{{ formData.logTime }}</text>
+						<uni-icons type="calendar" size="18" color="#666"></uni-icons>
+					</view>
+				</picker>
+			</view>
+
+			<!-- 3. 文字内容 -->
+			<view class="section">
+				<text class="section-title">记录内容</text>
+				<textarea class="content-input" v-model="formData.content" placeholder="记录下植物的点滴成长吧..." maxlength="500"></textarea>
+			</view>
+
+			<!-- 4. 图片上传 -->
+			<view class="section">
+				<text class="section-title">现场照片 (最多3张)</text>
+				<view class="image-grid">
+					<view class="image-item" v-for="(img, index) in uploadImages" :key="index">
+						<image :src="img.url" mode="aspectFill" @click="previewImage(index)"></image>
+						<view class="delete-btn" @click="removeImage(index)">
+							<uni-icons type="closeempty" size="12" color="#fff"></uni-icons>
+						</view>
+					</view>
+					<view class="image-item add-btn" v-if="uploadImages.length < 3" @click="chooseImage">
+						<uni-icons type="plusempty" size="30" color="#999"></uni-icons>
+					</view>
+				</view>
+			</view>
+
+			<!-- 保存按钮 -->
+			<view class="footer">
+				<button class="save-btn" @click="handleSave" :loading="isSaving" :disabled="isSaving">
+					保存记录
+				</button>
+			</view>
+		</view>
+
+		<uni-load-more v-if="isSaving" status="loading" iconType="circle"></uni-load-more>
+	</view>
+</template>
+
+<script>
+import navBar from '@/components/navBar.vue'
+import { callContainer } from '../../utils/request';
+
+export default {
+	components: { navBar },
+	data() {
+		return {
+			topBarHeight: 0,
+			plantId: 0,
+			logId: 0,
+			type: 'add',
+			formData: {
+				actionType: 'Other',
+				logTime: '',
+				content: ''
+			},
+			careOptions: [],
+			uploadImages: [],
+			isSaving: false,
+			familyId: 0
+		};
+	},
+	async onLoad(options) {
+		const app = getApp();
+		this.topBarHeight = app.globalData.topBarHeight;
+		this.familyId = uni.getStorageSync('familyId');
+		
+		if (options.plantId) {
+			this.plantId = Number(options.plantId);
+		}
+		
+		if (options.id) {
+			this.logId = Number(options.id);
+			this.type = 'edit';
+			this.getLogDetail();
+		}
+		
+		// 设置默认日期为今天
+		const now = new Date();
+		this.formData.logTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		
+		this.getCareOptions();
+	},
+	methods: {
+		async getCareOptions() {
+			try {
+				const result = await callContainer("/api/care/", { familyId: Number(this.familyId) });
+				if (result.data) {
+					this.careOptions = result.data;
+					if (this.type === 'add' && this.careOptions.length > 0) {
+						this.formData.actionType = this.careOptions[0].type;
+					}
+				}
+			} catch (e) { console.error(e); }
+		},
+		async getLogDetail() {
+			try {
+				const res = await callContainer("/api/plant/log/detail", { id: this.logId });
+				if (res.data) {
+					const data = res.data;
+					this.formData.actionType = data.actionType;
+					this.formData.content = data.content;
+					this.formData.logTime = data.logTime.split('T')[0];
+					if (data.images) {
+						this.uploadImages = data.images.map(img => ({
+							id: img.ID,
+							url: img.url,
+							isOld: true
+						}));
+					}
+				}
+			} catch (e) { console.error(e); }
+		},
+		onDateChange(e) {
+			this.formData.logTime = e.detail.value;
+		},
+		async chooseImage() {
+			try {
+				const res = await new Promise((resolve, reject) => {
+					wx.chooseMedia({
+						count: 3 - this.uploadImages.length,
+						mediaType: ['image'],
+						success: resolve,
+						fail: reject
+					})
+				});
+				
+				const files = res.tempFiles;
+				for (let file of files) {
+					this.uploadImages.push({
+						url: file.tempFilePath,
+						size: file.size,
+						isNew: true
+					});
+				}
+			} catch (e) { console.error(e); }
+		},
+		removeImage(index) {
+			this.uploadImages.splice(index, 1);
+		},
+		previewImage(index) {
+			uni.previewImage({
+				current: index,
+				urls: this.uploadImages.map(img => img.url)
+			});
+		},
+		async handleSave() {
+			if (!this.formData.actionType) {
+				uni.showToast({ title: '请选择类型', icon: 'none' });
+				return;
+			}
+			
+			this.isSaving = true;
+			try {
+				// 1. 上传新图片
+				const imageIds = [];
+				for (let img of this.uploadImages) {
+					if (img.isOld) {
+						imageIds.push(img.id);
+						continue;
+					}
+					
+					// 上传到云存储
+					const timestamp = Date.now();
+					const random = Math.floor(Math.random() * 1000);
+					const cloudPath = `${this.familyId}/logs/${timestamp}_${random}.jpg`;
+					
+					const uploadRes = await wx.cloud.uploadFile({
+						cloudPath,
+						filePath: img.url
+					});
+					
+					// 保存图片记录到数据库
+					const saveImgRes = await callContainer("/api/image/add", {
+						url: uploadRes.fileID,
+						size: img.size || 0
+					});
+					imageIds.push(saveImgRes.data.id);
+				}
+				
+				// 2. 保存日志
+				if (this.type === 'add') {
+					await callContainer("/api/plant/log/add", {
+						plantIds: [this.plantId],
+						actionType: this.formData.actionType,
+						content: this.formData.content,
+						logTime: this.formData.logTime,
+						imageIds: imageIds
+					});
+				} else {
+					await callContainer("/api/plant/log/update", {
+						id: this.logId,
+						actionType: this.formData.actionType,
+						content: this.formData.content,
+						logTime: this.formData.logTime,
+						imageIds: imageIds
+					});
+				}
+				
+				uni.showToast({ title: '保存成功', icon: 'success' });
+				uni.$emit('refreshHomeList'); // 通知详情页刷新
+				setTimeout(() => uni.navigateBack(), 1500);
+			} catch (e) {
+				console.error(e);
+				uni.showToast({ title: e.message || '保存失败', icon: 'none' });
+			} finally {
+				this.isSaving = false;
+			}
+		}
+	}
+};
+</script>
+
+<style lang="scss" scoped>
+.container {
+	min-height: 100vh;
+	background-color: #C1D0B7;
+	padding-bottom: 50px;
+}
+
+.form-container {
+	padding: 20px 16px;
+}
+
+.section {
+	margin-bottom: 24px;
+	background-color: rgba(255, 255, 255, 0.55);
+	padding: 16px;
+	border-radius: 16px;
+}
+
+.section-title {
+	font-size: 14px;
+	color: #4A6139;
+	font-weight: bold;
+	margin-bottom: 12px;
+	display: block;
+}
+
+.care-scroll {
+	width: 100%;
+}
+
+.care-list {
+	display: flex;
+}
+
+.care-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-right: 16px;
+	
+	.care-icon-box {
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 4px;
+		border: 1px solid transparent;
+		transition: all 0.2s;
+		
+		&.active {
+			transform: scale(1.1);
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+		}
+	}
+	
+	.care-name {
+		font-size: 11px;
+		color: #999;
+		
+		&.active-text {
+			color: #4A6139;
+			font-weight: bold;
+		}
+	}
+}
+
+.picker-box {
+	height: 44px;
+	background-color: #fff;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 12px;
+	font-size: 14px;
+	color: #333;
+}
+
+.content-input {
+	width: 100%;
+	height: 100px;
+	background-color: #fff;
+	border-radius: 8px;
+	padding: 12px;
+	font-size: 14px;
+	box-sizing: border-box;
+}
+
+.image-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.image-item {
+	width: 80px;
+	height: 80px;
+	border-radius: 8px;
+	position: relative;
+	overflow: hidden;
+	
+	image {
+		width: 100%;
+		height: 100%;
+	}
+	
+	&.add-btn {
+		background-color: #fff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px dashed #ccc;
+	}
+	
+	.delete-btn {
+		position: absolute;
+		right: 4px;
+		top: 4px;
+		width: 18px;
+		height: 18px;
+		background-color: rgba(0, 0, 0, 0.5);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+}
+
+.footer {
+	margin-top: 40px;
+}
+
+.save-btn {
+	background-color: #4A6139;
+	color: #fff;
+	height: 48px;
+	border-radius: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	font-weight: bold;
+	border: none;
+	
+	&:disabled {
+		opacity: 0.7;
+	}
+}
+</style>

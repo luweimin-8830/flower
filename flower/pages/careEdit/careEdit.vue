@@ -16,14 +16,26 @@
                     <input class="input-field" type="text" v-model="formData.type" placeholder="如: Watering" />
                 </view>
                 <view class="form-item">
-                    <text class="label">图标 (uni-icons)</text>
-                    <input class="input-field" type="text" v-model="formData.icon" placeholder="如: checkbox-filled" />
+                    <text class="label">选择图标</text>
+                    <view class="options-grid">
+                        <view v-for="icon in iconOptions" :key="icon" 
+                            class="option-item icon-item" 
+                            :class="{ 'active': formData.icon === icon }"
+                            @click="formData.icon = icon">
+                            <uni-icons :type="icon" size="20" :color="formData.icon === icon ? '#fff' : '#666'"></uni-icons>
+                        </view>
+                    </view>
                 </view>
                 <view class="form-item">
-                    <text class="label">颜色 (Hex)</text>
-                    <view class="color-picker-row">
-                        <input class="input-field" type="text" v-model="formData.color" placeholder="#D6EAF8" />
-                        <view class="color-preview" :style="{ backgroundColor: formData.color || '#eee' }"></view>
+                    <text class="label">选择颜色</text>
+                    <view class="options-grid">
+                        <view v-for="color in colorOptions" :key="color" 
+                            class="option-item color-item" 
+                            :class="{ 'active': formData.color === color }"
+                            :style="{ backgroundColor: color }"
+                            @click="formData.color = color">
+                            <uni-icons v-if="formData.color === color" type="checkmarkempty" size="16" color="#fff"></uni-icons>
+                        </view>
                     </view>
                 </view>
                 <view class="btn-group">
@@ -112,6 +124,16 @@ export default {
             isEditing: false,
             swipeOptions: [{ text: '删除', style: { backgroundColor: '#dd524d' } }],
             careList: [],
+            iconOptions: [
+                'checkbox-filled', 'flask', 'scissors', 'download', 
+                'sun', 'flag', 'heart', 'calendar', 'fire', 'medal',
+                'camera', 'image', 'chat'
+            ],
+            colorOptions: [
+                '#D6EAF8', '#DCECC9', '#F2D7D5', '#E8E0D5', 
+                '#FEF5E7', '#EBDEF0', '#E5E8E8', '#A2D9CE',
+                '#FAD7A0', '#D2B4DE', '#F1948A', '#85C1E9'
+            ],
             topBarHeight: 0,
             isSorting: false,
             areaHeight: 0,
@@ -176,7 +198,13 @@ export default {
             }
         },
         resetForm() {
-            this.formData = { id: null, name: '', type: '', icon: 'checkbox-filled', color: '#D6EAF8' };
+            this.formData = { 
+                id: null, 
+                name: '', 
+                type: '', 
+                icon: this.iconOptions[0], 
+                color: this.colorOptions[0] 
+            };
             this.isEditing = false;
         },
         startEdit(item) {
@@ -276,7 +304,7 @@ export default {
 }
 
 .card-box {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.55);
     border-radius: 16px;
     overflow: hidden;
 }
@@ -295,23 +323,46 @@ export default {
     }
     .input-field {
         height: 40px;
-        background-color: #fff;
+        background-color: rgba(255,255,255,0.7);
         border-radius: 8px;
         padding: 0 12px;
         font-size: 14px;
     }
 }
 
-.color-picker-row {
+.options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.option-item {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    .input-field { flex: 1; }
-    .color-preview {
-        width: 30px;
-        height: 30px;
-        border-radius: 4px;
-        border: 1px solid #ddd;
+    justify-content: center;
+    background-color: #fff;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    
+    &.active {
+        border-color: #4A6139;
+        transform: scale(1.1);
+    }
+}
+
+.icon-item {
+    &.active {
+        background-color: #4A6139;
+    }
+}
+
+.color-item {
+    &.active {
+        box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4A6139;
     }
 }
 

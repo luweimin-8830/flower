@@ -26,6 +26,18 @@ type DeleteLogRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
 
+type UpdateLogRequest struct {
+	ID         uint   `json:"id" binding:"required"`
+	ActionType string `json:"actionType"`
+	Content    string `json:"content"`
+	LogTime    string `json:"logTime"`
+	ImageIDs   []uint `json:"imageIds"`
+}
+
+type GetSingleLogRequest struct {
+	ID uint `json:"id" binding:"required"`
+}
+
 // CreatePlantLogHandler 创建日志（支持批量）
 func CreatePlantLogHandler(c *gin.Context) {
 	var req BatchCreateLogRequest
@@ -100,4 +112,53 @@ func DeletePlantLogHandler(c *gin.Context) {
 		return
 	}
 	response.Success(c, "删除成功")
+}
+
+// UpdatePlantLogHandler 更新日志
+func UpdatePlantLogHandler(c *gin.Context) {
+	var req UpdateLogRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误")
+		return
+	}
+
+	logTime := time.Now()
+	if req.LogTime != "" {
+		t, err := time.Parse("2006-01-02", req.LogTime)
+		if err == nil {
+			logTime = t
+		}
+	}
+
+	log := &model.PlantLog{
+		ActionType: req.ActionType,
+		Content:    req.Content,
+		LogTime:    logTime,
+	}
+	log.ID = req.ID
+
+	ctx := c.Request.Context()
+	if err := service.UpdatePlantLog(ctx, log, req.ImageIDs); err != nil {
+		response.Fail(c, "更新失败: "+err.Error())
+		return
+	}
+
+	response.Success(c, "更新成功")
+}
+
+// GetSingleLogHandler 获取单条日志
+func GetSingleLogHandler(c *gin.Context) {
+	var req GetSingleLogRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误")
+		return
+	}
+
+	ctx := c.Request.Context()
+	log, err := service.GetPlantLog(ctx, req.ID)
+	if err != nil {
+		response.Fail(c, "获取失败: "+err.Error())
+		return
+	}
+	response.Success(c, log)
 }

@@ -77,6 +77,8 @@ func main() {
 				log.POST("/add", handler.CreatePlantLogHandler)
 				log.POST("/list", handler.GetPlantLogsHandler)
 				log.POST("/delete", handler.DeletePlantLogHandler)
+				log.POST("/update", handler.UpdatePlantLogHandler)
+				log.POST("/detail", handler.GetSingleLogHandler)
 			}
 		}
 		tag := api.Group("/tag")

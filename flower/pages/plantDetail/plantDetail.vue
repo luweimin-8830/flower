@@ -89,7 +89,7 @@
 			</view>
 
 			<!-- 4. 快捷入口 -->
-			<view class="quick-links">
+			<!-- <view class="quick-links">
 				<view class="link-card" @click="goCalendar">
 					<view class="link-left">
 						<uni-icons type="calendar-filled" size="20" color="#6B8857"></uni-icons>
@@ -104,26 +104,25 @@
 					</view>
 					<uni-icons type="right" size="14" color="#999"></uni-icons>
 				</view>
-			</view>
+			</view> -->
 
 			<!-- 5. 植物日志 -->
 			<view class="log-section">
-				<!-- 代码省略，保持原样 -->
 				<view class="section-header">
 					<view class="header-left">
 						<uni-icons type="compose" size="20" color="#333"></uni-icons>
 						<text class="section-title" style="margin-left: 6px;">植物日志</text>
 					</view>
 					<view class="header-right">
-						<text class="edit-btn">编辑</text>
-						<uni-icons type="plusempty" size="24" color="#333" style="margin-left: 15px;"></uni-icons>
+						<text class="edit-btn" @click="isManageMode = !isManageMode">{{ isManageMode ? '完成' : '编辑' }}</text>
+						<uni-icons type="plusempty" size="24" color="#333" style="margin-left: 15px;" @click="goAddLog"></uni-icons>
 					</view>
 				</view>
 				<!-- 日志列表 -->
 				<view class="log-list">
 					<view v-for="(group, gIndex) in logList" :key="gIndex" class="log-group">
 						<text class="log-date-header">{{ group.dateStr }}</text>
-						<view v-for="(log, lIndex) in group.items" :key="lIndex" class="log-item">
+						<view v-for="(log, lIndex) in group.items" :key="lIndex" class="log-item" @click="goEditLog(log)">
 							<view class="log-time-col">
 								<text class="log-time">{{ log.time }}</text>
 								<text class="log-date-mini">{{ log.dateMini }}</text>
@@ -133,11 +132,23 @@
 								<view class="line" v-if="lIndex !== group.items.length - 1"></view>
 							</view>
 							<view class="log-content-box">
-								<view class="log-tag pill">
-									<uni-icons type="checkbox-filled" size="16" color="#4A90E2"
-										v-if="log.type === 'Watering'"></uni-icons>
+								<view class="log-tag pill" :style="{ backgroundColor: log.color + '33' || '#D6EAF8' }">
+									<uni-icons :type="log.icon || 'checkbox-filled'" size="16" :color="log.color || '#4A90E2'"></uni-icons>
 									<text class="log-text">{{ log.actionName }}</text>
 								</view>
+								<view class="log-content" v-if="log.content">{{ log.content }}</view>
+								
+								<!-- 图片展示 -->
+								<view class="log-images" v-if="log.images && log.images.length > 0">
+									<image v-for="(img, iIndex) in log.images" :key="iIndex" 
+										:src="img.url" mode="aspectFill" class="log-img"
+										@click.stop="previewLogImages(log.images, iIndex)"></image>
+								</view>
+							</view>
+							
+							<!-- 管理模式下的删除按钮 -->
+							<view class="delete-icon" v-if="isManageMode" @click.stop="handleDeleteLog(log.id)">
+								<uni-icons type="minus-filled" size="20" color="#dd524d"></uni-icons>
 							</view>
 						</view>
 					</view>
@@ -166,7 +177,8 @@ export default {
 			},
 			careActions: [],
 			logList: [],
-			totalLogCount: 0
+			totalLogCount: 0,
+			isManageMode: false
 		};
 	},
 	async onLoad(options) {
@@ -250,16 +262,49 @@ export default {
 				const action = this.careActions.find(a => a.type === log.actionType);
 				
 				groups[dateStr].items.push({
+					id: log.ID,
 					time,
 					dateMini,
 					type: log.actionType,
-					actionName: action ? action.name : log.actionType
+					actionName: action ? action.name : log.actionType,
+					content: log.content,
+					images: log.images,
+					icon: action ? action.icon : '',
+					color: action ? action.color : ''
 				});
 			});
 			this.logList = Object.values(groups);
 		},
 		goEdit() {
 			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.ID}&type=edit` })
+		},
+		goAddLog() {
+			uni.navigateTo({ url: `/pages/logEdit/logEdit?plantId=${this.plantId}` })
+		},
+		goEditLog(log) {
+			if (this.isManageMode) return;
+			uni.navigateTo({ url: `/pages/logEdit/logEdit?id=${log.id}&plantId=${this.plantId}` })
+		},
+		async handleDeleteLog(id) {
+			uni.showModal({
+				title: '提示',
+				content: '确定要删除这条日志吗？',
+				success: async (res) => {
+					if (res.confirm) {
+						try {
+							await callContainer("/api/plant/log/delete", { id: id });
+							uni.showToast({ title: '已删除' });
+							this.getLogs();
+						} catch (e) { console.error(e); }
+					}
+				}
+			});
+		},
+		previewLogImages(images, index) {
+			uni.previewImage({
+				current: index,
+				urls: images.map(img => img.url)
+			});
 		},
 		async handleCare(item) {
 			uni.showLoading({ title: '正在记录...' });
@@ -655,13 +700,38 @@ export default {
 	display: inline-flex;
 	align-items: center;
 	background-color: #D6EAF8;
-	padding: 6px 12px;
+	padding: 4px 10px;
 	border-radius: 20px;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+
+.log-content {
+	font-size: 13px;
+	color: #666;
+	line-height: 1.5;
+	margin-bottom: 8px;
+	word-break: break-all;
+}
+
+.log-images {
+	display: flex;
+	flex-wrap: wrap;
 	gap: 6px;
 }
 
+.log-img {
+	width: 70px;
+	height: 70px;
+	border-radius: 8px;
+}
+
+.delete-icon {
+	padding: 10px;
+}
+
 .log-text {
-	font-size: 14px;
+	font-size: 13px;
 	color: #333;
 }
 </style>

@@ -52,6 +52,41 @@ func DeletePlantLogByID(ctx context.Context, logID uint) error {
 	return db.DB.WithContext(ctx).Select("Images").Delete(&model.PlantLog{}, logID).Error
 }
 
+// UpdatePlantLog 更新日志
+func UpdatePlantLog(ctx context.Context, log *model.PlantLog, imageIDs []uint) error {
+	return db.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 1. 更新基本信息
+		if err := tx.Model(log).Updates(map[string]interface{}{
+			"action_type": log.ActionType,
+			"content":     log.Content,
+			"log_time":    log.LogTime,
+		}).Error; err != nil {
+			return err
+		}
+
+		// 2. 更新图片关联（先清空再重新关联，或者更精细的增量更新）
+		if err := tx.Model(log).Association("Images").Replace(imageIDs); err != nil {
+			// 如果是图片ID列表，GORM Association Replace 支持模型切片，我们传 ID 列表可能需要转成模型
+			var images []model.Image
+			if len(imageIDs) > 0 {
+				tx.Where("id IN ?", imageIDs).Find(&images)
+			}
+			if err := tx.Model(log).Association("Images").Replace(images); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
+// GetPlantLogByID 获取单条日志
+func GetPlantLogByID(ctx context.Context, logID uint) (*model.PlantLog, error) {
+	var log model.PlantLog
+	err := db.DB.WithContext(ctx).Preload("Images").First(&log, logID).Error
+	return &log, err
+}
+
 // CheckTodayActionExists 检查今日是否已存在某种操作
 func CheckTodayActionExists(ctx context.Context, plantID uint, actionType string) (bool, error) {
 	var count int64

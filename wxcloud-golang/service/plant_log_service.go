@@ -35,3 +35,13 @@ func DeletePlantLog(ctx context.Context, logID uint) error {
 	// 比如：检查是否有权限删除（如果需要）
 	return dao.DeletePlantLogByID(ctx, logID)
 }
+
+// UpdatePlantLog 业务逻辑：更新日志
+func UpdatePlantLog(ctx context.Context, log *model.PlantLog, imageIDs []uint) error {
+	return dao.UpdatePlantLog(ctx, log, imageIDs)
+}
+
+// GetPlantLog 业务逻辑：获取单条日志
+func GetPlantLog(ctx context.Context, logID uint) (*model.PlantLog, error) {
+	return dao.GetPlantLogByID(ctx, logID)
+}
