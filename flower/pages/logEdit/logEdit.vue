@@ -116,6 +116,19 @@ export default {
 		
 		this.getCareOptions();
 	},
+	watch: {
+		careOptions: {
+			handler(newVal) {
+				if (newVal && newVal.length > 0 && !this.formData.actionType && this.type === 'add') {
+					const growthAction = newVal.find(item => item.name === '成长记录' || item.type === 'Growth');
+					if (growthAction) {
+						this.formData.actionType = growthAction.type;
+					}
+				}
+			},
+			immediate: false
+		}
+	},
 	methods: {
 		async getCareOptions() {
 			try {
@@ -218,6 +231,15 @@ export default {
 			});
 		},
 		async handleSave() {
+			if (!this.formData.actionType) {
+				uni.showToast({ title: '请选择记录类型', icon: 'none' });
+				return;
+			}
+			if (this.type === 'add' && !this.plantId) {
+				uni.showToast({ title: '参数错误: 缺少植物ID', icon: 'none' });
+				return;
+			}
+			
 			this.isSaving = true;
 			try {
 				// 1. 处理图片

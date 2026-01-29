@@ -31,7 +31,7 @@
 				:style="{ display: onKey === 'd' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面d -->
-					<logCalendar />
+					<logCalendar ref="calendarComponent" :plant-id="currentPlantId" />
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['e'].is"
@@ -119,6 +119,7 @@ export default {
 			ballStyleLeft: 0,
 			liquidStyleLeft: 0,
 			onKey: 'c',
+			currentPlantId: 0,
 			list: {
 				a: {
 					is: false,
@@ -211,7 +212,6 @@ export default {
 			}
 		},
 		onTabbar(item, key) {
-
 			this.throttle(() => {
 				if (!item || !item.style) {
 					console.error('onTabbar error: item or item.style is undefined');
@@ -219,6 +219,11 @@ export default {
 				}
 				this.switchTabbarPage(key);
 				this.onKey = key
+				// 手动点击 tabbar 时清空选中的植物，展示家庭日历
+				if (key === 'd') {
+					this.currentPlantId = 0;
+				}
+				
 				let left = item.style.left
 				this.ballStyleLeft = left - 22;
 				this.animation01 = true;
@@ -292,11 +297,36 @@ export default {
 				}
 			})
 		})
+		
+		uni.$on('switchTab', (data) => {
+			let key, plantId = 0;
+			if (typeof data === 'string') {
+				key = data;
+			} else {
+				key = data.key;
+				plantId = data.plantId || 0;
+			}
+			
+			if (this.list[key]) {
+				this.currentPlantId = plantId;
+				const item = this.list[key];
+				if (item.style) {
+					this.onTabbar(item, key);
+				} else {
+					this.onKey = key;
+					this.switchTabbarPage(key);
+				}
+			}
+		});
 	},
 	onShow() {
 		this.$nextTick(() => {
-			this.$refs.homeComponent.onPageShow();
+			if (this.$refs.homeComponent) this.$refs.homeComponent.onPageShow();
+			if (this.$refs.calendarComponent) this.$refs.calendarComponent.initData();
 		})
+	},
+	onUnload() {
+		uni.$off('switchTab');
 	},
 	onShareAppMessage() {
 		return {

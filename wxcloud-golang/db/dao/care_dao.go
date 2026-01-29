@@ -62,7 +62,8 @@ func CreateDefaultCareActions(ctx context.Context, familyID uint) error {
 		{Name: "浇水", Type: "Watering", Icon: "checkbox-filled", Color: "#D6EAF8", FamilyID: familyID, SortOrder: 0},
 		{Name: "施肥", Type: "Fertilizing", Icon: "flask", Color: "#DCECC9", FamilyID: familyID, SortOrder: 1},
 		{Name: "修剪", Type: "Pruning", Icon: "scissors", Color: "#F2D7D5", FamilyID: familyID, SortOrder: 2},
-		{Name: "换土", Type: "SoilChange", Icon: "download", Color: "#E8E0D5", FamilyID: familyID, SortOrder: 3},
+		{Name: "成长记录", Type: "Growth", Icon: "camera", Color: "#E8E0D5", FamilyID: familyID, SortOrder: 3},
+		{Name: "换土", Type: "SoilChange", Icon: "download", Color: "#D5DBDB", FamilyID: familyID, SortOrder: 4},
 	}
 	return execWithSpan(ctx, "INSERT", "care_action", func(conn *gorm.DB) error {
 		return conn.Create(&defaults).Error

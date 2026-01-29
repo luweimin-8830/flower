@@ -329,8 +329,10 @@ export default {
 			}
 		},
 		goCalendar() {
-			uni.navigateTo({
-				url: `/pages/logCalendar/logCalendar?plantId=${this.plantId}`
+			uni.navigateBack({
+				success: () => {
+					uni.$emit('switchTab', { key: 'd', plantId: this.plantId });
+				}
 			});
 		},
 		goAlbum() { }

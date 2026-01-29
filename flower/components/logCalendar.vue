@@ -1,9 +1,12 @@
 <template>
-	<view class="calendar-wrapper" :class="{ 'as-page': showNav }">
-		<block v-if="showNav">
-			<navBar title="养护历程" />
-			<view :style="{ height: topBarHeight + 'px' }"></view>
-		</block>
+	<view class="calendar-wrapper">
+		<!-- 顶部固定区域 -->
+		<view class="fixed-header-group">
+			<navBar v-if="showNav" />
+			<view class="header-title-container" :style="{ paddingTop: statusBarHeight + 'px' }">
+				<text class="page-title">{{ (showNav || plantId) ? '养护历程' : '养护日历' }}</text>
+			</view>
+		</view>
 		
 		<scroll-view scroll-y class="scroll-body">
 			<view class="log-calendar">
@@ -70,6 +73,7 @@ export default {
 	},
 	data() {
 		return {
+			statusBarHeight: 0,
 			topBarHeight: 0,
 			selectedDate: '',
 			allLogs: [],
@@ -97,6 +101,8 @@ export default {
 	},
 	methods: {
 		async initData() {
+			const systemInfo = uni.getSystemInfoSync();
+			this.statusBarHeight = systemInfo.statusBarHeight || 44;
 			const app = getApp();
 			if (app && app.globalData) {
 				this.topBarHeight = app.globalData.topBarHeight;
@@ -146,7 +152,7 @@ export default {
 						if (!dateMap[date]) {
 							dateMap[date] = {
 								date: date,
-								info: '记录'
+								info: ''
 							};
 						}
 					});
@@ -180,13 +186,32 @@ export default {
 <style lang="scss" scoped>
 .calendar-wrapper {
 	width: 100%;
-	
-	&.as-page {
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-		background-color: #C1D0B7;
-	}
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+	box-sizing: border-box;
+}
+
+// 固定头部
+.fixed-header-group {
+    position: sticky;
+    top: 0;
+    z-index: 998;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+	background-color: rgba(255, 255, 255, 0.5);
+}
+
+.header-title-container {
+    padding: 16px 20px 12px;
+    text-align: center;
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
 }
 
 .scroll-body {
@@ -196,7 +221,7 @@ export default {
 
 .log-calendar {
 	margin: 12px;
-	background-color: #fff;
+	background-color: rgba(255,255,255,0.55);
 	border-radius: 16px;
 	overflow: hidden;
 }
@@ -208,7 +233,6 @@ export default {
 
 .day-detail {
 	padding: 16px;
-	background-color: #f9f9f9;
 }
 
 .detail-header {
@@ -252,7 +276,7 @@ export default {
 .log-item {
 	display: flex;
 	padding: 12px;
-	background-color: #fff;
+	background-color: rgba(255,255,255,0.6);
 	border-radius: 12px;
 	margin-bottom: 10px;
 	box-shadow: 0 2px 6px rgba(0,0,0,0.02);
@@ -304,6 +328,18 @@ export default {
 				border-radius: 4px;
 			}
 		}
+	}
+}
+
+// 隐藏日历文字，确保显示红点
+::v-deep .uni-calendar-item__weeks-box-item {
+	.uni-calendar-item__weeks-box-info {
+		display: none !important;
+	}
+	// 确保标记点显示
+	.uni-calendar-item__weeks-box-circle {
+		display: block !important;
+		background-color: #ff4d4f !important;
 	}
 }
 </style>
