@@ -122,12 +122,45 @@ export default {
     methods: {
         async loadData() {
             try {
-                const res = await uni.getStorage({ key: 'familyId' });
-                this.familyId = res.data;
-                this.getCareList();
-            } catch (e) { console.error(e); }
+                // 优先从 storage 获取，如果没有则尝试获取家庭列表并使用第一个
+                let fId = uni.getStorageSync('familyId');
+                console.log("Current familyId from storage:", fId);
+                
+                if (!fId) {
+                    console.log("Storage 中无 familyId，尝试从缓存的家庭列表获取");
+                    const families = uni.getStorageSync('family');
+                    if (families && families.length > 0) {
+                        fId = families[0].ID || families[0].id;
+                        uni.setStorageSync('familyId', fId);
+                    }
+                }
+                
+                // 如果还是没有，可能需要重新登录获取
+                if (!fId) {
+                    console.log("仍然没有 familyId，调用登录接口获取");
+                    uni.showLoading({ title: '同步家庭信息...' });
+                    const user = await callContainer("/api/login");
+                    if (user.data && user.data.family && user.data.family.length > 0) {
+                        fId = user.data.family[0].ID;
+                        uni.setStorageSync('familyId', fId);
+                        uni.setStorageSync('family', user.data.family);
+                    }
+                    uni.hideLoading();
+                }
+                
+                if (fId) {
+                    this.familyId = Number(fId);
+                    await this.getCareList();
+                } else {
+                    uni.showToast({ title: '未找到家庭信息', icon: 'none' });
+                }
+            } catch (e) { 
+                console.error("loadData error:", e); 
+                uni.hideLoading();
+            }
         },
         async getCareList() {
+            if (!this.familyId) return;
             try {
                 const res = await callContainer("/api/care/", { familyId: this.familyId });
                 if (res.data) {
@@ -137,7 +170,10 @@ export default {
                     }));
                     this.areaHeight = this.careList.length * ROW_HEIGHT;
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("getCareList error:", e);
+                uni.showToast({ title: '获取列表失败', icon: 'none' });
+            }
         },
         resetForm() {
             this.formData = { id: null, name: '', type: '', icon: 'checkbox-filled', color: '#D6EAF8' };

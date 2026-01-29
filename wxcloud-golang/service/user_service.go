@@ -90,6 +90,26 @@ func GetFamilyList(ctx context.Context, OPENID string) ([]model.Family, error) {
 	return dao.GetFamilyList(ctx, OPENID)
 }
 
+type UserWithFamilies struct {
+	*model.User
+	Families []model.Family `json:"families"`
+}
+
+func GetUserWithFamilies(ctx context.Context, openID string) (*UserWithFamilies, error) {
+	user, err := dao.GetUserByOpenID(ctx, openID)
+	if err != nil {
+		return nil, err
+	}
+	families, err := dao.GetFamilyList(ctx, openID)
+	if err != nil {
+		return nil, err
+	}
+	return &UserWithFamilies{
+		User:     user,
+		Families: families,
+	}, nil
+}
+
 func UpdateFamily(ctx context.Context, openID string, familyID uint, newName string) error {
 	return dao.UpdateFamilyName(ctx, openID, familyID, newName)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type GetCareRequest struct {
-	FamilyID uint `json:"familyId" binding:"required"`
+	FamilyID uint `json:"familyId"`
 }
 
 type AddCareRequest struct {
@@ -39,11 +39,27 @@ type SortCareRequest struct {
 func GetCareListHandler(c *gin.Context) {
 	var req GetCareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Fail(c, "参数错误")
+		response.Fail(c, "参数错误: "+err.Error())
 		return
 	}
 	ctx := c.Request.Context()
-	cares, err := service.GetFamilyCareActions(ctx, req.FamilyID)
+	
+	// 如果前端传 0，尝试获取该用户的默认家庭
+	familyID := req.FamilyID
+	if familyID == 0 {
+		openID := c.GetHeader("X-WX-OPENID")
+		user, err := service.GetUserWithFamilies(ctx, openID)
+		if err == nil && len(user.Families) > 0 {
+			familyID = user.Families[0].ID
+		}
+	}
+
+	if familyID == 0 {
+		response.Fail(c, "家庭ID无效")
+		return
+	}
+
+	cares, err := service.GetFamilyCareActions(ctx, familyID)
 	if err != nil {
 		response.Fail(c, "获取失败: "+err.Error())
 		return

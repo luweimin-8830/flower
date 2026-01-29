@@ -7,7 +7,22 @@ import (
 )
 
 func GetFamilyCareActions(ctx context.Context, familyID uint) ([]model.CareAction, error) {
-	return dao.GetCareByFamilyID(ctx, familyID)
+	cares, err := dao.GetCareByFamilyID(ctx, familyID)
+	if err != nil {
+		return nil, err
+	}
+	
+	// 如果没有任何养护项，则初始化默认项 (兼容老旧家庭数据)
+	if len(cares) == 0 && familyID > 0 {
+		err = dao.CreateDefaultCareActions(ctx, familyID)
+		if err != nil {
+			return nil, err
+		}
+		// 重新获取
+		return dao.GetCareByFamilyID(ctx, familyID)
+	}
+	
+	return cares, nil
 }
 
 func AddCareAction(ctx context.Context, care *model.CareAction) error {
