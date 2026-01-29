@@ -52,8 +52,8 @@ func GetPlantLogsByFamilyID(ctx context.Context, familyID uint) ([]*model.PlantL
 	var logs []*model.PlantLog
 	err := db.DB.WithContext(ctx).
 		Preload("Images").
-		Joins("JOIN plants ON plants.id = plant_logs.plant_id").
-		Where("plants.family_id = ?", familyID).
+		Joins("JOIN plant ON plant.id = plant_log.plant_id").
+		Where("plant.family_id = ?", familyID).
 		Order("log_time desc").
 		Find(&logs).Error
 	return logs, err
