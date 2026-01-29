@@ -7,6 +7,7 @@
     "home": "../../components/home",
     "my": "../../components/my",
     "loading-page": "../../components/loading",
-    "plant-list": "../../components/plantList"
+    "plant-list": "../../components/plantList",
+    "log-calendar": "../../components/logCalendar"
   }
 }

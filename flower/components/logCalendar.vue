@@ -1,0 +1,309 @@
+<template>
+	<view class="calendar-wrapper" :class="{ 'as-page': showNav }">
+		<block v-if="showNav">
+			<navBar title="养护历程" />
+			<view :style="{ height: topBarHeight + 'px' }"></view>
+		</block>
+		
+		<scroll-view scroll-y class="scroll-body">
+			<view class="log-calendar">
+				<uni-calendar 
+					ref="calendar"
+					:insert="true" 
+					:lunar="false" 
+					:selected="selectedDates" 
+					@change="onDateChange"
+				/>
+				
+				<view class="day-detail">
+					<view class="detail-header">
+						<text class="detail-title">{{ selectedDate }} 记录</text>
+						<view class="add-btn" @click="goAdd" v-if="plantId">
+							<uni-icons type="plusempty" size="18" color="#4A6139"></uni-icons>
+							<text>新增</text>
+						</view>
+					</view>
+					
+					<view class="log-list">
+						<view v-if="currentLogs.length === 0" class="empty-box">
+							<text class="empty-text">当日无养护记录</text>
+						</view>
+						<view v-for="log in currentLogs" :key="log.ID" class="log-item" @click="goEdit(log)">
+							<view class="log-icon" :style="{ backgroundColor: log.color + '22' }">
+								<uni-icons :type="log.icon || 'checkbox-filled'" size="20" :color="log.color || '#4A6139'"></uni-icons>
+							</view>
+							<view class="log-info">
+								<view class="log-top">
+									<text class="log-name">{{ log.actionName }}</text>
+									<text class="log-time">{{ formatTime(log.logTime) }}</text>
+								</view>
+								<text class="log-content" v-if="log.content">{{ log.content }}</text>
+								<view class="log-images" v-if="log.images && log.images.length > 0">
+									<image v-for="(img, idx) in log.images" :key="idx" :src="img.url" mode="aspectFill" class="thumb"></image>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
+			<view class="safe-area-bottom"></view>
+		</scroll-view>
+	</view>
+</template>
+
+<script>
+import { callContainer } from '../utils/request';
+import navBar from './navBar.vue';
+
+export default {
+	name: 'logCalendar',
+	components: { navBar },
+	props: {
+		plantId: {
+			type: [Number, String],
+			default: 0
+		},
+		showNav: {
+			type: Boolean,
+			default: false
+		}
+	},
+	data() {
+		return {
+			topBarHeight: 0,
+			selectedDate: '',
+			allLogs: [],
+			careActions: [],
+			familyId: 0,
+			selectedDates: [] // uni-calendar markers
+		};
+	},
+	computed: {
+		currentLogs() {
+			if (!this.selectedDate) return [];
+			return this.allLogs.filter(log => {
+				const logDate = log.logTime.split('T')[0];
+				return logDate === this.selectedDate;
+			});
+		}
+	},
+	watch: {
+		plantId: {
+			handler() {
+				this.initData();
+			},
+			immediate: true
+		}
+	},
+	methods: {
+		async initData() {
+			const app = getApp();
+			if (app && app.globalData) {
+				this.topBarHeight = app.globalData.topBarHeight;
+			}
+			this.familyId = uni.getStorageSync('familyId');
+			const now = new Date();
+			this.selectedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+			
+			await Promise.all([
+				this.getCareActions(),
+				this.getLogs()
+			]);
+		},
+		async getCareActions() {
+			try {
+				const res = await callContainer("/api/care/", { familyId: Number(this.familyId) });
+				if (res.data) {
+					this.careActions = res.data;
+				}
+			} catch (e) { console.error(e); }
+		},
+		async getLogs() {
+			try {
+				const params = {};
+				if (this.plantId) {
+					params.plantId = Number(this.plantId);
+				} else {
+					params.familyId = Number(this.familyId);
+				}
+				
+				const res = await callContainer("/api/plant/log/list", params);
+				if (res.data) {
+					this.allLogs = res.data.map(log => {
+						const action = this.careActions.find(a => a.type === log.actionType);
+						return {
+							...log,
+							actionName: action ? action.name : log.actionType,
+							icon: action ? action.icon : '',
+							color: action ? action.color : ''
+						};
+					});
+					
+					// 生成日历标记
+					const dateMap = {};
+					this.allLogs.forEach(log => {
+						const date = log.logTime.split('T')[0];
+						if (!dateMap[date]) {
+							dateMap[date] = {
+								date: date,
+								info: '记录'
+							};
+						}
+					});
+					this.selectedDates = Object.values(dateMap);
+					
+				}
+			} catch (e) { console.error(e); }
+		},
+		onDateChange(e) {
+			this.selectedDate = e.fulldate;
+		},
+		formatTime(timeStr) {
+			if (!timeStr) return '';
+			const date = new Date(timeStr);
+			return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+		},
+		goAdd() {
+			uni.navigateTo({
+				url: `/pages/logEdit/logEdit?plantId=${this.plantId}&date=${this.selectedDate}`
+			});
+		},
+		goEdit(log) {
+			uni.navigateTo({
+				url: `/pages/logEdit/logEdit?id=${log.ID}&plantId=${this.plantId}`
+			});
+		}
+	}
+};
+</script>
+
+<style lang="scss" scoped>
+.calendar-wrapper {
+	width: 100%;
+	
+	&.as-page {
+		height: 100vh;
+		display: flex;
+		flex-direction: column;
+		background-color: #C1D0B7;
+	}
+}
+
+.scroll-body {
+	flex: 1;
+	height: 0;
+}
+
+.log-calendar {
+	margin: 12px;
+	background-color: #fff;
+	border-radius: 16px;
+	overflow: hidden;
+}
+
+.safe-area-bottom {
+	height: env(safe-area-inset-bottom);
+	padding-bottom: 20px;
+}
+
+.day-detail {
+	padding: 16px;
+	background-color: #f9f9f9;
+}
+
+.detail-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+}
+
+.detail-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: #333;
+}
+
+.add-btn {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	background-color: #fff;
+	padding: 4px 10px;
+	border-radius: 20px;
+	border: 1px solid #eee;
+	text {
+		font-size: 13px;
+		color: #4A6139;
+	}
+}
+
+.log-list {
+	.empty-box {
+		padding: 30px 0;
+		text-align: center;
+		.empty-text {
+			font-size: 14px;
+			color: #999;
+		}
+	}
+}
+
+.log-item {
+	display: flex;
+	padding: 12px;
+	background-color: #fff;
+	border-radius: 12px;
+	margin-bottom: 10px;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+	
+	.log-icon {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-right: 12px;
+		flex-shrink: 0;
+	}
+	
+	.log-info {
+		flex: 1;
+		.log-top {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 4px;
+			.log-name {
+				font-size: 15px;
+				font-weight: 500;
+				color: #333;
+			}
+			.log-time {
+				font-size: 12px;
+				color: #999;
+			}
+		}
+		
+		.log-content {
+			font-size: 13px;
+			color: #666;
+			line-height: 1.4;
+			margin-bottom: 8px;
+			display: block;
+		}
+		
+		.log-images {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			.thumb {
+				width: 60px;
+				height: 60px;
+				border-radius: 4px;
+			}
+		}
+	}
+}
+</style>

@@ -30,6 +30,11 @@ func GetPlantLogs(ctx context.Context, plantID uint) ([]*model.PlantLog, error) 
 	return dao.GetPlantLogsByPlantID(ctx, plantID)
 }
 
+// GetFamilyLogs 获取家庭下所有植物的日志
+func GetFamilyLogs(ctx context.Context, familyID uint) ([]*model.PlantLog, error) {
+	return dao.GetPlantLogsByFamilyID(ctx, familyID)
+}
+
 // DeletePlantLog 业务逻辑：删除日志
 func DeletePlantLog(ctx context.Context, logID uint) error {
 	// 比如：检查是否有权限删除（如果需要）

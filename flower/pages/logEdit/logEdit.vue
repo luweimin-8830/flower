@@ -10,7 +10,7 @@
 				<scroll-view scroll-x class="care-scroll" :show-scrollbar="false">
 					<view class="care-list">
 						<view class="care-item" v-for="(item, index) in careOptions" :key="index"
-							@click="formData.actionType = item.type">
+							@click="formData.actionType = (formData.actionType === item.type ? '' : item.type)">
 							<view class="care-icon-box"
 								:class="{ 'active': formData.actionType === item.type }"
 								:style="{ backgroundColor: formData.actionType === item.type ? item.color : '#f5f5f5' }">
@@ -42,7 +42,7 @@
 
 			<!-- 4. 图片上传 -->
 			<view class="section">
-				<text class="section-title">现场照片 (最多3张)</text>
+				<text class="section-title">记录照片 (最多3张)</text>
 				<view class="image-grid">
 					<view class="image-item" v-for="(img, index) in uploadImages" :key="index">
 						<image :src="img.url" mode="aspectFill" @click="previewImage(index)"></image>
@@ -81,7 +81,7 @@ export default {
 			logId: 0,
 			type: 'add',
 			formData: {
-				actionType: 'Other',
+				actionType: '',
 				logTime: '',
 				content: ''
 			},
@@ -106,9 +106,13 @@ export default {
 			this.getLogDetail();
 		}
 		
-		// 设置默认日期为今天
-		const now = new Date();
-		this.formData.logTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		// 设置默认日期
+		if (options.date) {
+			this.formData.logTime = options.date;
+		} else {
+			const now = new Date();
+			this.formData.logTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		}
 		
 		this.getCareOptions();
 	},
@@ -118,9 +122,6 @@ export default {
 				const result = await callContainer("/api/care/", { familyId: Number(this.familyId) });
 				if (result.data) {
 					this.careOptions = result.data;
-					if (this.type === 'add' && this.careOptions.length > 0) {
-						this.formData.actionType = this.careOptions[0].type;
-					}
 				}
 			} catch (e) { console.error(e); }
 		},
@@ -157,14 +158,55 @@ export default {
 				});
 				
 				const files = res.tempFiles;
+				uni.showLoading({ title: '处理图片...' });
+				
 				for (let file of files) {
+					// 1. 大小检查
+					const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+					if (file.size > MAX_SIZE) {
+						uni.showToast({ title: '图片不能超过2MB', icon: 'none' });
+						continue;
+					}
+
+					// 2. 获取图片信息
+					const imageInfo = await new Promise((resolve, reject) => {
+						wx.getImageInfo({
+							src: file.tempFilePath,
+							success: resolve,
+							fail: reject
+						})
+					});
+
+					// 3. 计算 SHA256
+					const fileInfo = await new Promise((resolve, reject) => {
+						wx.getFileSystemManager().getFileInfo({
+							filePath: file.tempFilePath,
+							digestAlgorithm: "sha256",
+							success: resolve,
+							fail: reject
+						})
+					});
+					const hash = fileInfo.digest;
+
+					// 4. 秒传检查
+					const checkRes = await callContainer("/api/image/check", { hash });
+					
 					this.uploadImages.push({
-						url: file.tempFilePath,
+						url: checkRes.data.uploadRequired ? file.tempFilePath : checkRes.data.url,
 						size: file.size,
+						width: imageInfo.width,
+						height: imageInfo.height,
+						hash: hash,
+						isUpload: checkRes.data.uploadRequired,
+						id: checkRes.data.id,
 						isNew: true
 					});
 				}
-			} catch (e) { console.error(e); }
+				uni.hideLoading();
+			} catch (e) { 
+				console.error(e); 
+				uni.hideLoading();
+			}
 		},
 		removeImage(index) {
 			this.uploadImages.splice(index, 1);
@@ -176,14 +218,9 @@ export default {
 			});
 		},
 		async handleSave() {
-			if (!this.formData.actionType) {
-				uni.showToast({ title: '请选择类型', icon: 'none' });
-				return;
-			}
-			
 			this.isSaving = true;
 			try {
-				// 1. 上传新图片
+				// 1. 处理图片
 				const imageIds = [];
 				for (let img of this.uploadImages) {
 					if (img.isOld) {
@@ -191,20 +228,32 @@ export default {
 						continue;
 					}
 					
-					// 上传到云存储
-					const timestamp = Date.now();
-					const random = Math.floor(Math.random() * 1000);
-					const cloudPath = `${this.familyId}/logs/${timestamp}_${random}.jpg`;
+					if (!img.isUpload) {
+						// 秒传，直接使用 ID
+						imageIds.push(img.id);
+						continue;
+					}
+
+					// 需要上传
+					const timestamp = Math.floor(Date.now() / 1000);
+					const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+					const cloudPath = `${this.familyId}/logs/${timestamp}${random}.jpg`;
 					
 					const uploadRes = await wx.cloud.uploadFile({
 						cloudPath,
-						filePath: img.url
+						filePath: img.url,
+						config: {
+							env: 'prod-0gr2o3qpe533f1fb'
+						}
 					});
 					
 					// 保存图片记录到数据库
 					const saveImgRes = await callContainer("/api/image/add", {
 						url: uploadRes.fileID,
-						size: img.size || 0
+						width: img.width,
+						height: img.height,
+						size: img.size,
+						hash: img.hash
 					});
 					imageIds.push(saveImgRes.data.id);
 				}
@@ -312,7 +361,7 @@ export default {
 
 .picker-box {
 	height: 44px;
-	background-color: #fff;
+	background-color: rgba(255,255,255,0.6);
 	border-radius: 8px;
 	display: flex;
 	align-items: center;
@@ -325,7 +374,7 @@ export default {
 .content-input {
 	width: 100%;
 	height: 100px;
-	background-color: #fff;
+	background-color: rgba(255,255,255,0.6);
 	border-radius: 8px;
 	padding: 12px;
 	font-size: 14px;
@@ -351,7 +400,7 @@ export default {
 	}
 	
 	&.add-btn {
-		background-color: #fff;
+		background-color: rgba(255,255,255,0.6);
 		display: flex;
 		align-items: center;
 		justify-content: center;

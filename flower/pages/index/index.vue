@@ -31,6 +31,7 @@
 				:style="{ display: onKey === 'd' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面d -->
+					<logCalendar />
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['e'].is"
@@ -100,7 +101,8 @@ import navBar from '@/components/navBar.vue';
 import home from '@/components/home.vue';
 import my from '@/components/my.vue';
 import loadingPage from '@/components/loading.vue';
-import plantList from "@/components/plantList.vue"
+import plantList from "@/components/plantList.vue";
+import logCalendar from '@/components/logCalendar.vue';
 export default {
 	components: {
 		navBar,
@@ -108,6 +110,7 @@ export default {
 		my,
 		loadingPage,
 		plantList,
+		logCalendar,
 	},
 	data() {
 		return {

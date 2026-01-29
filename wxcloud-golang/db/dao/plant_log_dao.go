@@ -47,6 +47,18 @@ func GetPlantLogsByPlantID(ctx context.Context, plantID uint) ([]*model.PlantLog
 	return logs, err
 }
 
+// GetPlantLogsByFamilyID 查询指定家庭下所有植物的日志
+func GetPlantLogsByFamilyID(ctx context.Context, familyID uint) ([]*model.PlantLog, error) {
+	var logs []*model.PlantLog
+	err := db.DB.WithContext(ctx).
+		Preload("Images").
+		Joins("JOIN plants ON plants.id = plant_logs.plant_id").
+		Where("plants.family_id = ?", familyID).
+		Order("log_time desc").
+		Find(&logs).Error
+	return logs, err
+}
+
 // DeletePlantLogByID 删除日志
 func DeletePlantLogByID(ctx context.Context, logID uint) error {
 	return db.DB.WithContext(ctx).Select("Images").Delete(&model.PlantLog{}, logID).Error

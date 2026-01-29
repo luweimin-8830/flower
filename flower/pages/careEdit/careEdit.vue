@@ -1,105 +1,112 @@
 <template>
-    <navBar title="养护管理" />
-    <view :style="{ height: topBarHeight + 'px' }"></view>
-    <view class="page-container">
-
-        <!-- 1. 创建/编辑养护项区域 -->
-        <view class="section" v-if="!isSorting">
-            <text class="section-title">{{ isEditing ? '编辑养护项' : '创建新养护项' }}</text>
-            <view class="card-box form-card">
-                <view class="form-item">
-                    <text class="label">名称</text>
-                    <input class="input-field" type="text" v-model="formData.name" placeholder="如: 浇水, 施肥" />
-                </view>
-                <view class="form-item">
-                    <text class="label">标识 (Type)</text>
-                    <input class="input-field" type="text" v-model="formData.type" placeholder="如: Watering" />
-                </view>
-                <view class="form-item">
-                    <text class="label">选择图标</text>
-                    <view class="options-grid">
-                        <view v-for="icon in iconOptions" :key="icon" 
-                            class="option-item icon-item" 
-                            :class="{ 'active': formData.icon === icon }"
-                            @click="formData.icon = icon">
-                            <uni-icons :type="icon" size="20" :color="formData.icon === icon ? '#fff' : '#666'"></uni-icons>
+    <view class="page-wrapper">
+        <navBar title="养护管理" />
+        <view :style="{ height: topBarHeight + 'px' }"></view>
+        
+        <scroll-view scroll-y class="main-scroll" :show-scrollbar="false" :enhanced="true">
+            <view class="page-container">
+                <!-- 1. 创建/编辑养护项区域 -->
+                <view class="section" v-if="!isSorting">
+                    <text class="section-title">{{ isEditing ? '编辑养护项' : '创建新养护项' }}</text>
+                    <view class="card-box form-card">
+                        <view class="form-item">
+                            <text class="label">名称</text>
+                            <input class="input-field" type="text" v-model="formData.name" placeholder="如: 浇水, 施肥" />
+                        </view>
+                        <view class="form-item">
+                            <text class="label">标识 (Type)</text>
+                            <input class="input-field" type="text" v-model="formData.type" placeholder="如: Watering" />
+                        </view>
+                        <view class="form-item">
+                            <text class="label">选择图标</text>
+                            <view class="options-grid">
+                                <view v-for="icon in iconOptions" :key="icon" 
+                                    class="option-item icon-item" 
+                                    :class="{ 'active': formData.icon === icon }"
+                                    @click="formData.icon = icon">
+                                    <uni-icons :type="icon" size="20" :color="formData.icon === icon ? '#fff' : '#666'"></uni-icons>
+                                </view>
+                            </view>
+                        </view>
+                        <view class="form-item">
+                            <text class="label">选择颜色</text>
+                            <view class="options-grid">
+                                <view v-for="color in colorOptions" :key="color" 
+                                    class="option-item color-item" 
+                                    :class="{ 'active': formData.color === color }"
+                                    :style="{ backgroundColor: color }"
+                                    @click="formData.color = color">
+                                    <uni-icons v-if="formData.color === color" type="checkmarkempty" size="16" color="#fff"></uni-icons>
+                                </view>
+                            </view>
+                        </view>
+                        <view class="btn-group">
+                            <view class="action-btn cancel" v-if="isEditing" @click="resetForm">取消</view>
+                            <view class="action-btn save" :class="{ 'disabled': !formData.name || !formData.type }" @click="handleSubmit">
+                                {{ isEditing ? '保存修改' : '立即添加' }}
+                            </view>
                         </view>
                     </view>
                 </view>
-                <view class="form-item">
-                    <text class="label">选择颜色</text>
-                    <view class="options-grid">
-                        <view v-for="color in colorOptions" :key="color" 
-                            class="option-item color-item" 
-                            :class="{ 'active': formData.color === color }"
-                            :style="{ backgroundColor: color }"
-                            @click="formData.color = color">
-                            <uni-icons v-if="formData.color === color" type="checkmarkempty" size="16" color="#fff"></uni-icons>
+
+                <!-- 2. 养护项列表区域 -->
+                <view class="section">
+                    <view class="section-header">
+                        <text class="section-title">现有养护项</text>
+                        <view class="sort-btn" @click="toggleSortMode">
+                            <uni-icons type="list" size="16" :color="isSorting ? '#4A6139' : '#666'"></uni-icons>
+                            <text :class="{ 'active-text': isSorting }">{{ isSorting ? '完成' : '排序' }}</text>
                         </view>
                     </view>
-                </view>
-                <view class="btn-group">
-                    <view class="action-btn cancel" v-if="isEditing" @click="resetForm">取消</view>
-                    <view class="action-btn save" :class="{ 'disabled': !formData.name || !formData.type }" @click="handleSubmit">
-                        {{ isEditing ? '保存修改' : '立即添加' }}
+
+                    <view class="card-box list-card" :class="{ 'sorting-mode': isSorting }">
+                        <!-- 模式 A: 普通模式 (左滑删除) -->
+                        <uni-swipe-action v-if="!isSorting">
+                            <block v-for="(item, index) in careList" :key="item.ID">
+                                <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)">
+                                    <view class="list-item" @click="startEdit(item)">
+                                        <view class="left-info">
+                                            <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
+                                                <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
+                                            </view>
+                                            <view class="care-text-info">
+                                                <text class="care-name">{{ item.name }}</text>
+                                                <text class="care-type">{{ item.type }}</text>
+                                            </view>
+                                        </view>
+                                        <uni-icons type="compose" size="18" color="#999"></uni-icons>
+                                    </view>
+                                </uni-swipe-action-item>
+                                <view v-if="index < careList.length - 1" class="divider"></view>
+                            </block>
+                        </uni-swipe-action>
+
+                        <!-- 模式 B: 排序模式 -->
+                        <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
+                            <block v-for="(item, index) in careList" :key="item.ID">
+                                <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40"
+                                    @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
+                                    :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
+                                    <view class="list-item sort-inner">
+                                        <view class="left-info">
+                                            <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
+                                            <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
+                                                <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
+                                            </view>
+                                            <text class="care-name">{{ item.name }}</text>
+                                        </view>
+                                    </view>
+                                    <view class="divider"></view>
+                                </movable-view>
+                            </block>
+                        </movable-area>
                     </view>
                 </view>
+                
+                <!-- 底部安全区域占位 -->
+                <view class="safe-area-bottom"></view>
             </view>
-        </view>
-
-        <!-- 2. 养护项列表区域 -->
-        <view class="section">
-            <view class="section-header">
-                <text class="section-title">现有养护项</text>
-                <view class="sort-btn" @click="toggleSortMode">
-                    <uni-icons type="list" size="16" :color="isSorting ? '#4A6139' : '#666'"></uni-icons>
-                    <text :class="{ 'active-text': isSorting }">{{ isSorting ? '完成' : '排序' }}</text>
-                </view>
-            </view>
-
-            <view class="card-box list-card" :class="{ 'sorting-mode': isSorting }">
-                <!-- 模式 A: 普通模式 (左滑删除) -->
-                <uni-swipe-action v-if="!isSorting">
-                    <block v-for="(item, index) in careList" :key="item.ID">
-                        <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)">
-                            <view class="list-item" @click="startEdit(item)">
-                                <view class="left-info">
-                                    <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                        <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
-                                    </view>
-                                    <view class="care-text-info">
-                                        <text class="care-name">{{ item.name }}</text>
-                                        <text class="care-type">{{ item.type }}</text>
-                                    </view>
-                                </view>
-                                <uni-icons type="compose" size="18" color="#999"></uni-icons>
-                            </view>
-                        </uni-swipe-action-item>
-                        <view v-if="index < careList.length - 1" class="divider"></view>
-                    </block>
-                </uni-swipe-action>
-
-                <!-- 模式 B: 排序模式 -->
-                <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
-                    <block v-for="(item, index) in careList" :key="item.ID">
-                        <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40"
-                            @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
-                            :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
-                            <view class="list-item sort-inner">
-                                <view class="left-info">
-                                    <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
-                                    <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                        <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
-                                    </view>
-                                    <text class="care-name">{{ item.name }}</text>
-                                </view>
-                            </view>
-                            <view class="divider"></view>
-                        </movable-view>
-                    </block>
-                </movable-area>
-            </view>
-        </view>
+        </scroll-view>
     </view>
 </template>
 
@@ -284,10 +291,24 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.page-container {
-    min-height: 100vh;
-    padding: 20px 16px;
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     background-color: #C1D0B7;
+}
+
+.main-scroll {
+    flex: 1;
+    overflow: hidden;
+}
+
+.page-container {
+    padding: 20px 16px;
+}
+
+.safe-area-bottom {
+    height: calc(30px + env(safe-area-inset-bottom));
 }
 
 .section {

@@ -19,7 +19,8 @@ type BatchCreateLogRequest struct {
 }
 
 type GetLogsRequest struct {
-	PlantID uint `json:"plantId" binding:"required"`
+	PlantID  uint `json:"plantId"`
+	FamilyID uint `json:"familyId"`
 }
 
 type DeleteLogRequest struct {
@@ -81,7 +82,7 @@ func CreatePlantLogHandler(c *gin.Context) {
 	response.Success(c, "记录成功")
 }
 
-// GetPlantLogsHandler 获取某棵植物的日志
+// GetPlantLogsHandler 获取日志（支持植物或家庭）
 func GetPlantLogsHandler(c *gin.Context) {
 	var req GetLogsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -90,7 +91,18 @@ func GetPlantLogsHandler(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	logs, err := service.GetPlantLogs(ctx, req.PlantID)
+	
+	var logs []*model.PlantLog
+	var err error
+	if req.PlantID > 0 {
+		logs, err = service.GetPlantLogs(ctx, req.PlantID)
+	} else if req.FamilyID > 0 {
+		logs, err = service.GetFamilyLogs(ctx, req.FamilyID)
+	} else {
+		response.Fail(c, "缺少植物ID或家庭ID")
+		return
+	}
+
 	if err != nil {
 		response.Fail(c, "获取失败: "+err.Error())
 		return

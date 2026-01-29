@@ -1,91 +1,92 @@
 <template>
-    <navBar />
-    <view :style="{ height: topBarHeight + 'px' }"></view>
-    <view class="page-container">
+    <view class="page-wrapper">
+        <navBar />
+        <view :style="{ height: topBarHeight + 'px' }"></view>
 
-        <!-- 1. 创建新标签区域 (排序模式下隐藏，避免干扰) -->
-        <view class="section" v-if="!isSorting">
-            <text class="section-title">创建新标签</text>
-            <view class="card-box input-card">
-                <input class="input-field" type="text" v-model="newTagName" placeholder="输入标签名称"
-                    placeholder-class="placeholder-style" />
-                <view class="add-btn" :class="{ 'disabled': !newTagName }" @click="handleAddTag">
-                    <text class="btn-text">添加</text>
+        <scroll-view scroll-y class="main-scroll" :show-scrollbar="false" :enhanced="true">
+            <view class="page-container">
+                <!-- 1. 创建新标签区域 (排序模式下隐藏，避免干扰) -->
+                <view class="section" v-if="!isSorting">
+                    <text class="section-title">创建新标签</text>
+                    <view class="card-box input-card">
+                        <input class="input-field" type="text" v-model="newTagName" placeholder="输入标签名称"
+                            placeholder-class="placeholder-style" />
+                        <view class="add-btn" :class="{ 'disabled': !newTagName }" @click="handleAddTag">
+                            <text class="btn-text">添加</text>
+                        </view>
+                    </view>
                 </view>
-            </view>
-        </view>
 
-        <!-- 2. 标签列表区域 -->
-        <view class="section">
-            <view class="section-header">
-                <text class="section-title">可用标签</text>
-                <!-- 🌟 切换排序模式按钮 -->
-                <view class="sort-btn" @click="toggleSortMode">
-                    <!-- 图标：根据状态变色 -->
-                    <view class="iconfont plant-paixu" :class="{ 'active-text': isSorting }"></view>
-                    <text :class="{ 'active-text': isSorting }">{{ isSorting ? '完成' : '排序' }}</text>
-                </view>
-            </view>
+                <!-- 2. 标签列表区域 -->
+                <view class="section">
+                    <view class="section-header">
+                        <text class="section-title">可用标签</text>
+                        <!-- 🌟 切换排序模式按钮 -->
+                        <view class="sort-btn" @click="toggleSortMode">
+                            <!-- 图标：根据状态变色 -->
+                            <view class="iconfont plant-paixu" :class="{ 'active-text': isSorting }"></view>
+                            <text :class="{ 'active-text': isSorting }">{{ isSorting ? '完成' : '排序' }}</text>
+                        </view>
+                    </view>
 
-            <view class="card-box list-card" :class="{ 'sorting-mode': isSorting }">
+                    <view class="card-box list-card" :class="{ 'sorting-mode': isSorting }">
 
-                <!-- 🌟 模式 A: 普通模式 (支持左滑删除) -->
-                <uni-swipe-action v-if="!isSorting">
-                    <block v-for="(item, index) in tagsList" :key="item.ID">
-                        <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)"
-                            :auto-close="true">
-                            <view class="list-item">
-                                <template v-if="item.isEditing">
-                                    <input class="edit-input" v-model="item.tempName" :focus="true" />
-                                    <view class="action-group">
-                                        <view class="mini-btn save-btn" @click.stop="saveEdit(index)">保存</view>
-                                        <view class="mini-btn cancel-btn" @click.stop="cancelEdit(index)">取消</view>
+                        <!-- 🌟 模式 A: 普通模式 (支持左滑删除) -->
+                        <uni-swipe-action v-if="!isSorting">
+                            <block v-for="(item, index) in tagsList" :key="item.ID">
+                                <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)"
+                                    :auto-close="true">
+                                    <view class="list-item">
+                                        <template v-if="item.isEditing">
+                                            <input class="edit-input" v-model="item.tempName" :focus="true" />
+                                            <view class="action-group">
+                                                <view class="mini-btn save-btn" @click.stop="saveEdit(index)">保存</view>
+                                                <view class="mini-btn cancel-btn" @click.stop="cancelEdit(index)">取消</view>
+                                            </view>
+                                        </template>
+                                        <template v-else>
+                                            <view class="left-info">
+                                                <text class="tag-name">{{ item.name }}</text>
+                                                <view class="icon-wrapper" @click.stop="startEdit(index)">
+                                                    <uni-icons type="compose" size="18" color="#2F3E25"></uni-icons>
+                                                </view>
+                                            </view>
+                                            <view class="count-badge">
+                                                <text>{{ item.plantCount }}</text>
+                                            </view>
+                                        </template>
                                     </view>
-                                </template>
-                                <template v-else>
-                                    <view class="left-info">
-                                        <text class="tag-name">{{ item.name }}</text>
-                                        <view class="icon-wrapper" @click.stop="startEdit(index)">
-                                            <uni-icons type="compose" size="18" color="#2F3E25"></uni-icons>
+                                </uni-swipe-action-item>
+                                <view v-if="index < tagsList.length - 1" class="divider"></view>
+                            </block>
+                        </uni-swipe-action>
+
+                        <!-- 🌟 模式 B: 排序模式 (支持拖拽) -->
+                        <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
+                            <block v-for="(item, index) in tagsList" :key="item.ID">
+                                <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40" :disabled="false"
+                                    @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
+                                    :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
+                                    <view class="list-item sort-inner">
+                                        <view class="left-info">
+                                            <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
+                                            <text class="tag-name">{{ item.name }}</text>
+                                        </view>
+                                        <view class="count-badge">
+                                            <text>{{ item.plantCount }}</text>
                                         </view>
                                     </view>
-                                    <view class="count-badge">
-                                        <text>{{ item.plantCount }}</text>
-                                    </view>
-                                </template>
-                            </view>
-                        </uni-swipe-action-item>
-                        <view v-if="index < tagsList.length - 1" class="divider"></view>
-                    </block>
-                </uni-swipe-action>
+                                    <view class="divider"></view>
+                                </movable-view>
+                            </block>
+                        </movable-area>
+                    </view>
+                </view>
 
-                <!-- 🌟 模式 B: 排序模式 (支持拖拽) -->
-                <!-- movable-area 高度必须等于列表总高度 -->
-                <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
-                    <block v-for="(item, index) in tagsList" :key="item.ID">
-                        <!-- movable-view 是可拖动的元素 -->
-                        <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40" :disabled="false"
-                            @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
-                            :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
-                            <view class="list-item sort-inner">
-                                <view class="left-info">
-                                    <!-- 拖拽图标 -->
-                                    <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
-                                    <text class="tag-name">{{ item.name }}</text>
-                                </view>
-                                <!-- 排序模式下也可以显示数量，或者隐藏 -->
-                                <view class="count-badge">
-                                    <text>{{ item.plantCount }}</text>
-                                </view>
-                            </view>
-                            <!-- 模拟分割线 -->
-                            <view class="divider"></view>
-                        </movable-view>
-                    </block>
-                </movable-area>
-
+                <!-- 底部安全区域占位 -->
+                <view class="safe-area-bottom"></view>
             </view>
-        </view>
+        </scroll-view>
     </view>
 </template>
 
@@ -294,10 +295,25 @@ export default {
 
 <style scoped lang="scss">
 /* ... 原有样式保持不变 ... */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #C1D0B7;
+}
+
+.main-scroll {
+    flex: 1;
+    overflow: hidden;
+}
+
 .page-container {
-    min-height: 100vh;
     padding: 20px 16px;
     box-sizing: border-box;
+}
+
+.safe-area-bottom {
+    height: calc(30px + env(safe-area-inset-bottom));
 }
 
 .section-title {
