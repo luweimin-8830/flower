@@ -72,6 +72,12 @@ func main() {
 			plant.POST("/add", handler.CreatePlantHandler)
 			plant.POST("/delete", handler.DeletePlantHandler)
 			plant.POST("/update", handler.UpdatePlantHandler)
+			log := plant.Group("/log")
+			{
+				log.POST("/add", handler.CreatePlantLogHandler)
+				log.POST("/list", handler.GetPlantLogsHandler)
+				log.POST("/delete", handler.DeletePlantLogHandler)
+			}
 		}
 		tag := api.Group("/tag")
 		{
