@@ -3,9 +3,7 @@
 		<!-- 顶部固定区域 -->
 		<view class="fixed-header-group">
 			<navBar v-if="showNav" />
-			<view class="header-title-container" :style="{ paddingTop: statusBarHeight + 'px' }">
-				<text class="page-title">养护历程</text>
-			</view>
+			<view :style="{ height: topBarHeight + 'px' }"></view>
 		</view>
 		
 		<scroll-view scroll-y class="scroll-body">
@@ -93,7 +91,9 @@ export default {
 			this.statusBarHeight = systemInfo.statusBarHeight || 44;
 			const app = getApp();
 			if (app && app.globalData) {
-				this.topBarHeight = app.globalData.topBarHeight;
+				this.topBarHeight = app.globalData.topBarHeight || this.statusBarHeight;
+			} else {
+				this.topBarHeight = this.statusBarHeight;
 			}
 			this.familyId = uni.getStorageSync('familyId');
 			const now = new Date();
@@ -171,6 +171,7 @@ export default {
 	flex-direction: column;
 	padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
+	background-color: #C1D0B7;
 }
 
 // 固定头部
@@ -178,19 +179,7 @@ export default {
     position: sticky;
     top: 0;
     z-index: 998;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.header-title-container {
-    padding: 16px 20px 12px;
-    text-align: center;
-}
-
-.page-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+	background-color: #C1D0B7;
 }
 
 .scroll-body {

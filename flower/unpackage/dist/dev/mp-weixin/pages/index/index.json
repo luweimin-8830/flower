@@ -8,6 +8,7 @@
     "my": "../../components/my",
     "loading-page": "../../components/loading",
     "plant-list": "../../components/plantList",
-    "log-calendar": "../../components/logCalendar"
+    "log-calendar": "../../components/logCalendar",
+    "photo-album": "../../components/photoAlbum"
   }
 }

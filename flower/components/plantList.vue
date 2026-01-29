@@ -4,10 +4,8 @@
 
         <!-- 顶部固定区域 -->
         <view class="fixed-header-group">
-            <!-- 顶部占位 + 标题栏合并 -->
-            <view class="header-title-container" :style="{ paddingTop: statusBarHeight + 'px' }">
-                <text class="page-title">植物列表</text>
-            </view>
+            <!-- 顶部占位 -->
+            <view :style="{ height: topBarHeight + 'px' }"></view>
         </view>
 
         <!-- 中间独立滚动区域 -->
@@ -78,7 +76,8 @@ export default {
             currentFamilyId: null,
             
             // 系统信息
-            statusBarHeight: 0
+            statusBarHeight: 0,
+            topBarHeight: 0
         };
     },
 
@@ -106,9 +105,16 @@ export default {
             try {
                 const systemInfo = uni.getSystemInfoSync();
                 this.statusBarHeight = systemInfo.statusBarHeight || 44;
+                const app = getApp();
+                if (app && app.globalData) {
+                    this.topBarHeight = app.globalData.topBarHeight || this.statusBarHeight;
+                } else {
+                    this.topBarHeight = this.statusBarHeight;
+                }
             } catch (error) {
                 console.error("获取系统信息失败:", error);
                 this.statusBarHeight = 44;
+                this.topBarHeight = 44;
             }
         },
         
@@ -347,6 +353,7 @@ export default {
     flex-direction: column;
     padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
+    background-color: #C1D0B7;
 }
 
 // 固定头部
@@ -354,19 +361,7 @@ export default {
     position: sticky;
     top: 0;
     z-index: 998;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.header-title-container {
-    padding: 16px 20px 12px;
-    text-align: center;
-}
-
-.page-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+    background-color: #C1D0B7;
 }
 
 // 内容区域

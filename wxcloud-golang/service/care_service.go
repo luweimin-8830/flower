@@ -11,7 +11,7 @@ func GetFamilyCareActions(ctx context.Context, familyID uint) ([]model.CareActio
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// 如果没有任何养护项，则初始化默认项 (兼容老旧家庭数据)
 	if len(cares) == 0 && familyID > 0 {
 		err = dao.CreateDefaultCareActions(ctx, familyID)
@@ -21,7 +21,29 @@ func GetFamilyCareActions(ctx context.Context, familyID uint) ([]model.CareActio
 		// 重新获取
 		return dao.GetCareByFamilyID(ctx, familyID)
 	}
-	
+
+	// 针对老用户：如果列表不为空但缺少“成长记录” (Type: "Growth")，补齐它
+	hasGrowth := false
+	for _, c := range cares {
+		if c.Type == "Growth" {
+			hasGrowth = true
+			break
+		}
+	}
+	if !hasGrowth && familyID > 0 {
+		growth := model.CareAction{
+			Name:      "成长记录",
+			Type:      "Growth",
+			Icon:      "camera",
+			Color:     "#E8E0D5",
+			FamilyID:  familyID,
+			SortOrder: len(cares),
+		}
+		_ = dao.CreateCareAction(ctx, &growth)
+		// 重新获取完整列表
+		return dao.GetCareByFamilyID(ctx, familyID)
+	}
+
 	return cares, nil
 }
 

@@ -11,6 +11,7 @@ const my = () => "../../components/my.js";
 const loadingPage = () => "../../components/loading.js";
 const plantList = () => "../../components/plantList.js";
 const logCalendar = () => "../../components/logCalendar.js";
+const photoAlbum = () => "../../components/photoAlbum.js";
 const _sfc_main = {
   components: {
     navBar,
@@ -18,7 +19,8 @@ const _sfc_main = {
     my,
     loadingPage,
     plantList,
-    logCalendar
+    logCalendar,
+    photoAlbum
   },
   data() {
     return {
@@ -79,7 +81,7 @@ const _sfc_main = {
     tabbarPageScrollLower() {
     },
     init(e) {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:173", "Tabbar init elements:", e);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:175", "Tabbar init elements:", e);
       if (!e || e.length === 0)
         return;
       const keys = Object.keys(this.list);
@@ -95,7 +97,7 @@ const _sfc_main = {
       if (item && item.style) {
         this.onTabbar(item, this.onKey);
       } else {
-        common_vendor.index.__f__("warn", "at pages/index/index.vue:206", "初始化匹配失败，尝试使用默认值");
+        common_vendor.index.__f__("warn", "at pages/index/index.vue:208", "初始化匹配失败，尝试使用默认值");
         const defaultWidth = windowWidth / 5;
         this.ballStyleLeft = defaultWidth * 2 + defaultWidth / 2 - 22;
         this.liquidStyleLeft = defaultWidth * 2 + defaultWidth / 2 - windowWidth / 2;
@@ -104,7 +106,7 @@ const _sfc_main = {
     onTabbar(item, key) {
       this.throttle(() => {
         if (!item || !item.style) {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:216", "onTabbar error: item or item.style is undefined");
+          common_vendor.index.__f__("error", "at pages/index/index.vue:218", "onTabbar error: item or item.style is undefined");
           return;
         }
         this.switchTabbarPage(key);
@@ -214,15 +216,16 @@ const _sfc_main = {
 };
 if (!Array) {
   const _component_loadingPage = common_vendor.resolveComponent("loadingPage");
+  const _component_photoAlbum = common_vendor.resolveComponent("photoAlbum");
   const _component_plantList = common_vendor.resolveComponent("plantList");
   const _component_home = common_vendor.resolveComponent("home");
   const _component_logCalendar = common_vendor.resolveComponent("logCalendar");
   const _component_my = common_vendor.resolveComponent("my");
-  (_component_loadingPage + _component_plantList + _component_home + _component_logCalendar + _component_my)();
+  (_component_loadingPage + _component_photoAlbum + _component_plantList + _component_home + _component_logCalendar + _component_my)();
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.sr("loading", "24547230-0"),
+    a: common_vendor.sr("loading", "a77b0c48-0"),
     b: $data.list["a"].is
   }, $data.list["a"].is ? {
     c: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
@@ -235,13 +238,13 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}, {
     h: $data.list["c"].is
   }, $data.list["c"].is ? {
-    i: common_vendor.sr("homeComponent", "24547230-2"),
+    i: common_vendor.sr("homeComponent", "a77b0c48-3"),
     j: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
     k: $data.onKey === "c" ? "" : "none"
   } : {}, {
     l: $data.list["d"].is
   }, $data.list["d"].is ? {
-    m: common_vendor.sr("calendarComponent", "24547230-3"),
+    m: common_vendor.sr("calendarComponent", "a77b0c48-4"),
     n: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
     o: $data.onKey === "d" ? "" : "none"
   } : {}, {

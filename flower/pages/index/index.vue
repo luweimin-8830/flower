@@ -10,7 +10,7 @@
 				:style="{ display: onKey === 'a' ? '' : 'none' }">
 				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
 					<!-- 页面a -->
-
+					<photoAlbum />
 				</scroll-view>
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['b'].is"
@@ -103,6 +103,7 @@ import my from '@/components/my.vue';
 import loadingPage from '@/components/loading.vue';
 import plantList from "@/components/plantList.vue";
 import logCalendar from '@/components/logCalendar.vue';
+import photoAlbum from '@/components/photoAlbum.vue';
 export default {
 	components: {
 		navBar,
@@ -111,6 +112,7 @@ export default {
 		loadingPage,
 		plantList,
 		logCalendar,
+		photoAlbum,
 	},
 	data() {
 		return {

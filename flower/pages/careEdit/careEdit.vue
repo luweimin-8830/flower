@@ -6,7 +6,7 @@
         <scroll-view scroll-y class="main-scroll" :show-scrollbar="false" :enhanced="true">
             <view class="page-container">
                 <!-- 1. 创建/编辑养护项区域 -->
-                <view class="section" v-if="!isSorting">
+                <view class="section">
                     <text class="section-title">{{ isEditing ? '编辑养护项' : '创建新养护项' }}</text>
                     <view class="card-box form-card">
                         <view class="form-item">
