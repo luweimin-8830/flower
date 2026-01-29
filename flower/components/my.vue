@@ -64,7 +64,7 @@ export default {
             if (type === 'tag') {
                 uni.navigateTo({ url: '/pages/tagEdit/tagEdit' })
             } else if (type === 'care') {
-                // uni.navigateTo({ url: '/pages/careManager/careManager' })
+                uni.navigateTo({ url: '/pages/careEdit/careEdit' })
             } else if (type === 'family') {
                 uni.navigateTo({ url: '/pages/familyDetail/familyDetail' })
             }

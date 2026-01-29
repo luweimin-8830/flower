@@ -10,6 +10,7 @@ if (!Math) {
   "./pages/tagEdit/tagEdit.js";
   "./pages/familyDetail/familyDetail.js";
   "./pages/shareMember/shareMember.js";
+  "./pages/careEdit/careEdit.js";
 }
 const _sfc_main = {
   globalData: {

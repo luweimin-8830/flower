@@ -60,7 +60,7 @@
 					</view>
 					<view class="vertical-line"></view>
 					<view class="stat-item">
-						<text class="stat-val">{{ 2 }}</text> <!-- 暂时写死或从 plant.logCount 取 -->
+						<text class="stat-val">{{ totalLogCount }}</text>
 						<text class="stat-label">植物日志</text>
 					</view>
 				</view>
@@ -72,7 +72,7 @@
 				<!-- 代码省略，保持原样 -->
 				<view class="section-header">
 					<text class="section-title">日常护理</text>
-					<uni-icons type="notification" size="20" color="#6B8857"></uni-icons>
+					<!-- <uni-icons type="notification" size="20" color="#6B8857"></uni-icons> -->
 				</view>
 				<scroll-view scroll-x class="care-scroll-view" :show-scrollbar="false">
 					<view class="care-list">
@@ -164,28 +164,31 @@ export default {
 				tags: [],
 				desc: ''
 			},
-			careActions: [
-				{ name: "施肥", icon: "flask", type: "Fertilizing", color: "#DCECC9" },
-				{ name: "修剪", icon: "scissors", type: "Pruning", color: "#F2D7D5" },
-				{ name: "换土", icon: "download", type: "SoilChange", color: "#E8E0D5" },
-				{ name: "浇水", icon: "checkbox-filled", type: "Watering", color: "#D6EAF8" },
-			],
-			logList: []
+			careActions: [],
+			logList: [],
+			totalLogCount: 0
 		};
 	},
-	onLoad(options) {
+	async onLoad(options) {
 		const app = getApp()
 		const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
 		this.topBarHeight = app.globalData.topBarHeight || menuButtonInfo.top;
 
 		if (options && options.id) {
 			this.plantId = options.id
-			this.getPlant()
-			this.getLogs()
+			await Promise.all([
+				this.getPlant(),
+				this.getCareActions()
+			]);
+			// 确保有了 careActions 后再获取并格式化日志
+			this.getLogs();
 		}
 		uni.$off('refreshHomeList');
-        uni.$on('refreshHomeList', (data) => {
-            this.getPlant();
+        uni.$on('refreshHomeList', async (data) => {
+            await Promise.all([
+				this.getPlant(),
+				this.getCareActions()
+			]);
 			this.getLogs();
         })
 	},
@@ -193,6 +196,17 @@ export default {
 		uni.$off('refreshHomeList');
 	},
 	methods: {
+		async getCareActions() {
+			try {
+				const familyId = uni.getStorageSync('familyId');
+				const result = await callContainer("/api/care/", { familyId: Number(familyId) });
+				if (result.data) {
+					this.careActions = result.data;
+				}
+			} catch (error) {
+				console.error("获取养护项失败:", error);
+			}
+		},
 		async getPlant() {
 			try {
 				const result = await callContainer("/api/plant/", {
@@ -206,10 +220,11 @@ export default {
 		},
 		async getLogs() {
 			try {
-				const result = await callContainer("/api/plant/log/", {
+				const result = await callContainer("/api/plant/log/list", {
 					plantId: Number(this.plantId)
 				})
 				if (result.data) {
+					this.totalLogCount = result.data.length
 					this.formatLogs(result.data)
 				}
 			} catch (error) {

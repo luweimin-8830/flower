@@ -63,6 +63,8 @@ func Login(ctx context.Context, openId string) (*model.User, []model.Family, err
 		if err := dao.CreateFamily(ctx, newFamily); err != nil {
 			return nil, nil, fmt.Errorf("创建默认家庭失败: %v", err)
 		}
+		// 初始化默认养护项
+		_ = dao.CreateDefaultCareActions(ctx, newFamily.ID)
 		families, err = dao.GetFamilyList(ctx, openId)
 		if err != nil {
 			return nil, nil, fmt.Errorf("重新获取家庭列表失败: %v", err)
@@ -101,6 +103,8 @@ func CreateFamily(ctx context.Context, openID string, name string) (*model.Famil
 	if err != nil {
 		return nil, err
 	}
+	// 初始化默认养护项
+	_ = dao.CreateDefaultCareActions(ctx, family.ID)
 	return family, nil
 }
 
