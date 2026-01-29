@@ -2,16 +2,25 @@ package service
 
 import (
 	"context"
+	"errors"
 	"wxcloud-golang/db/dao"
 	"wxcloud-golang/db/model"
 )
 
 // BatchAddPlantLogs 业务逻辑：添加日志
 func BatchAddPlantLogs(ctx context.Context, logs []*model.PlantLog, imageIDs []uint) error {
-	// 这里可以添加额外的业务逻辑，比如：
-	// 1. 检查植物是否存在
-	// 2. 如果是浇水操作，更新植物表的 "last_water_date"
-	
+	// 1. 判断是否今日已有相同操作 (仅针对批量添加中的第一个植物做演示，或循环检查)
+	// 如果是快捷护理，通常是针对单棵植物或一批植物的今日去重
+	for _, log := range logs {
+		exists, err := dao.CheckTodayActionExists(ctx, log.PlantID, log.ActionType)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return errors.New("今日已记录过该操作")
+		}
+	}
+
 	// 调用 DAO 层进行存储
 	return dao.BatchCreatePlantLogs(ctx, logs, imageIDs)
 }

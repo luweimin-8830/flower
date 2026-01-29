@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"time"
 	"wxcloud-golang/db"
 	"wxcloud-golang/db/model"
 
@@ -49,4 +50,14 @@ func GetPlantLogsByPlantID(ctx context.Context, plantID uint) ([]*model.PlantLog
 // DeletePlantLogByID 删除日志
 func DeletePlantLogByID(ctx context.Context, logID uint) error {
 	return db.DB.WithContext(ctx).Select("Images").Delete(&model.PlantLog{}, logID).Error
+}
+
+// CheckTodayActionExists 检查今日是否已存在某种操作
+func CheckTodayActionExists(ctx context.Context, plantID uint, actionType string) (bool, error) {
+	var count int64
+	today := time.Now().Format("2006-01-02")
+	err := db.DB.WithContext(ctx).Model(&model.PlantLog{}).
+		Where("plant_id = ? AND action_type = ? AND DATE(log_time) = ?", plantID, actionType, today).
+		Count(&count).Error
+	return count > 0, err
 }

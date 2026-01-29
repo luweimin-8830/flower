@@ -161,49 +161,32 @@ export default {
 			topBarHeight: 0,
 			plantId: 0,
 			plant: {
-				// 预设一些空值防止报错
 				tags: [],
 				desc: ''
 			},
-			// ... 其他数据保持不变 ...
 			careActions: [
-				{ name: "Fertilizing", icon: "", img: "", color: "#DCECC9" },
-				{ name: "Pruning", icon: "scissors", color: "#F2D7D5" },
-				{ name: "Soil Change", icon: "", img: "", color: "#E8E0D5" },
-				{ name: "Watering", icon: "checkbox-filled", color: "#D6EAF8" },
-				{ name: "修剪", icon: "scissors", color: "#F2D7D5" },
+				{ name: "施肥", icon: "flask", type: "Fertilizing", color: "#DCECC9" },
+				{ name: "修剪", icon: "scissors", type: "Pruning", color: "#F2D7D5" },
+				{ name: "换土", icon: "download", type: "SoilChange", color: "#E8E0D5" },
+				{ name: "浇水", icon: "checkbox-filled", type: "Watering", color: "#D6EAF8" },
 			],
-			logList: [
-				{
-					dateStr: "2026年1月15日 星期四",
-					items: [
-						{ time: "19:07", dateMini: "01/15", type: "Watering", actionName: "Watering" }
-					]
-				},
-				{
-					dateStr: "2026年1月14日 星期三",
-					items: [
-						{ time: "10:00", dateMini: "01/14", type: "Other", actionName: "记录生长" }
-					]
-				}
-			]
+			logList: []
 		};
 	},
 	onLoad(options) {
 		const app = getApp()
-		// 获取胶囊按钮位置，用于对齐右上角按钮
 		const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
-		// 如果 topBarHeight 不准，可以用 menuButtonInfo.top
 		this.topBarHeight = app.globalData.topBarHeight || menuButtonInfo.top;
 
 		if (options && options.id) {
 			this.plantId = options.id
 			this.getPlant()
+			this.getLogs()
 		}
 		uni.$off('refreshHomeList');
         uni.$on('refreshHomeList', (data) => {
-            console.log('收到刷新通知', data);
             this.getPlant();
+			this.getLogs();
         })
 	},
 	onUnload() {
@@ -215,21 +198,76 @@ export default {
 				const result = await callContainer("/api/plant/", {
 					id: Number(this.plantId)
 				})
-				console.log("call container get plant",result)
 				this.plant = result.data
 				this.plant.birthday = this.plant.birthday ? this.plant.birthday.split('T')[0] : '';
-
-				// 🌟 模拟数据：如果后端没返回 tags 和 desc，先造一点假数据看效果
-
 			} catch (error) {
 				console.error(error)
 			}
 		},
+		async getLogs() {
+			try {
+				const result = await callContainer("/api/plant/log/", {
+					plantId: Number(this.plantId)
+				})
+				if (result.data) {
+					this.formatLogs(result.data)
+				}
+			} catch (error) {
+				console.error(error)
+			}
+		},
+		formatLogs(rawLogs) {
+			const groups = {};
+			rawLogs.forEach(log => {
+				const date = new Date(log.logTime);
+				const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+				const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+				const dateMini = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+				
+				if (!groups[dateStr]) {
+					groups[dateStr] = {
+						dateStr,
+						items: []
+					};
+				}
+				
+				// 查找对应的操作名称
+				const action = this.careActions.find(a => a.type === log.actionType);
+				
+				groups[dateStr].items.push({
+					time,
+					dateMini,
+					type: log.actionType,
+					actionName: action ? action.name : log.actionType
+				});
+			});
+			this.logList = Object.values(groups);
+		},
 		goEdit() {
 			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.ID}&type=edit` })
 		},
-		// ... 其他方法保持不变 ...
-		handleCare(item) { console.log(item.name) },
+		async handleCare(item) {
+			uni.showLoading({ title: '正在记录...' });
+			try {
+				await callContainer("/api/plant/log/add", {
+					plantIds: [Number(this.plantId)],
+					actionType: item.type,
+					content: `完成了一次${item.name}`
+				});
+				uni.hideLoading();
+				uni.showToast({ title: '记录成功', icon: 'success' });
+				// 刷新列表
+				this.getLogs();
+			} catch (error) {
+				uni.hideLoading();
+				// 后端返回“今日已记录过该操作”会进入这里
+				uni.showModal({
+					title: '提示',
+					content: error.message || '今日已记录过该操作',
+					showCancel: false
+				});
+			}
+		},
 		goCalendar() { },
 		goAlbum() { }
 	}
