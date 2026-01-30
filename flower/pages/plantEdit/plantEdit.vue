@@ -197,14 +197,14 @@ export default {
 
 				const apiTags = tagList.data || []
 				const selectedIds = (this.plant && this.plant.tags)
-					? this.plant.tags.map(t => Number(t.ID || t.id))
+					? this.plant.tags.map(t => Number(t.id))
 					: [];
 
 				this.tags = [
 					...apiTags.map((item) => ({
 						name: item.name,
-						ID: item.ID,
-						active: selectedIds.includes(Number(item.ID))
+						id: item.id,
+						active: selectedIds.includes(Number(item.id))
 					}))
 				]
 				console.log("tags", this.tags)
@@ -258,7 +258,7 @@ export default {
 				console.log("save image", addImage)
 				this.plant.coverId = addImage.data.id;
 			}
-			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.ID })) || []
+			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.id })) || []
 			if (this.plant.coverId === 0) { this.plant.coverId = 6 }
 			console.log("name", this.plant.name)
 			console.log("coverId", this.plant.coverId)

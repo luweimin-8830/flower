@@ -18,7 +18,7 @@
 
             <!-- A: 普通模式 -->
             <block v-if="!isSorting">
-                <view v-for="(item, index) in familyList" :key="item.ID" class="list-item"
+                <view v-for="(item, index) in familyList" :key="item.id" class="list-item"
                     :class="{ 'has-border': index !== familyList.length - 1 }">
 
                     <!-- 左侧：名称 + 编辑 (仅户主) -->
@@ -32,7 +32,7 @@
                     <view class="right-content">
                         <!-- 1. 邀请按钮 (户主 & 管理员) -->
                         <button class="icon-btn-reset" v-if="item.role === 'owner' || item.role === 'admin'"
-                            open-type="share" :data-id="item.ID" :data-name="item.name">
+                            open-type="share" :data-id="item.id" :data-name="item.name">
                             <view class="icon-btn">
                                 <uni-icons type="personadd" size="18" color="#4A6139"></uni-icons>
                             </view>
@@ -59,7 +59,7 @@
 
             <!-- B: 排序模式 -->
             <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
-                <block v-for="(item, index) in familyList" :key="item.ID">
+                <block v-for="(item, index) in familyList" :key="item.id">
                     <movable-view class="sort-movable-item" :y="item.y" direction="vertical" :damping="40"
                         @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
                         :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
@@ -120,7 +120,7 @@ export default {
                     let rawList = family.data;
                     rawList.sort((a, b) => a.mySortOrder - b.mySortOrder);
                     this.familyList = rawList.map((item, index) => ({
-                        ID: item.ID,
+                        id: item.id,
                         name: item.name,
                         role: item.myRole,
                         memberCount: item.memberCount,
@@ -151,7 +151,7 @@ export default {
                         try {
                             // 调用后端删除API
                             await callContainer("/api/family/delete", {
-                                familyId: item.ID
+                                familyId: item.id
                             });
                             
                             // 前端移除该家庭
@@ -212,7 +212,7 @@ export default {
                 
                 item.name = newName;
                 const uploadName = await callContainer("/api/family/update", {
-                    familyId: item.ID,
+                    familyId: item.id,
                     name: newName
                 })
                 console.log("call container upload family:", uploadName)
@@ -222,7 +222,7 @@ export default {
                 })
                 let localList = result.data;
                 if (Array.isArray(localList)) {
-                    const targetIndex = localList.findIndex(f => (f.id === item.ID) || (f.ID === item.ID));
+                    const targetIndex = localList.findIndex(f => (f.id === item.id) || (f.ID === item.id));
                     if (targetIndex !== -1) {
                         // 修改名称
                         localList[targetIndex].name = item.name;
@@ -312,7 +312,7 @@ export default {
         },
         async saveSortOrder() {
             try {
-                const familyIds = this.familyList.map(item => item.ID);
+                const familyIds = this.familyList.map(item => item.id);
                 await callContainer("/api/family/sort", {
                     familyIds: familyIds
                 });

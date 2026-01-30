@@ -133,9 +133,20 @@ export default {
 		async getCareOptions() {
 			try {
 				const result = await callContainer("/api/care/", { familyId: Number(this.familyId) });
+				let options = [];
+				// 前端写死第一个：成长记录
+				const growthOption = {
+					name: '成长记录',
+					type: 'Growth',
+					icon: 'camera',
+					color: '#E8E0D5'
+				};
+				
 				if (result.data) {
-					this.careOptions = result.data;
+					// 过滤掉后端可能存在的重复项（兼容老数据）
+					options = result.data.filter(item => item.type !== 'Growth' && item.name !== '成长记录');
 				}
+				this.careOptions = [growthOption, ...options];
 			} catch (e) { console.error(e); }
 		},
 		async getLogDetail() {
@@ -148,7 +159,7 @@ export default {
 					this.formData.logTime = data.logTime.split('T')[0];
 					if (data.images) {
 						this.uploadImages = data.images.map(img => ({
-							id: img.ID,
+							id: img.id,
 							url: img.url,
 							isOld: true
 						}));
@@ -345,6 +356,7 @@ export default {
 
 .care-list {
 	display: flex;
+	padding: 12px 8px; // 增加间距，确保第一个图标在缩放 (scale 1.1) 和阴影显示时不会被左侧边缘裁剪
 }
 
 .care-item {

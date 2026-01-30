@@ -62,7 +62,7 @@
                     <view class="card-box list-card" :class="{ 'sorting-mode': isSorting }">
                         <!-- 模式 A: 普通模式 (左滑删除) -->
                         <uni-swipe-action v-if="!isSorting">
-                            <block v-for="(item, index) in careList" :key="item.ID">
+                            <block v-for="(item, index) in careList" :key="item.id">
                                 <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)">
                                     <view class="list-item" @click="startEdit(item)">
                                         <view class="left-info">
@@ -83,7 +83,7 @@
 
                         <!-- 模式 B: 排序模式 -->
                         <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
-                            <block v-for="(item, index) in careList" :key="item.ID">
+                            <block v-for="(item, index) in careList" :key="item.id">
                                 <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40"
                                     @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
                                     :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
@@ -215,7 +215,7 @@ export default {
             this.isEditing = false;
         },
         startEdit(item) {
-            this.formData = { ...item, id: item.ID };
+            this.formData = { ...item, id: item.id };
             this.isEditing = true;
             uni.pageScrollTo({ scrollTop: 0, duration: 300 });
         },
@@ -240,7 +240,7 @@ export default {
                     content: '确定删除该养护项吗？',
                     success: async (res) => {
                         if (res.confirm) {
-                            await callContainer("/api/care/delete", { id: item.ID });
+                            await callContainer("/api/care/delete", { id: item.id });
                             this.getCareList();
                         }
                     }
@@ -251,7 +251,7 @@ export default {
         async toggleSortMode() {
             if (this.isSorting) {
                 this.isSorting = false;
-                const sortedIds = this.careList.map(item => item.ID);
+                const sortedIds = this.careList.map(item => item.id);
                 await callContainer("/api/care/sort", { careIds: sortedIds });
             } else {
                 this.careList.forEach((item, index) => item.y = index * ROW_HEIGHT);

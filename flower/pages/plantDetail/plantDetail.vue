@@ -262,7 +262,7 @@ export default {
 				const action = this.careActions.find(a => a.type === log.actionType);
 				
 				groups[dateStr].items.push({
-					id: log.ID,
+					id: log.id,
 					time,
 					dateMini,
 					type: log.actionType,
@@ -276,7 +276,7 @@ export default {
 			this.logList = Object.values(groups);
 		},
 		goEdit() {
-			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.ID}&type=edit` })
+			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.id}&type=edit` })
 		},
 		goAddLog() {
 			uni.navigateTo({ url: `/pages/logEdit/logEdit?plantId=${this.plantId}` })

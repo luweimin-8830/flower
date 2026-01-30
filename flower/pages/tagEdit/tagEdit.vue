@@ -33,7 +33,7 @@
 
                         <!-- 🌟 模式 A: 普通模式 (支持左滑删除) -->
                         <uni-swipe-action v-if="!isSorting">
-                            <block v-for="(item, index) in tagsList" :key="item.ID">
+                            <block v-for="(item, index) in tagsList" :key="item.id">
                                 <uni-swipe-action-item :right-options="swipeOptions" @click="swipeClick($event, index)"
                                     :auto-close="true">
                                     <view class="list-item">
@@ -63,7 +63,7 @@
 
                         <!-- 🌟 模式 B: 排序模式 (支持拖拽) -->
                         <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
-                            <block v-for="(item, index) in tagsList" :key="item.ID">
+                            <block v-for="(item, index) in tagsList" :key="item.id">
                                 <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40" :disabled="false"
                                     @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
                                     :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
@@ -219,7 +219,7 @@ export default {
         // 5. 保存顺序到服务器
         async saveSortOrder() {
             // 提取 ID 数组
-            const sortedIds = this.tagsList.map(item => item.ID);
+            const sortedIds = this.tagsList.map(item => item.id);
             console.log('新的顺序 ID:', sortedIds);
 
             try {
@@ -261,7 +261,7 @@ export default {
                 }));
                 if (result.confirm) {
                     const item = this.tagsList[index];
-                    await callContainer("/api/tag/delete", { id: item.ID });
+                    await callContainer("/api/tag/delete", { id: item.id });
                     this.tagsList.splice(index, 1);
                     // 删除后要更新高度
                     this.areaHeight = this.tagsList.length * ROW_HEIGHT;
@@ -282,7 +282,7 @@ export default {
             if (!item.tempName.trim()) return;
             item.name = item.tempName;
             item.isEditing = false;
-            await callContainer("/api/tag/update", { id: item.ID, name: item.name });
+            await callContainer("/api/tag/update", { id: item.id, name: item.name });
         }
     },
     onLoad() {

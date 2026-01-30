@@ -16,12 +16,15 @@ const (
 )
 
 type PlantLog struct {
-	gorm.Model
-	PlantID    uint      `json:"plantId" gorm:"index;not null"`               // 关联植物ID
-	OpenId     string    `json:"openId" gorm:"index"`                         // 操作人
-	ActionType string    `json:"actionType" gorm:"type:varchar(50);not null"` // 类型
-	Content    string    `json:"content" gorm:"type:text"`                    // 文字内容
-	LogTime    time.Time `json:"logTime" gorm:"index"`                        // 实际发生的日期
+	ID         uint           `gorm:"primaryKey" json:"id"`
+	CreatedAt  time.Time      `json:"createdAt"`
+	UpdatedAt  time.Time      `json:"updatedAt"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	PlantID    uint           `json:"plantId" gorm:"index;not null"`               // 关联植物ID
+	OpenId     string         `json:"openId" gorm:"index"`                         // 操作人
+	ActionType string         `json:"actionType" gorm:"type:varchar(50);not null"` // 类型
+	Content    string         `json:"content" gorm:"type:text"`                    // 文字内容
+	LogTime    time.Time      `json:"logTime" gorm:"index"`                        // 实际发生的日期
 
 	// 多对多关联：一条日志可以包含多张图片
 	// gorm 会自动创建 plant_log_images 中间表
