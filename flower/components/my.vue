@@ -46,6 +46,20 @@
             </view>
         </view>
     </view>
+    <view class="section-container">
+        <text class="section-title">帮助与支持</text>
+        <view class="card-box">
+            <button class="contact-btn" open-type="contact" hover-class="item-hover">
+                <view class="menu-item">
+                    <view class="left-content">
+                        <uni-icons type="chat" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                        <text class="menu-text">联系客服</text>
+                    </view>
+                    <uni-icons type="right" size="16" color="#999"></uni-icons>
+                </view>
+            </button>
+        </view>
+    </view>
 </template>
 
 <script>
@@ -155,5 +169,21 @@ export default {
     width: 100%;
     /* 如果想让分割线不顶头，可以加 margin-left: 32px; */
     margin-left: 32px;
+}
+/* 客服按钮重置样式 */
+.contact-btn {
+    width: 100%;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+    text-align: left;
+    border: none;
+    border-radius: 0;
+    display: block;
+
+    &::after {
+        border: none;
+    }
 }
 </style>

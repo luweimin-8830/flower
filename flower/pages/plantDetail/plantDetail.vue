@@ -79,7 +79,7 @@
 						<view class="care-item" v-for="(item, index) in careActions" :key="index"
 							@click="handleCare(item)">
 							<view class="care-icon-box" :style="{ backgroundColor: item.color }">
-								<uni-icons :type="item.icon" size="28" color="#fff" v-if="item.icon"></uni-icons>
+								<view class="iconfont" :class="item.icon" style="font-size: 28px; color: #fff;" v-if="item.icon"></view>
 								<image v-else :src="item.img" class="care-img"></image>
 							</view>
 							<text class="care-name">{{ item.name }}</text>
@@ -133,7 +133,7 @@
 							</view>
 							<view class="log-content-box">
 								<view class="log-tag pill" :style="{ backgroundColor: log.color + '33' || '#D6EAF8' }">
-									<uni-icons :type="log.icon || 'checkbox-filled'" size="16" :color="log.color || '#4A90E2'"></uni-icons>
+									<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 16px;" :style="{ color: log.color || '#4A90E2' }"></view>
 									<text class="log-text">{{ log.actionName }}</text>
 								</view>
 								<view class="log-content" v-if="log.content">{{ log.content }}</view>

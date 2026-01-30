@@ -14,8 +14,9 @@
 							<view class="care-icon-box"
 								:class="{ 'active': formData.actionType === item.type }"
 								:style="{ backgroundColor: formData.actionType === item.type ? item.color : '#f5f5f5' }">
-								<uni-icons :type="item.icon" size="24" 
-									:color="formData.actionType === item.type ? '#fff' : '#999'"></uni-icons>
+								<view class="iconfont" :class="item.icon" 
+									style="font-size: 24px;"
+									:style="{ color: formData.actionType === item.type ? '#fff' : '#999' }"></view>
 							</view>
 							<text class="care-name" :class="{ 'active-text': formData.actionType === item.type }">{{ item.name }}</text>
 						</view>
@@ -138,7 +139,7 @@ export default {
 				const growthOption = {
 					name: '成长记录',
 					type: 'record',
-					icon: 'camera',
+					icon: 'plant-shequhuodong',
 					color: '#E8E0D5'
 				};
 				

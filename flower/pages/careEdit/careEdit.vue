@@ -24,7 +24,7 @@
                                     class="option-item icon-item" 
                                     :class="{ 'active': formData.icon === icon }"
                                     @click="formData.icon = icon">
-                                    <uni-icons :type="icon" size="20" :color="formData.icon === icon ? '#fff' : '#666'"></uni-icons>
+                                    <view class="iconfont" :class="icon" :style="{ fontSize: '20px', color: formData.icon === icon ? '#fff' : '#666' }"></view>
                                 </view>
                             </view>
                         </view>
@@ -67,7 +67,7 @@
                                     <view class="list-item" @click="startEdit(item)">
                                         <view class="left-info">
                                             <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                                <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
+                                                <view class="iconfont" :class="item.icon" style="font-size: 20px; color: #fff;"></view>
                                             </view>
                                             <view class="care-text-info">
                                                 <text class="care-name">{{ item.name }}</text>
@@ -91,7 +91,7 @@
                                         <view class="left-info">
                                             <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
                                             <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                                <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
+                                                <view class="iconfont" :class="item.icon" style="font-size: 20px; color: #fff;"></view>
                                             </view>
                                             <text class="care-name">{{ item.name }}</text>
                                         </view>
@@ -125,16 +125,16 @@ export default {
                 id: null,
                 name: '',
                 type: '',
-                icon: 'checkbox-filled',
+                icon: 'plant-jiaoshui1',
                 color: '#D6EAF8'
             },
             isEditing: false,
             swipeOptions: [{ text: '删除', style: { backgroundColor: '#dd524d' } }],
             careList: [],
             iconOptions: [
-                'checkbox-filled', 'flask', 'scissors', 'download', 
-                'sun', 'flag', 'heart', 'calendar', 'fire', 'medal',
-                'camera', 'image', 'chat'
+                'plant-shequhuodong', 'plant-kongzhonghuayuan', 'plant-dianpu', 'plant-a-xiujian13', 
+                'plant-chuchong1', 'plant-shifei1', 'plant-a-xiujian23', 'plant-jiaoshui1', 'plant-chuchong2', 'plant-jiaoshui2',
+                'plant-a-Frame9', 'plant-a-Frame1'
             ],
             colorOptions: [
                 '#D6EAF8', '#DCECC9', '#F2D7D5', '#E8E0D5', 

@@ -81,8 +81,9 @@
                                 <view v-for="item in careOptions" :key="item.type" class="action-item"
                                     :class="{ 'active': batchActionType === item.type }"
                                     @click="batchActionType = item.type">
-                                    <uni-icons :type="item.icon" size="18"
-                                        :color="batchActionType === item.type ? '#fff' : '#666'"></uni-icons>
+                                    <view class="iconfont" :class="item.icon" 
+                                        style="font-size: 18px;"
+                                        :style="{ color: batchActionType === item.type ? '#fff' : '#666' }"></view>
                                     <text class="action-name">{{ item.name }}</text>
                                 </view>
                             </view>
@@ -473,15 +474,10 @@ export default {
                     }))
                 ]
 
-                // 成长记录
-                const growthOption = {
-                    name: '成长记录',
-                    type: 'record',
-                    icon: 'camera',
-                    color: '#E8E0D5'
-                };
+                // 批量操作项
                 const apiCares = careList?.data || [];
-                this.careOptions = [growthOption, ...apiCares.filter(c => c.type !== 'record')];
+                // 首页不需要“成长记录”操作，过滤掉
+                this.careOptions = apiCares.filter(c => c.type !== 'record');
                 if (this.careOptions.length > 0) {
                     this.batchActionType = this.careOptions[0].type;
                 }
