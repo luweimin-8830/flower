@@ -61,10 +61,11 @@ func GetCareByID(ctx context.Context, id uint) (*model.CareAction, error) {
 
 func CreateDefaultCareActions(ctx context.Context, familyID uint) error {
 	defaults := []model.CareAction{
-		{Name: "浇水", Type: "water", Icon: "checkbox-filled", Color: "#D6EAF8", FamilyID: familyID, SortOrder: 0},
-		{Name: "施肥", Type: "fertilize", Icon: "flask", Color: "#DCECC9", FamilyID: familyID, SortOrder: 1},
-		{Name: "修剪", Type: "prune", Icon: "scissors", Color: "#F2D7D5", FamilyID: familyID, SortOrder: 2},
-		{Name: "换土", Type: "repot", Icon: "download", Color: "#E8E0D5", FamilyID: familyID, SortOrder: 3},
+		{Name: "成长记录", Type: "record", Icon: "camera", Color: "#E8E0D5", FamilyID: familyID, SortOrder: 0},
+		{Name: "浇水", Type: "water", Icon: "checkbox-filled", Color: "#D6EAF8", FamilyID: familyID, SortOrder: 1},
+		{Name: "施肥", Type: "fertilize", Icon: "flask", Color: "#DCECC9", FamilyID: familyID, SortOrder: 2},
+		{Name: "修剪", Type: "prune", Icon: "scissors", Color: "#F2D7D5", FamilyID: familyID, SortOrder: 3},
+		{Name: "换土", Type: "repot", Icon: "download", Color: "#E8E0D5", FamilyID: familyID, SortOrder: 4},
 	}
 	return execWithSpan(ctx, "INSERT", "care_action", func(conn *gorm.DB) error {
 		return conn.Create(&defaults).Error

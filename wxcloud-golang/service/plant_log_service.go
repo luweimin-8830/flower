@@ -68,8 +68,31 @@ func fillActionInfo(ctx context.Context, familyID uint, logs []*model.PlantLog) 
 			log.ActionIcon = action.Icon
 			log.ActionColor = action.Color
 		} else {
-			// 兜底显示
-			log.ActionName = log.ActionType
+			// 特殊处理内置类型或老数据兼容
+			switch log.ActionType {
+			case "Growth", "record":
+				log.ActionName = "成长记录"
+				log.ActionIcon = "camera"
+				log.ActionColor = "#E8E0D5"
+			case "water":
+				log.ActionName = "浇水"
+				log.ActionIcon = "checkbox-filled"
+				log.ActionColor = "#D6EAF8"
+			case "fertilize":
+				log.ActionName = "施肥"
+				log.ActionIcon = "flask"
+				log.ActionColor = "#DCECC9"
+			case "prune":
+				log.ActionName = "修剪"
+				log.ActionIcon = "scissors"
+				log.ActionColor = "#F2D7D5"
+			case "repot":
+				log.ActionName = "换土"
+				log.ActionIcon = "download"
+				log.ActionColor = "#E8E0D5"
+			default:
+				log.ActionName = log.ActionType
+			}
 		}
 	}
 }

@@ -137,14 +137,14 @@ export default {
 				// 前端写死第一个：成长记录
 				const growthOption = {
 					name: '成长记录',
-					type: 'Growth',
+					type: 'record',
 					icon: 'camera',
 					color: '#E8E0D5'
 				};
 				
 				if (result.data) {
 					// 过滤掉后端可能存在的重复项（兼容老数据）
-					options = result.data.filter(item => item.type !== 'Growth' && item.name !== '成长记录');
+					options = result.data.filter(item => item.type !== 'record' && item.type !== 'Growth' && item.name !== '成长记录');
 				}
 				this.careOptions = [growthOption, ...options];
 			} catch (e) { console.error(e); }
