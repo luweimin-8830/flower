@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"wxcloud-golang/db/dao"
 	"wxcloud-golang/db/model"
-
-	"gorm.io/gorm"
 )
 
 func AddPlant(ctx context.Context, plant *model.Plant, tagIDs []uint) error {
 	if len(tagIDs) > 0 {
 		var tags []model.Tag
 		for _, id := range tagIDs {
-			tags = append(tags, model.Tag{Model: gorm.Model{ID: id}})
+			tags = append(tags, model.Tag{ID: id})
 		}
 		plant.Tags = tags
 		fmt.Println("传入标签是：", tags)

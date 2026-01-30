@@ -50,7 +50,7 @@ func UpdatePlant(ctx context.Context, plantID uint, updateDate map[string]any, n
 
 			var newTags []model.Tag
 			for _, tagId := range newTagIDs {
-				newTags = append(newTags, model.Tag{Model: gorm.Model{ID: tagId}})
+				newTags = append(newTags, model.Tag{ID: tagId})
 			}
 			if err := tx.Model(&plant).Association("Tags").Replace(newTags); err != nil {
 				tx.Rollback()
