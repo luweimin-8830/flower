@@ -139,8 +139,8 @@ export default {
 				const growthOption = {
 					name: '成长记录',
 					type: 'record',
-					icon: 'plant-shequhuodong',
-					color: '#E8E0D5'
+					icon: 'plant-zhiwuzhiyuan-duorouzhiwuyuan',
+					color: '#A7C190'
 				};
 				
 				if (result.data) {

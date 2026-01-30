@@ -28,7 +28,7 @@
 						</view>
 						<view v-for="log in currentLogs" :key="log.id" class="log-item" @click="goEdit(log)">
 							<view class="log-icon" :style="{ backgroundColor: (log.color || '#4A6139') + '22' }">
-								<uni-icons :type="log.icon || 'checkbox-filled'" size="20" :color="log.color || '#4A6139'"></uni-icons>
+								<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 20px;" :style="{ color: log.color || '#4A6139' }"></view>
 							</view>
 							<view class="log-info">
 								<view class="log-top">
@@ -126,7 +126,7 @@ export default {
 							...log,
 							// 优先使用后端返回的 name，其次使用前端匹配到的 action.name，最后兜底使用 actionType
 							name: log.name || (action ? action.name : log.actionType),
-							icon: log.icon || (action ? action.icon : 'checkbox-filled'),
+							icon: log.icon || (action ? action.icon : 'plant-jiaoshui1'),
 							color: log.color || (action ? action.color : '#4A6139')
 						};
 					});
