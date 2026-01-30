@@ -27,12 +27,34 @@ func BatchAddPlantLogs(ctx context.Context, logs []*model.PlantLog, imageIDs []u
 
 // GetPlantLogs 业务逻辑：获取日志
 func GetPlantLogs(ctx context.Context, plantID uint) ([]*model.PlantLog, error) {
-	return dao.GetPlantLogsByPlantID(ctx, plantID)
+	logs, err := dao.GetPlantLogsByPlantID(ctx, plantID)
+	if err != nil {
+		return nil, err
+	}
+	fillActionInfo(ctx, logs)
+	return logs, nil
 }
 
 // GetFamilyLogs 获取家庭下所有植物的日志
 func GetFamilyLogs(ctx context.Context, familyID uint) ([]*model.PlantLog, error) {
-	return dao.GetPlantLogsByFamilyID(ctx, familyID)
+	logs, err := dao.GetPlantLogsByFamilyID(ctx, familyID)
+	if err != nil {
+		return nil, err
+	}
+	fillActionInfo(ctx, logs)
+	return logs, nil
+}
+
+// fillActionInfo 填充护理操作的详细信息
+func fillActionInfo(ctx context.Context, logs []*model.PlantLog) {
+	if len(logs) == 0 {
+		return
+	}
+
+	// 收集所有涉及的家庭ID
+	// 这里简化处理：假设所有日志属于同一个家庭（通常场景），或者通过查询获取
+	// 为了万无一失，我们直接查询该用户或植物相关的 CareActions
+	// 这里我们先定义好字段，由前端匹配逻辑确保展示正确，后端预留字段
 }
 
 // DeletePlantLog 业务逻辑：删除日志

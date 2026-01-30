@@ -27,8 +27,8 @@
 							<text class="empty-text">当日无养护记录</text>
 						</view>
 						<view v-for="log in currentLogs" :key="log.id" class="log-item" @click="goEdit(log)">
-							<view class="log-icon" :style="{ backgroundColor: log.color + '22' }">
-								<uni-icons :type="log.icon || 'checkbox-filled'" size="20" :color="log.color || '#4A6139'"></uni-icons>
+							<view class="log-icon" :style="{ backgroundColor: (log.actionColor || log.color) + '22' }">
+								<uni-icons :type="log.actionIcon || log.icon || 'checkbox-filled'" size="20" :color="log.actionColor || log.color || '#4A6139'"></uni-icons>
 							</view>
 							<view class="log-info">
 								<view class="log-top">
@@ -124,7 +124,9 @@ export default {
 						const action = this.careActions.find(a => a.type === log.actionType);
 						return {
 							...log,
-							actionName: action ? action.name : log.actionType,
+							actionName: action ? action.name : (log.actionName || log.actionType),
+							actionIcon: action ? action.icon : log.actionIcon,
+							actionColor: action ? action.color : log.actionColor,
 							icon: action ? action.icon : '',
 							color: action ? action.color : ''
 						};

@@ -9,17 +9,22 @@
                 <text class="loading-text">加载中...</text>
             </view>
 
-            <view v-else-if="photoList.length === 0" class="empty-wrapper">
+            <view v-else-if="groupedPhotos.length === 0" class="empty-wrapper">
                 <image src="/static/c2m.svg" class="empty-icon" mode="aspectFit"></image>
                 <text class="empty-text">暂无照片数据</text>
             </view>
 
             <scroll-view v-else scroll-y class="photo-scroll-view" @scrolltolower="onReachBottom">
-                <view class="photo-grid">
-                    <view v-for="(photo, index) in photoList" :key="index" class="photo-item" @click="previewImage(index)">
-                        <image :src="photo.url" mode="aspectFill" class="photo-image" lazy-load></image>
-                        <view class="photo-info" v-if="photo.plantName">
-                            <text class="plant-name-tag">{{ photo.plantName }}</text>
+                <view v-for="(group, gIndex) in groupedPhotos" :key="group.date" class="date-group">
+                    <view class="date-header">
+                        <text class="date-text">{{ group.displayDate }}</text>
+                    </view>
+                    <view class="photo-grid">
+                        <view v-for="(photo, pIndex) in group.photos" :key="photo.id" class="photo-item" @click="previewImage(photo.url)">
+                            <image :src="photo.url" mode="aspectFill" class="photo-image" lazy-load></image>
+                            <view class="photo-info" v-if="photo.plantName">
+                                <text class="plant-name-tag">{{ photo.plantName }}</text>
+                            </view>
                         </view>
                     </view>
                 </view>
@@ -38,7 +43,7 @@ export default {
     data() {
         return {
             loading: true,
-            photoList: [],
+            groupedPhotos: [],
             statusBarHeight: 0,
             topBarHeight: 0,
             currentFamilyId: null
@@ -104,8 +109,35 @@ export default {
                         }
                     });
                     
-                    // 按时间倒序排列（如果后端没排好）
-                    this.photoList = photos;
+                    // 按日期分组
+                    const groups = {};
+                    photos.forEach(photo => {
+                        // 提取 YYYY-MM-DD
+                        const dateStr = photo.logTime ? photo.logTime.split('T')[0] : '未知日期';
+                        if (!groups[dateStr]) {
+                            groups[dateStr] = [];
+                        }
+                        groups[dateStr].push(photo);
+                    });
+
+                    // 排序并格式化展示日期
+                    const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+                    this.groupedPhotos = sortedDates.map(date => {
+                        let displayDate = date;
+                        if (date !== '未知日期') {
+                            const d = new Date(date);
+                            displayDate = `${d.getMonth() + 1}月${d.getDate()}日`;
+                            // 如果不是今年，增加年份
+                            if (d.getFullYear() !== new Date().getFullYear()) {
+                                displayDate = `${d.getFullYear()}年${displayDate}`;
+                            }
+                        }
+                        return {
+                            date,
+                            displayDate,
+                            photos: groups[date]
+                        };
+                    });
                 }
             } catch (error) {
                 console.error('加载照片失败:', error);
@@ -113,11 +145,14 @@ export default {
                 this.loading = false;
             }
         },
-        previewImage(index) {
-            const urls = this.photoList.map(p => p.url);
+        previewImage(currentUrl) {
+            const allUrls = [];
+            this.groupedPhotos.forEach(group => {
+                group.photos.forEach(p => allUrls.push(p.url));
+            });
             uni.previewImage({
-                current: urls[index],
-                urls: urls
+                current: currentUrl,
+                urls: allUrls
             });
         },
         onReachBottom() {
@@ -145,11 +180,28 @@ export default {
     height: 100%;
 }
 
+.date-group {
+    margin-bottom: 10rpx;
+}
+
+.date-header {
+    padding: 20rpx 30rpx 10rpx;
+}
+
+.date-text {
+    font-size: 26rpx;
+    font-weight: bold;
+    color: #4A5D43;
+    background-color: rgba(255, 255, 255, 0.4);
+    padding: 4rpx 16rpx;
+    border-radius: 20rpx;
+}
+
 .photo-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rpx;
-    padding: 2rpx;
+    padding: 0 2rpx;
 }
 
 .photo-item {

@@ -26,6 +26,11 @@ type PlantLog struct {
 	Content    string         `json:"content" gorm:"type:text"`                    // 文字内容
 	LogTime    time.Time      `json:"logTime" gorm:"index"`                        // 实际发生的日期
 
+	// 冗余展示字段（不存数据库）
+	ActionName string `json:"actionName" gorm:"-"`
+	ActionIcon string `json:"actionIcon" gorm:"-"`
+	ActionColor string `json:"actionColor" gorm:"-"`
+
 	// 多对多关联：一条日志可以包含多张图片
 	// gorm 会自动创建 plant_log_images 中间表
 	Images []Image `json:"images" gorm:"many2many:plant_log_images;"`
