@@ -31,7 +31,11 @@ func GetPlantLogs(ctx context.Context, plantID uint) ([]*model.PlantLog, error) 
 	if err != nil {
 		return nil, err
 	}
-	fillActionInfo(ctx, logs)
+	// 获取植物详情以拿到 familyID
+	plant, _ := dao.GetPlantByID(ctx, plantID)
+	if plant != nil {
+		fillActionInfo(ctx, plant.FamilyID, logs)
+	}
 	return logs, nil
 }
 
@@ -41,20 +45,33 @@ func GetFamilyLogs(ctx context.Context, familyID uint) ([]*model.PlantLog, error
 	if err != nil {
 		return nil, err
 	}
-	fillActionInfo(ctx, logs)
+	fillActionInfo(ctx, familyID, logs)
 	return logs, nil
 }
 
 // fillActionInfo 填充护理操作的详细信息
-func fillActionInfo(ctx context.Context, logs []*model.PlantLog) {
+func fillActionInfo(ctx context.Context, familyID uint, logs []*model.PlantLog) {
 	if len(logs) == 0 {
 		return
 	}
 
-	// 收集所有涉及的家庭ID
-	// 这里简化处理：假设所有日志属于同一个家庭（通常场景），或者通过查询获取
-	// 为了万无一失，我们直接查询该用户或植物相关的 CareActions
-	// 这里我们先定义好字段，由前端匹配逻辑确保展示正确，后端预留字段
+	// 获取该家庭的所有养护项配置
+	cares, _ := dao.GetCareByFamilyID(ctx, familyID)
+	careMap := make(map[string]model.CareAction)
+	for _, c := range cares {
+		careMap[c.Type] = c
+	}
+
+	for _, log := range logs {
+		if action, ok := careMap[log.ActionType]; ok {
+			log.ActionName = action.Name
+			log.ActionIcon = action.Icon
+			log.ActionColor = action.Color
+		} else {
+			// 兜底显示
+			log.ActionName = log.ActionType
+		}
+	}
 }
 
 // DeletePlantLog 业务逻辑：删除日志
@@ -70,5 +87,14 @@ func UpdatePlantLog(ctx context.Context, log *model.PlantLog, imageIDs []uint) e
 
 // GetPlantLog 业务逻辑：获取单条日志
 func GetPlantLog(ctx context.Context, logID uint) (*model.PlantLog, error) {
-	return dao.GetPlantLogByID(ctx, logID)
+	log, err := dao.GetPlantLogByID(ctx, logID)
+	if err != nil {
+		return nil, err
+	}
+	// 获取植物详情以拿到 familyID
+	plant, _ := dao.GetPlantByID(ctx, log.PlantID)
+	if plant != nil {
+		fillActionInfo(ctx, plant.FamilyID, []*model.PlantLog{log})
+	}
+	return log, nil
 }

@@ -27,12 +27,12 @@
 							<text class="empty-text">当日无养护记录</text>
 						</view>
 						<view v-for="log in currentLogs" :key="log.id" class="log-item" @click="goEdit(log)">
-							<view class="log-icon" :style="{ backgroundColor: (log.actionColor || log.color) + '22' }">
-								<uni-icons :type="log.actionIcon || log.icon || 'checkbox-filled'" size="20" :color="log.actionColor || log.color || '#4A6139'"></uni-icons>
+							<view class="log-icon" :style="{ backgroundColor: (log.color || '#4A6139') + '22' }">
+								<uni-icons :type="log.icon || 'checkbox-filled'" size="20" :color="log.color || '#4A6139'"></uni-icons>
 							</view>
 							<view class="log-info">
 								<view class="log-top">
-									<text class="log-name">{{ log.actionName }}</text>
+									<text class="log-name">{{ log.name }}</text>
 									<text class="log-time">{{ formatTime(log.logTime) }}</text>
 								</view>
 								<text class="log-content" v-if="log.content">{{ log.content }}</text>
@@ -124,11 +124,10 @@ export default {
 						const action = this.careActions.find(a => a.type === log.actionType);
 						return {
 							...log,
-							actionName: action ? action.name : (log.actionName || log.actionType),
-							actionIcon: action ? action.icon : log.actionIcon,
-							actionColor: action ? action.color : log.actionColor,
-							icon: action ? action.icon : '',
-							color: action ? action.color : ''
+							// 优先使用后端返回的 name，其次使用前端匹配到的 action.name，最后兜底使用 actionType
+							name: log.name || (action ? action.name : log.actionType),
+							icon: log.icon || (action ? action.icon : 'checkbox-filled'),
+							color: log.color || (action ? action.color : '#4A6139')
 						};
 					});
 					
