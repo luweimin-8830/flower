@@ -22,6 +22,108 @@
   /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
   /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
+.edit-mode-header.data-v-045d88fd {
+  width: 100%;
+  padding: 0 10px;
+}
+.clean-btn.data-v-045d88fd,
+.save-btn-rect.data-v-045d88fd {
+  width: 100%;
+  height: 74rpx;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 28rpx;
+  color: #333;
+}
+.clean-btn.data-v-045d88fd:active,
+.save-btn-rect.data-v-045d88fd:active {
+  transform: scale(0.92) translateY(2px);
+}
+.save-btn-rect.data-v-045d88fd {
+  color: #6B8857;
+  font-weight: bold;
+}
+.action-selection-bar.data-v-045d88fd {
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 10px;
+  height: 140rpx;
+}
+.select-all-wrapper.data-v-045d88fd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 30rpx;
+  flex-shrink: 0;
+}
+.select-all-wrapper .select-all-text.data-v-045d88fd {
+  font-size: 10px;
+  color: #6B8857;
+  margin-top: 4rpx;
+}
+.action-scroll-view.data-v-045d88fd {
+  flex: 1;
+  width: 0;
+  white-space: nowrap;
+  height: 100%;
+}
+.action-list.data-v-045d88fd {
+  display: inline-flex;
+  align-items: center;
+  padding-right: 60rpx;
+  height: 100%;
+}
+.action-item.data-v-045d88fd {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  width: 120rpx;
+  height: 120rpx;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 24rpx;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.action-item.active.data-v-045d88fd {
+  background: #6B8857;
+}
+.action-item.active .action-name.data-v-045d88fd {
+  color: #fff;
+}
+.action-item .action-name.data-v-045d88fd {
+  font-size: 11px;
+  color: #666;
+  margin-top: 8rpx;
+  width: 100%;
+  text-align: center;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.checkbox-wrapper.data-v-045d88fd {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* 3. 滚动区域：自动填满剩余空间 */
 .content-scroll-view.data-v-045d88fd {
@@ -164,7 +266,7 @@
 .tag-flex-box.data-v-045d88fd {
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 40rpx 0 20rpx;
   position: relative;
 }
 .tag-item.data-v-045d88fd {
@@ -218,10 +320,30 @@
   animation: scaleIn-045d88fd 0.2s ease-out;
 }
 .plant-card.data-v-045d88fd {
+  position: relative;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.card-delete-btn.data-v-045d88fd {
+  position: absolute;
+  right: 12rpx;
+  bottom: 12rpx;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+}
+.card-delete-btn.data-v-045d88fd:active {
+  transform: scale(0.9);
+  background: #fff;
 }
 .image-wrapper.data-v-045d88fd {
   position: relative;

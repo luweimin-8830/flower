@@ -22,7 +22,8 @@ func DeleteCareAction(ctx context.Context, id uint) error {
 
 func UpdateCareAction(ctx context.Context, care *model.CareAction) error {
 	return execWithSpan(ctx, "UPDATE", "care_action", func(conn *gorm.DB) error {
-		return conn.Save(care).Error
+		// 使用 Updates 而不是 Save，避免触发零值日期 (0001-01-01) 的更新导致 MySQL 报错
+		return conn.Model(care).Updates(care).Error
 	})
 }
 

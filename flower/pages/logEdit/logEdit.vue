@@ -352,27 +352,31 @@ export default {
 
 .care-scroll {
 	width: 100%;
+	height: 150rpx;
 }
 
 .care-list {
-	display: flex;
-	padding: 12px 8px; // 增加间距，确保第一个图标在缩放 (scale 1.1) 和阴影显示时不会被左侧边缘裁剪
+	display: inline-flex;
+	padding: 12px 60rpx 12px 10px;
+	height: 100%;
 }
 
 .care-item {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	margin-right: 16px;
+	margin-right: 12px;
+	width: 110rpx;
+	flex-shrink: 0;
 	
 	.care-icon-box {
-		width: 48px;
-		height: 48px;
+		width: 90rpx;
+		height: 90rpx;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-bottom: 4px;
+		margin-bottom: 6px;
 		border: 1px solid transparent;
 		transition: all 0.2s;
 		
@@ -385,6 +389,11 @@ export default {
 	.care-name {
 		font-size: 11px;
 		color: #999;
+		text-align: center;
+		width: 100%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		
 		&.active-text {
 			color: #4A6139;

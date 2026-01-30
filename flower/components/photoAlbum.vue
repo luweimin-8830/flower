@@ -10,8 +10,8 @@
             </view>
 
             <view v-else-if="groupedPhotos.length === 0" class="empty-wrapper">
-                <image src="/static/c2m.svg" class="empty-icon" mode="aspectFit"></image>
-                <text class="empty-text">暂无照片数据</text>
+                <image src="/static/icon/c2m.svg" class="empty-icon" mode="aspectFit"></image>
+                <text class="empty-text">暂无照片,请去成长记录中添加</text>
             </view>
 
             <scroll-view v-else scroll-y class="photo-scroll-view" @scrolltolower="onReachBottom">

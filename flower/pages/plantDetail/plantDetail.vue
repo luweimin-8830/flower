@@ -23,7 +23,7 @@
 				<!-- 上半部分：左图右文 -->
 				<view class="card-top">
 					<!-- 左侧图片 -->
-					<image v-if="plant.cover" :src="plant.cover.url" mode="aspectFill" class="plant-avatar"></image>
+					<image v-if="plant.cover" :src="plant.cover.url" mode="aspectFill" class="plant-avatar" @click="previewCover"></image>
 					<view v-else class="plant-avatar placeholder"></view>
 
 					<!-- 右侧信息 -->
@@ -306,6 +306,13 @@ export default {
 				urls: images.map(img => img.url)
 			});
 		},
+		previewCover() {
+			if (this.plant.cover && this.plant.cover.url) {
+				uni.previewImage({
+					urls: [this.plant.cover.url]
+				});
+			}
+		},
 		async handleCare(item) {
 			uni.showLoading({ title: '正在记录...' });
 			try {
@@ -539,24 +546,28 @@ export default {
 .care-scroll-view {
 	width: 100%;
 	white-space: nowrap;
+	height: 160rpx; // 确保高度足够展示 120rpx 的内容
 }
 
 .care-list {
-	display: flex;
-	padding-right: 16px;
+	display: inline-flex;
+	padding-right: 60rpx;
+	height: 100%;
 }
 
 .care-item {
 	display: inline-flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
 	margin-right: 20px;
-	width: 70px;
+	width: 120rpx;
+	flex-shrink: 0;
 }
 
 .care-icon-box {
-	width: 56px;
-	height: 56px;
+	width: 100rpx;
+	height: 100rpx;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -566,9 +577,14 @@ export default {
 }
 
 .care-name {
-	font-size: 12px;
+	font-size: 11px;
 	color: #555;
 	text-align: center;
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.2;
 }
 
 /* 快捷入口 */

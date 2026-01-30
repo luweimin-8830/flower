@@ -29,7 +29,8 @@ func GetUserByOpenID(ctx context.Context, OPENID string) (*model.User, error) {
 // 更新用户列表
 func UpdateUser(ctx context.Context, user *model.User) error {
 	return execWithSpan(ctx, "UPDATE", "user", func(conn *gorm.DB) error {
-		return conn.Save(user).Error
+		// 使用 Updates 而不是 Save，避免触发零值日期 (0001-01-01) 的更新导致 MySQL 报错
+		return conn.Model(user).Updates(user).Error
 	})
 }
 

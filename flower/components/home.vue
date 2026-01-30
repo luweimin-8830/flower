@@ -24,31 +24,71 @@
             <!-- 顶部占位 (状态栏高度) -->
             <view :style="{ height: topBarHeight + 'px' }"></view>
 
-            <!-- 搜索框 -->
+            <!-- 搜索框与编辑模式头部 -->
             <view class="header-action-container">
-                <view class="search-box-wrapper">
-                    <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false"
-                        v-model="searchValue" bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
-                    </uni-search-bar>
-                </view>
-                <view class="add-btn" @click="goAddPage">
-                    <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
-                </view>
+                <template v-if="!isEditMode">
+                    <view class="search-box-wrapper">
+                        <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false"
+                            v-model="searchValue" bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
+                        </uni-search-bar>
+                    </view>
+                    <view class="add-btn" @click="goAddPage">
+                        <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
+                    </view>
+                </template>
+                <template v-else>
+                    <view class="edit-mode-header">
+                        <uni-row :gutter="20" style="width: 100%;">
+                            <uni-col :span="6">
+                                <view class="clean-btn" @click="exitEditMode">
+                                    <text>取消</text>
+                                </view>
+                            </uni-col>
+                            <uni-col :span="6" :push="12">
+                                <view class="save-btn-rect" @click="handleBatchDone">
+                                    <text>完成</text>
+                                </view>
+                            </uni-col>
+                        </uni-row>
+                    </view>
+                </template>
             </view>
 
-            <!-- 横向滚动标签 -->
+            <!-- 横向滚动标签 / 操作选择 -->
             <view class="tag-scroll-container">
-                <scroll-view scroll-x="true" class="tag-scroll-view" :show-scrollbar="false"
-                    :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)"
-                    scroll-with-animation>
-                    <view class="tag-flex-box" id="tag-container">
-                        <view v-for="(item, index) in tagList" :key="item.id" :id="'tag-item-' + index" class="tag-item"
-                            :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
-                            <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
+                <template v-if="!isEditMode">
+                    <scroll-view scroll-x="true" class="tag-scroll-view" :show-scrollbar="false"
+                        :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)"
+                        scroll-with-animation>
+                        <view class="tag-flex-box" id="tag-container">
+                            <view v-for="(item, index) in tagList" :key="item.id" :id="'tag-item-' + index" class="tag-item"
+                                :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
+                                <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
+                            </view>
+                            <view class="slider-bar" :style="sliderStyle"></view>
                         </view>
-                        <view class="slider-bar" :style="sliderStyle"></view>
+                    </scroll-view>
+                </template>
+                <template v-else>
+                    <view class="action-selection-bar">
+                        <view class="select-all-wrapper" @click="toggleSelectAll">
+                            <uni-icons :type="isSelectAll ? 'checkbox-filled' : 'circle'" size="20"
+                                color="#6B8857"></uni-icons>
+                            <text class="select-all-text">全选</text>
+                        </view>
+                        <scroll-view scroll-x class="action-scroll-view" :show-scrollbar="false">
+                            <view class="action-list">
+                                <view v-for="item in careOptions" :key="item.type" class="action-item"
+                                    :class="{ 'active': batchActionType === item.type }"
+                                    @click="batchActionType = item.type">
+                                    <uni-icons :type="item.icon" size="18"
+                                        :color="batchActionType === item.type ? '#fff' : '#666'"></uni-icons>
+                                    <text class="action-name">{{ item.name }}</text>
+                                </view>
+                            </view>
+                        </scroll-view>
                     </view>
-                </scroll-view>
+                </template>
             </view>
         </view>
 
@@ -65,15 +105,24 @@
             <view v-else class="waterfall-wrapper">
                 <WaterfallBox :list="plantsList" idKey="id" cols="2">
                     <template #item="{ item }">
-                        <view class="plant-card" @click="gotoDetail(item)">
+                        <view class="plant-card" @click="handleCardClick(item)" @longpress="enterEditMode(item)">
                             <view class="image-wrapper"
                                 :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
                                 <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
                                     :class="{ 'show': loadedImagesMap[item.id] }" @load="onImgLoad(item)"></image>
+                                <!-- 选择框 -->
+                                <view v-if="isEditMode" class="checkbox-wrapper" @click.stop="toggleSelect(item.id)">
+                                    <uni-icons :type="selectedPlantIds.includes(item.id) ? 'checkbox-filled' : 'circle'" 
+                                        size="22" :color="selectedPlantIds.includes(item.id) ? '#6B8857' : 'rgba(255,255,255,0.8)'"></uni-icons>
+                                </view>
                             </view>
                             <view class="plant-info">
                                 <text class="plant-name">{{ item.name }}</text>
                                 <view class="plant-tags" v-if="item.tags"></view>
+                            </view>
+                            <!-- 卡片右下角删除图标 -->
+                            <view v-if="isEditMode" class="card-delete-btn" @click.stop="handleSingleDelete(item)">
+                                <uni-icons type="trash-filled" size="14" color="#dd524d"></uni-icons>
                             </view>
                         </view>
                     </template>
@@ -138,6 +187,11 @@ export default {
             isSelecting: false,
             currentFamilyIndex: 0,
             isFiltering: false, // 防止过滤期间的并发修改
+            isEditMode: false,
+            selectedPlantIds: [],
+            isSelectAll: false,
+            careOptions: [],
+            batchActionType: '',
         }
     },
     computed: {
@@ -403,9 +457,11 @@ export default {
             const familyId = this.value;
 
             try {
-                const tagList = await callContainer("/api/tag/", {
-                    familyId: familyId
-                })
+                const [tagList, careList] = await Promise.all([
+                    callContainer("/api/tag/", { familyId: familyId }),
+                    callContainer("/api/care/", { familyId: Number(familyId) })
+                ]);
+                
                 console.log("tagList:", tagList)
                 const apiTags = tagList?.data || []
                 this.tagList = [
@@ -416,6 +472,20 @@ export default {
                         ...item
                     }))
                 ]
+
+                // 成长记录
+                const growthOption = {
+                    name: '成长记录',
+                    type: 'record',
+                    icon: 'camera',
+                    color: '#E8E0D5'
+                };
+                const apiCares = careList?.data || [];
+                this.careOptions = [growthOption, ...apiCares.filter(c => c.type !== 'record')];
+                if (this.careOptions.length > 0) {
+                    this.batchActionType = this.careOptions[0].type;
+                }
+
                 console.log("tags:", this.tagList)
                 this.$nextTick(() => {
                     // 稍微延迟一点，确保 DOM 渲染完成
@@ -425,6 +495,103 @@ export default {
                 });
             } catch (error) {
                 console.error("获取标签列表失败:", error)
+            }
+        },
+        enterEditMode(item) {
+            if (this.isEditMode) return;
+            wx.vibrateShort({ type: "medium" });
+            this.isEditMode = true;
+            this.selectedPlantIds = [item.id];
+            this.checkSelectAll();
+        },
+        async handleSingleDelete(item) {
+            uni.showModal({
+                title: '提示',
+                content: `确定要删除“${item.name}”吗？删除后相关的记录也会被清除。`,
+                confirmColor: '#dd524d',
+                success: async (res) => {
+                    if (res.confirm) {
+                        uni.showLoading({ title: '正在删除...' });
+                        try {
+                            await callContainer("/api/plant/delete", { id: item.id });
+                            uni.showToast({ title: '已删除', icon: 'success' });
+                            await this.getPlantsList();
+                        } catch (e) {
+                            console.error("删除失败:", e);
+                            uni.showToast({ title: '删除失败', icon: 'none' });
+                        } finally {
+                            uni.hideLoading();
+                        }
+                    }
+                }
+            });
+        },
+        exitEditMode() {
+            this.isEditMode = false;
+            this.selectedPlantIds = [];
+            this.isSelectAll = false;
+        },
+        handleCardClick(item) {
+            if (this.isEditMode) {
+                this.toggleSelect(item.id);
+            } else {
+                this.gotoDetail(item);
+            }
+        },
+        toggleSelect(id) {
+            const index = this.selectedPlantIds.indexOf(id);
+            if (index > -1) {
+                this.selectedPlantIds.splice(index, 1);
+            } else {
+                this.selectedPlantIds.push(id);
+            }
+            this.checkSelectAll();
+            wx.vibrateShort({ type: "light" });
+        },
+        toggleSelectAll() {
+            if (this.isSelectAll) {
+                this.selectedPlantIds = [];
+            } else {
+                this.selectedPlantIds = this.plantsList.map(p => p.id);
+            }
+            this.isSelectAll = !this.isSelectAll;
+            wx.vibrateShort({ type: "light" });
+        },
+        checkSelectAll() {
+            this.isSelectAll = this.plantsList.length > 0 && this.selectedPlantIds.length === this.plantsList.length;
+        },
+        async handleBatchDone() {
+            if (this.selectedPlantIds.length === 0) {
+                uni.showToast({ title: '请先选择植物', icon: 'none' });
+                return;
+            }
+            if (!this.batchActionType) {
+                uni.showToast({ title: '请选择操作', icon: 'none' });
+                return;
+            }
+
+            uni.showLoading({ title: '正在处理...' });
+            try {
+                const now = new Date();
+                const logTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                
+                await callContainer("/api/plant/log/add", {
+                    plantIds: this.selectedPlantIds,
+                    actionType: this.batchActionType,
+                    content: `批量执行了${this.careOptions.find(c => c.type === this.batchActionType)?.name || ''}操作`,
+                    logTime: logTime,
+                    imageIds: []
+                });
+
+                uni.showToast({ title: '操作成功', icon: 'success' });
+                this.exitEditMode();
+                // 刷新数据以更新最后操作时间等（如果有显示的话）
+                await this.getPlantsList();
+            } catch (error) {
+                console.error("批量操作失败:", error);
+                uni.showToast({ title: '操作失败', icon: 'none' });
+            } finally {
+                uni.hideLoading();
             }
         },
         searchPlant(e) {
@@ -607,6 +774,120 @@ export default {
     /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
 
+.edit-mode-header {
+    width: 100%;
+    padding: 0 10px;
+}
+
+.clean-btn,
+.save-btn-rect {
+    width: 100%;
+    height: 74rpx;
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 60rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 28rpx;
+    color: #333;
+
+    &:active {
+        transform: scale(0.92) translateY(2px);
+    }
+}
+
+.save-btn-rect {
+    color: #6B8857;
+    font-weight: bold;
+}
+
+.action-selection-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 10px;
+    height: 140rpx;
+}
+
+.select-all-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: 30rpx;
+    flex-shrink: 0;
+
+    .select-all-text {
+        font-size: 10px;
+        color: #6B8857;
+        margin-top: 4rpx;
+    }
+}
+
+.action-scroll-view {
+    flex: 1;
+    width: 0;
+    white-space: nowrap;
+    height: 100%;
+}
+
+.action-list {
+    display: inline-flex;
+    align-items: center;
+    padding-right: 60rpx;
+    height: 100%;
+}
+
+.action-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20rpx;
+    width: 120rpx;
+    height: 120rpx;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 24rpx;
+    transition: all 0.2s;
+    flex-shrink: 0;
+
+    &.active {
+        background: #6B8857;
+        .action-name {
+            color: #fff;
+        }
+    }
+
+    .action-name {
+        font-size: 11px;
+        color: #666;
+        margin-top: 8rpx;
+        width: 100%;
+        text-align: center;
+        line-height: 1.2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        overflow: hidden;
+    }
+}
+
+.checkbox-wrapper {
+    position: absolute;
+    top: 10rpx;
+    right: 10rpx;
+    z-index: 5;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 44rpx;
+    height: 44rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* 3. 滚动区域：自动填满剩余空间 */
 .content-scroll-view {
     flex: 1;
@@ -778,7 +1059,7 @@ export default {
 .tag-flex-box {
     display: flex;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 40rpx 0 20rpx;
     position: relative;
 }
 
@@ -840,11 +1121,33 @@ export default {
 }
 
 .plant-card {
+    position: relative;
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     // transform: translateY(0);
+}
+
+.card-delete-btn {
+    position: absolute;
+    right: 12rpx;
+    bottom: 12rpx;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    width: 44rpx;
+    height: 44rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
+
+    &:active {
+        transform: scale(0.9);
+        background: #fff;
+    }
 }
 
 .image-wrapper {
