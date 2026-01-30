@@ -50,14 +50,22 @@ func CreatePlantLogHandler(c *gin.Context) {
 	OPENID := c.GetHeader("X-WX-OPENID")
 
 	// 1. 处理时间：如果没传，默认当前时间；传了就解析
-	logTime := time.Now()
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	logTime := time.Now().In(loc)
 	if req.LogTime != "" {
-		t, err := time.Parse("2006-01-02", req.LogTime)
+		t, err := time.ParseInLocation("2006-01-02", req.LogTime, loc)
 		if err != nil {
 			response.Fail(c, "日期格式错误，应为 YYYY-MM-DD")
 			return
 		}
-		logTime = t
+		// 如果是今天，则保留当前的时分秒，实现“真实时间”上传
+		now := time.Now().In(loc)
+		if t.Format("2006-01-02") == now.Format("2006-01-02") {
+			logTime = now
+		} else {
+			// 如果是过去或未来的日期，设为当天的 12:00 或保持 00:00
+			logTime = t
+		}
 	}
 
 	// 2. 构造日志对象切片
@@ -134,11 +142,17 @@ func UpdatePlantLogHandler(c *gin.Context) {
 		return
 	}
 
-	logTime := time.Now()
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	logTime := time.Now().In(loc)
 	if req.LogTime != "" {
-		t, err := time.Parse("2006-01-02", req.LogTime)
+		t, err := time.ParseInLocation("2006-01-02", req.LogTime, loc)
 		if err == nil {
-			logTime = t
+			now := time.Now().In(loc)
+			if t.Format("2006-01-02") == now.Format("2006-01-02") {
+				logTime = now
+			} else {
+				logTime = t
+			}
 		}
 	}
 

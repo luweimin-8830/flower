@@ -189,12 +189,9 @@ export default {
 }
 
 .date-text {
-    font-size: 26rpx;
+    font-size: 32rpx;
     font-weight: bold;
-    color: #4A5D43;
-    background-color: rgba(255, 255, 255, 0.4);
-    padding: 4rpx 16rpx;
-    border-radius: 20rpx;
+    color: #566C44;
 }
 
 .photo-grid {
