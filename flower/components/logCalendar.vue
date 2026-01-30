@@ -26,7 +26,7 @@
 						<view v-if="currentLogs.length === 0" class="empty-box">
 							<text class="empty-text">当日无养护记录</text>
 						</view>
-						<view v-for="log in currentLogs" :key="log.ID" class="log-item" @click="goEdit(log)">
+						<view v-for="log in currentLogs" :key="log.id" class="log-item" @click="goEdit(log)">
 							<view class="log-icon" :style="{ backgroundColor: log.color + '22' }">
 								<uni-icons :type="log.icon || 'checkbox-filled'" size="20" :color="log.color || '#4A6139'"></uni-icons>
 							</view>
@@ -156,7 +156,7 @@ export default {
 		},
 		goEdit(log) {
 			uni.navigateTo({
-				url: `/pages/logEdit/logEdit?id=${log.ID}&plantId=${log.plantId}`
+				url: `/pages/logEdit/logEdit?id=${log.id}&plantId=${log.plantId}`
 			});
 		}
 	}

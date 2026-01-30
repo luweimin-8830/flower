@@ -42,7 +42,7 @@
                     :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)"
                     scroll-with-animation>
                     <view class="tag-flex-box" id="tag-container">
-                        <view v-for="(item, index) in tagList" :key="item.ID" :id="'tag-item-' + index" class="tag-item"
+                        <view v-for="(item, index) in tagList" :key="item.id" :id="'tag-item-' + index" class="tag-item"
                             :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
                             <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
                         </view>
@@ -63,13 +63,13 @@
             
             <!-- 瀑布流列表 -->
             <view v-else class="waterfall-wrapper">
-                <WaterfallBox :list="plantsList" idKey="ID" cols="2">
+                <WaterfallBox :list="plantsList" idKey="id" cols="2">
                     <template #item="{ item }">
                         <view class="plant-card" @click="gotoDetail(item)">
                             <view class="image-wrapper"
                                 :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
                                 <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
-                                    :class="{ 'show': loadedImagesMap[item.ID] }" @load="onImgLoad(item)"></image>
+                                    :class="{ 'show': loadedImagesMap[item.id] }" @load="onImgLoad(item)"></image>
                             </view>
                             <view class="plant-info">
                                 <text class="plant-name">{{ item.name }}</text>
@@ -195,7 +195,7 @@ export default {
                 if (familyList && Array.isArray(familyList) && familyList.length > 0) {
                     this.familyRange = familyList.map(item => ({
                         text: item.name,
-                        value: item.ID || item.id,
+                        value: item.id,
                         disable: false
                     }));
 
@@ -239,7 +239,7 @@ export default {
                 if (familyList && Array.isArray(familyList) && familyList.length > 0) {
                     this.familyRange = familyList.map(item => ({
                         text: item.name,
-                        value: item.ID || item.id,
+                        value: item.id,
                         disable: false
                     }));
 
@@ -306,7 +306,7 @@ export default {
         },
         filterPlants() {
             const currentTag = this.tagList[this.currentTagIndex];
-            const tagId = currentTag ? currentTag.ID : 0;
+            const tagId = currentTag ? currentTag.id : 0;
             let filtered = [];
             if (tagId === 0) {
 
@@ -314,7 +314,7 @@ export default {
             } else {
                 // 🟢 只过滤，不 map
                 filtered = this.allPlantsList.filter(plant => {
-                    return plant.tags && plant.tags.some(t => t.ID === tagId);
+                    return plant.tags && plant.tags.some(t => t.id === tagId);
                 });
             }
             this.plantsList = filtered;
@@ -409,10 +409,10 @@ export default {
                 console.log("tagList:", tagList)
                 const apiTags = tagList?.data || []
                 this.tagList = [
-                    { name: "全部", ID: 0 },
+                    { name: "全部", id: 0 },
                     ...apiTags.map(item => ({
                         name: item.name,
-                        ID: item.ID,
+                        id: item.id,
                         ...item
                     }))
                 ]
@@ -488,8 +488,8 @@ export default {
         },
         onImgLoad(item) {
             // 使用独立的映射对象来追踪加载状态，避免修改冻结对象
-            if (item.ID && !this.loadedImagesMap[item.ID]) {
-                this.$set(this.loadedImagesMap, item.ID, true);
+            if (item.id && !this.loadedImagesMap[item.id]) {
+                this.$set(this.loadedImagesMap, item.id, true);
             }
 
         },
@@ -498,9 +498,9 @@ export default {
             this.$nextTick(() => {
                 if (this.plantsList && this.plantsList.length > 0) {
                     this.plantsList.forEach(plant => {
-                        if (!this.loadedImagesMap[plant.ID]) {
+                        if (!this.loadedImagesMap[plant.id]) {
                             // 重置状态，触发重新加载
-                            this.$set(this.loadedImagesMap, plant.ID, false);
+                            this.$set(this.loadedImagesMap, plant.id, false);
                         }
                     });
                 }
@@ -513,7 +513,7 @@ export default {
         },
         gotoDetail(item) {
             uni.navigateTo({
-                url: `/pages/plantDetail/plantDetail?id=${item.ID}`
+                url: `/pages/plantDetail/plantDetail?id=${item.id}`
             })
         },
         onPageShow() {
@@ -559,7 +559,7 @@ export default {
         })
 
         // 确定默认家庭ID：优先使用 userInfo 中的 currentFamilyId，否则使用家庭列表的第一个
-        const defaultFamilyId = userInfo?.currentFamilyId || (familyList && familyList[0]?.ID);
+        const defaultFamilyId = userInfo?.currentFamilyId || (familyList && familyList[0]?.id);
         
 
         // 保存默认家庭ID到缓存

@@ -211,7 +211,7 @@ export default {
                 // uni-indexed-list 默认显示 name 字段
                 groupMap[firstChar].push({
                     name: plant.name,
-                    id: plant.ID,
+                    id: plant.id,
                     data: plant
                 });
             });
@@ -317,9 +317,9 @@ export default {
             console.log('点击植物:', e);
             const plantData = e.item?.data;
 
-            if (plantData && plantData.ID) {
+            if (plantData && plantData.id) {
                 uni.navigateTo({
-                    url: `/pages/plantDetail/plantDetail?id=${plantData.ID}`
+                    url: `/pages/plantDetail/plantDetail?id=${plantData.id}`
                 });
             }
         },
@@ -327,9 +327,9 @@ export default {
         // 自定义列表项点击
         onPlantItemClick(item) {
             console.log('点击植物项:', item);
-            if (item && item.data && item.data.ID) {
+            if (item && item.data && item.data.id) {
                 uni.navigateTo({
-                    url: `/pages/plantDetail/plantDetail?id=${item.data.ID}`
+                    url: `/pages/plantDetail/plantDetail?id=${item.data.id}`
                 });
             }
         },

@@ -103,7 +103,7 @@ const _sfc_main = {
         if (familyList && Array.isArray(familyList) && familyList.length > 0) {
           this.familyRange = familyList.map((item) => ({
             text: item.name,
-            value: item.ID || item.id,
+            value: item.id,
             disable: false
           }));
           this.value = cachedFamilyId || this.familyRange[0].value;
@@ -134,7 +134,7 @@ const _sfc_main = {
         if (familyList && Array.isArray(familyList) && familyList.length > 0) {
           this.familyRange = familyList.map((item) => ({
             text: item.name,
-            value: item.ID || item.id,
+            value: item.id,
             disable: false
           }));
           const currentFamilyExists = this.familyRange.some((item) => item.value === this.value);
@@ -183,13 +183,13 @@ const _sfc_main = {
     },
     filterPlants() {
       const currentTag = this.tagList[this.currentTagIndex];
-      const tagId = currentTag ? currentTag.ID : 0;
+      const tagId = currentTag ? currentTag.id : 0;
       let filtered = [];
       if (tagId === 0) {
         filtered = this.allPlantsList;
       } else {
         filtered = this.allPlantsList.filter((plant) => {
-          return plant.tags && plant.tags.some((t) => t.ID === tagId);
+          return plant.tags && plant.tags.some((t) => t.id === tagId);
         });
       }
       this.plantsList = filtered;
@@ -255,10 +255,10 @@ const _sfc_main = {
         common_vendor.index.__f__("log", "at components/home.vue:409", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
-          { name: "全部", ID: 0 },
+          { name: "全部", id: 0 },
           ...apiTags.map((item) => ({
             name: item.name,
-            ID: item.ID,
+            id: item.id,
             ...item
           }))
         ];
@@ -319,8 +319,8 @@ const _sfc_main = {
       });
     },
     onImgLoad(item) {
-      if (item.ID && !this.loadedImagesMap[item.ID]) {
-        this.$set(this.loadedImagesMap, item.ID, true);
+      if (item.id && !this.loadedImagesMap[item.id]) {
+        this.$set(this.loadedImagesMap, item.id, true);
       }
     },
     // 确保图片显示的方法（用于页面返回时恢复图片状态）
@@ -328,8 +328,8 @@ const _sfc_main = {
       this.$nextTick(() => {
         if (this.plantsList && this.plantsList.length > 0) {
           this.plantsList.forEach((plant) => {
-            if (!this.loadedImagesMap[plant.ID]) {
-              this.$set(this.loadedImagesMap, plant.ID, false);
+            if (!this.loadedImagesMap[plant.id]) {
+              this.$set(this.loadedImagesMap, plant.id, false);
             }
           });
         }
@@ -341,7 +341,7 @@ const _sfc_main = {
     },
     gotoDetail(item) {
       common_vendor.index.navigateTo({
-        url: `/pages/plantDetail/plantDetail?id=${item.ID}`
+        url: `/pages/plantDetail/plantDetail?id=${item.id}`
       });
     },
     onPageShow() {
@@ -374,7 +374,7 @@ const _sfc_main = {
     await new Promise((resolve) => {
       common_vendor.index.setStorage({ key: "family", data: familyList, success: resolve });
     });
-    const defaultFamilyId = (userInfo == null ? void 0 : userInfo.currentFamilyId) || familyList && ((_a = familyList[0]) == null ? void 0 : _a.ID);
+    const defaultFamilyId = (userInfo == null ? void 0 : userInfo.currentFamilyId) || familyList && ((_a = familyList[0]) == null ? void 0 : _a.id);
     if (defaultFamilyId) {
       await new Promise((resolve) => {
         common_vendor.index.setStorage({ key: "familyId", data: defaultFamilyId, success: resolve });
@@ -437,10 +437,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       return {
         a: common_vendor.t(item.name),
         b: "tag-text-" + index,
-        c: item.ID,
+        c: item.id,
         d: "tag-item-" + index,
         e: $data.currentTagIndex === index ? 1 : "",
-        f: common_vendor.o(($event) => $options.selectTag(index, item), item.ID)
+        f: common_vendor.o(($event) => $options.selectTag(index, item), item.id)
       };
     }),
     w: common_vendor.s($options.sliderStyle),
@@ -454,7 +454,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }, s0, i0) => {
       return common_vendor.e({
         a: item.cover.url,
-        b: $data.loadedImagesMap[item.ID] ? 1 : "",
+        b: $data.loadedImagesMap[item.id] ? 1 : "",
         c: common_vendor.o(($event) => $options.onImgLoad(item)),
         d: item.cover.height / item.cover.width * 100 + "%",
         e: common_vendor.t(item.name),
@@ -471,7 +471,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     B: common_vendor.p({
       list: $data.plantsList,
-      idKey: "ID",
+      idKey: "id",
       cols: "2"
     })
   });

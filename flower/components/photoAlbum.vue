@@ -96,7 +96,7 @@ export default {
                             log.images.forEach(img => {
                                 photos.push({
                                     url: img.url,
-                                    id: img.ID,
+                                    id: img.id,
                                     plantName: log.plant ? log.plant.name : '',
                                     logTime: log.logTime
                                 });

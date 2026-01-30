@@ -222,7 +222,7 @@ export default {
                 })
                 let localList = result.data;
                 if (Array.isArray(localList)) {
-                    const targetIndex = localList.findIndex(f => (f.id === item.id) || (f.ID === item.id));
+                    const targetIndex = localList.findIndex(f => f.id === item.id);
                     if (targetIndex !== -1) {
                         // 修改名称
                         localList[targetIndex].name = item.name;

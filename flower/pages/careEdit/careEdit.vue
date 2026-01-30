@@ -159,7 +159,7 @@ export default {
                     console.log("Storage 中无 familyId，尝试从缓存的家庭列表获取");
                     const families = uni.getStorageSync('family');
                     if (families && families.length > 0) {
-                        fId = families[0].ID || families[0].id;
+                        fId = families[0].id;
                         uni.setStorageSync('familyId', fId);
                     }
                 }
@@ -170,7 +170,7 @@ export default {
                     uni.showLoading({ title: '同步家庭信息...' });
                     const user = await callContainer("/api/login");
                     if (user.data && user.data.family && user.data.family.length > 0) {
-                        fId = user.data.family[0].ID;
+                        fId = user.data.family[0].id;
                         uni.setStorageSync('familyId', fId);
                         uni.setStorageSync('family', user.data.family);
                     }
