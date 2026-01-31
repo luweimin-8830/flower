@@ -133,7 +133,7 @@ export default {
 			isSave: true,
 			option: 'add',
 			plantId:0,
-			cover:'/static/020-plant.png',
+			cover:'/static/default.svg',
 		}
 	},
 	methods: {
@@ -259,7 +259,6 @@ export default {
 				this.plant.coverId = addImage.data.id;
 			}
 			this.plant.tags = this.tags.filter(item => item.active).map(item => ({ id: item.id })) || []
-			if (this.plant.coverId === 0) { this.plant.coverId = 6 }
 			console.log("name", this.plant.name)
 			console.log("coverId", this.plant.coverId)
 			console.log("desc", this.plant.desc)
@@ -369,7 +368,7 @@ export default {
 				})
 				console.log("call container get plant", result)
 				this.plant = result.data
-				this.cover = result.data.cover.url || '/static/020-plant.png'
+				this.cover = (result.data.cover && result.data.cover.url) ? result.data.cover.url : '/static/default.svg'
 				this.plant.birthday = this.plant.birthday ? this.plant.birthday.split('T')[0] : '';
 			} catch (error) {
 				console.error(error)

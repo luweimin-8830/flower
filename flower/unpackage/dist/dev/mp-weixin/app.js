@@ -12,6 +12,7 @@ if (!Math) {
   "./pages/shareMember/shareMember.js";
   "./pages/careEdit/careEdit.js";
   "./pages/logEdit/logEdit.js";
+  "./pages/shareDetail/shareDetail.js";
 }
 const _sfc_main = {
   globalData: {

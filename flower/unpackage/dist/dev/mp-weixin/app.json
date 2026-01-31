@@ -9,7 +9,8 @@
     "pages/familyDetail/familyDetail",
     "pages/shareMember/shareMember",
     "pages/careEdit/careEdit",
-    "pages/logEdit/logEdit"
+    "pages/logEdit/logEdit",
+    "pages/shareDetail/shareDetail"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",

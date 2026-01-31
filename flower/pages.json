@@ -89,6 +89,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": false
 			}
+		},
+		{
+			"path": "pages/shareDetail/shareDetail",
+			"style": {
+				"navigationBarTitleText": "分享详情",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": false
+			}
 		}
 	],
 	"globalStyle": {

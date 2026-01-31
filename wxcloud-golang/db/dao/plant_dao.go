@@ -17,7 +17,13 @@ func CreatePlant(ctx context.Context, plant *model.Plant) error {
 func GetPlantByID(ctx context.Context, id uint) (*model.Plant, error) {
 	var plant model.Plant
 	err := execWithSpan(ctx, "SELECT", "plant", func(conn *gorm.DB) error {
-		return conn.Preload("Cover").Preload("Tags").First(&plant, id).Error
+		err := conn.Preload("Cover").Preload("Tags").First(&plant, id).Error
+		if err == nil && plant.Cover.URL == "" {
+			plant.Cover.URL = "/static/default.svg"
+			plant.Cover.Width = 100
+			plant.Cover.Height = 100
+		}
+		return err
 	})
 	return &plant, err
 }
@@ -25,7 +31,17 @@ func GetPlantByID(ctx context.Context, id uint) (*model.Plant, error) {
 func GetPlantByFamilyID(ctx context.Context, familyID uint) ([]model.Plant, error) {
 	var plants []model.Plant
 	err := execWithSpan(ctx, "SELECT", "plant", func(conn *gorm.DB) error {
-		return conn.Where("family_id = ?", familyID).Order("created_at desc").Preload("Cover").Preload("Tags").Find(&plants).Error
+		err := conn.Where("family_id = ?", familyID).Order("created_at desc").Preload("Cover").Preload("Tags").Find(&plants).Error
+		if err == nil {
+			for i := range plants {
+				if plants[i].Cover.URL == "" {
+					plants[i].Cover.URL = "/static/default.svg"
+					plants[i].Cover.Width = 100
+					plants[i].Cover.Height = 100
+				}
+			}
+		}
+		return err
 	})
 	return plants, err
 }

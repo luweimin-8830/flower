@@ -28,14 +28,10 @@
                         <view class="group-title">{{ group.key }}</view>
                         <view v-for="item in group.data" :key="item.id" class="plant-item" @click="onPlantItemClick(item)">
                             <image 
-                                v-if="item.data.cover && item.data.cover.url"
                                 class="plant-image" 
-                                :src="item.data.cover.url" 
+                                :src="(item.data.cover && item.data.cover.url) ? item.data.cover.url : '/static/default.svg'" 
                                 mode="aspectFill"
                             ></image>
-                            <view v-else class="plant-image placeholder">
-                                <uni-icons type="image" size="30" color="#ccc"></uni-icons>
-                            </view>
                             <view class="plant-info">
                                 <text class="plant-name">{{ item.name }}</text>
                                 <text v-if="item.data.desc" class="plant-desc">{{ item.data.desc }}</text>

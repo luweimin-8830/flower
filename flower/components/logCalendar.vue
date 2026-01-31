@@ -121,7 +121,17 @@ export default {
 				const res = await callContainer("/api/plant/log/list", params);
 				if (res.data) {
 					this.allLogs = res.data.map(log => {
-						const action = this.careActions.find(a => a.type === log.actionType);
+						let action = this.careActions.find(a => a.type === log.actionType);
+						
+						// 处理特殊类型 'record' (成长记录)
+						if (!action && (log.actionType === 'record' || log.actionType === 'Growth')) {
+							action = {
+								name: '成长记录',
+								icon: 'plant-zhiwuzhiyuan-duorouzhiwuyuan',
+								color: '#A7C190'
+							};
+						}
+
 						return {
 							...log,
 							// 优先使用后端返回的 name，其次使用前端匹配到的 action.name，最后兜底使用 actionType

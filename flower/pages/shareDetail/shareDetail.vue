@@ -1,24 +1,13 @@
 <template>
 	<view class="container">
-		<navBar />
+		<navBar :isHome="true" />
 
-		<!-- 🌟 新增：右上角操作按钮 (悬浮在导航栏之上) -->
-		<!-- topBarHeight 是状态栏高度，我们需要往下一点点 -->
-		<view class="top-actions" :style="{ top: (topBarHeight + 8) + 'px' }">
-			<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
-				<uni-icons type="upload" size="20" color="#333"></uni-icons>
-			</button>
-			<view class="action-btn pill-btn" @click="goEdit">
-				<text>编辑</text>
-			</view>
-		</view>
-
-		<!-- 占位符 -->
-		<view :style="{ height: topBarHeight + 44 + 'px' }"></view>
+		<!-- 占位符 - 减小高度让卡片上移 -->
+		<view :style="{ height: topBarHeight + 10 + 'px' }"></view>
 
 		<scroll-view scroll-y class="main-scroll" :enable-back-to-top="true">
 
-			<!-- 🌟 修改：植物基本信息卡片 -->
+			<!-- 植物基本信息卡片 -->
 			<view class="plant-header-card">
 				<!-- 上半部分：左图右文 -->
 				<view class="card-top">
@@ -35,10 +24,6 @@
 							<view class="tag-item" v-for="(tag, index) in plant.tags" :key="index">
 								<text>{{ tag.name }}</text>
 							</view>
-							<!-- 如果没有标签显示添加按钮 -->
-							<!-- <view class="tag-item add-tag" v-if="!plant.tags || plant.tags.length === 0">
-								<uni-icons type="plusempty" size="12" color="#fff"></uni-icons>
-							</view> -->
 						</view>
 					</view>
 				</view>
@@ -65,63 +50,19 @@
 				</view>
 			</view>
 
-			<!-- ... 下面的日常护理、快捷入口、日志部分保持不变 ... -->
-			<!-- 3. 日常护理 (横向滚动) -->
-			<view class="section-container">
-				<!-- 代码省略，保持原样 -->
-				<view class="section-header">
-					<text class="section-title">日常护理</text>
-					<!-- <uni-icons type="notification" size="20" color="#6B8857"></uni-icons> -->
-				</view>
-				<scroll-view scroll-x class="care-scroll-view" :show-scrollbar="false">
-					<view class="care-list">
-						<view class="care-item" v-for="(item, index) in careActions" :key="index"
-							@click="handleCare(item)">
-							<view class="care-icon-box" :style="{ backgroundColor: item.color }">
-								<view class="iconfont" :class="item.icon" style="font-size: 28px; color: #fff;" v-if="item.icon"></view>
-								<image v-else :src="item.img" class="care-img"></image>
-							</view>
-							<text class="care-name">{{ item.name }}</text>
-						</view>
-					</view>
-				</scroll-view>
-			</view>
-
-			<!-- 4. 快捷入口 -->
-			<!-- <view class="quick-links">
-				<view class="link-card" @click="goCalendar">
-					<view class="link-left">
-						<uni-icons type="calendar-filled" size="20" color="#6B8857"></uni-icons>
-						<text class="link-text">植物日历</text>
-					</view>
-					<uni-icons type="right" size="14" color="#999"></uni-icons>
-				</view>
-				<view class="link-card" @click="goAlbum">
-					<view class="link-left">
-						<uni-icons type="image-filled" size="20" color="#6B8857"></uni-icons>
-						<text class="link-text">植物相册 ({{ plant.photoCount || 0 }})</text>
-					</view>
-					<uni-icons type="right" size="14" color="#999"></uni-icons>
-				</view>
-			</view> -->
-
-			<!-- 5. 植物日志 -->
+			<!-- 植物日志 (只读模式) -->
 			<view class="log-section">
 				<view class="section-header">
 					<view class="header-left">
 						<uni-icons type="compose" size="20" color="#333"></uni-icons>
-						<text class="section-title" style="margin-left: 6px;">植物日志</text>
-					</view>
-					<view class="header-right">
-						<text class="edit-btn" @click="isManageMode = !isManageMode">{{ isManageMode ? '完成' : '编辑' }}</text>
-						<uni-icons type="plusempty" size="24" color="#333" style="margin-left: 15px;" @click="goAddLog"></uni-icons>
+						<text class="section-title" style="margin-left: 6px;">生长日志</text>
 					</view>
 				</view>
 				<!-- 日志列表 -->
 				<view class="log-list">
 					<view v-for="(group, gIndex) in logList" :key="gIndex" class="log-group">
 						<text class="log-date-header">{{ group.dateStr }}</text>
-						<view v-for="(log, lIndex) in group.items" :key="lIndex" class="log-item" @click="goEditLog(log)">
+						<view v-for="(log, lIndex) in group.items" :key="lIndex" class="log-item">
 							<view class="log-time-col">
 								<text class="log-time">{{ log.time }}</text>
 								<text class="log-date-mini">{{ log.dateMini }}</text>
@@ -144,12 +85,10 @@
 										@click.stop="previewLogImages(log.images, iIndex)"></image>
 								</view>
 							</view>
-							
-							<!-- 管理模式下的删除按钮 -->
-							<view class="delete-icon" v-if="isManageMode" @click.stop="handleDeleteLog(log.id)">
-								<uni-icons type="minus-filled" size="20" color="#dd524d"></uni-icons>
-							</view>
 						</view>
+					</view>
+					<view v-if="logList.length === 0" class="empty-logs">
+						<text>暂无日志记录</text>
 					</view>
 				</view>
 			</view>
@@ -159,34 +98,11 @@
 	</view>
 </template>
 
-
 <script>
 import navBar from '@/components/navBar.vue'
 import { callContainer } from '../../utils/request';
 
 export default {
-	onShareAppMessage(res) {
-		const id = String(this.plantId);
-		const name = this.plant.name || '我的植物';
-		const imageUrl = (this.plant.cover && this.plant.cover.url) ? this.plant.cover.url : '';
-		
-		return {
-			title: '分享我的' + name,
-			path: '/pages/shareDetail/shareDetail?id=' + id,
-			imageUrl: imageUrl
-		};
-	},
-	onShareTimeline() {
-		const id = String(this.plantId);
-		const name = this.plant.name || '我的植物';
-		const imageUrl = (this.plant.cover && this.plant.cover.url) ? this.plant.cover.url : '';
-		
-		return {
-			title: '看看我养的' + name,
-			query: 'id=' + id,
-			imageUrl: imageUrl
-		};
-	},
 	components: { navBar },
 	data() {
 		return {
@@ -198,8 +114,7 @@ export default {
 			},
 			careActions: [],
 			logList: [],
-			totalLogCount: 0,
-			isManageMode: false
+			totalLogCount: 0
 		};
 	},
 	async onLoad(options) {
@@ -209,38 +124,17 @@ export default {
 
 		if (options && options.id) {
 			this.plantId = options.id
-			await Promise.all([
-				this.getPlant(),
-				this.getCareActions()
-			]);
-			// 确保有了 careActions 后再获取并格式化日志
+			await this.getPlant();
+			// 获取养护项定义用于日志显示
+			await this.getCareActions();
 			this.getLogs();
 		}
-
-		uni.$off('refreshHomeList');
-        uni.$on('refreshHomeList', async (data) => {
-            await Promise.all([
-				this.getPlant(),
-				this.getCareActions()
-			]);
-			this.getLogs();
-        })
-		
-		// #ifdef MP-WEIXIN
-		uni.showShareMenu({
-			withShareTicket: true,
-			menus: ['shareAppMessage', 'shareTimeline']
-		});
-		// #endif
-	},
-	onUnload() {
-		uni.$off('refreshHomeList');
 	},
 	methods: {
 		async getCareActions() {
 			try {
-				const familyId = uni.getStorageSync('familyId');
-				const result = await callContainer("/api/care/", { familyId: Number(familyId) });
+				// 获取养护项定义，分享页面根据日志中的 actionType 匹配，即使没有 familyId 也可以通过日志本身信息或默认映射
+				const result = await callContainer("/api/care/", { familyId: this.plant.familyId });
 				if (result.data) {
 					this.careActions = result.data;
 				}
@@ -313,31 +207,6 @@ export default {
 			});
 			this.logList = Object.values(groups);
 		},
-		goEdit() {
-			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.id}&type=edit` })
-		},
-		goAddLog() {
-			uni.navigateTo({ url: `/pages/logEdit/logEdit?plantId=${this.plantId}` })
-		},
-		goEditLog(log) {
-			if (this.isManageMode) return;
-			uni.navigateTo({ url: `/pages/logEdit/logEdit?id=${log.id}&plantId=${this.plantId}` })
-		},
-		async handleDeleteLog(id) {
-			uni.showModal({
-				title: '提示',
-				content: '确定要删除这条日志吗？',
-				success: async (res) => {
-					if (res.confirm) {
-						try {
-							await callContainer("/api/plant/log/delete", { id: id });
-							uni.showToast({ title: '已删除' });
-							this.getLogs();
-						} catch (e) { console.error(e); }
-					}
-				}
-			});
-		},
 		previewLogImages(images, index) {
 			uni.previewImage({
 				current: index,
@@ -350,33 +219,7 @@ export default {
 					urls: [this.plant.cover.url]
 				});
 			}
-		},
-		async handleCare(item) {
-			uni.showLoading({ title: '正在记录...' });
-			try {
-				await callContainer("/api/plant/log/add", {
-					plantIds: [Number(this.plantId)],
-					actionType: item.type,
-					content: `完成了一次${item.name}`
-				});
-				uni.hideLoading();
-				uni.showToast({ title: '记录成功', icon: 'success' });
-				// 刷新列表
-				this.getLogs();
-			} catch (error) {
-				uni.hideLoading();
-				// 后端返回“今日已记录过该操作”会进入这里
-				uni.showModal({
-					title: '提示',
-					content: error.message || '今日已记录过该操作',
-					showCancel: false
-				});
-			}
-		},
-		handleShareClick() {
-			console.log('用户点击了分享按钮');
-		},
-		goAlbum() { }
+		}
 	}
 };
 </script>
@@ -384,67 +227,17 @@ export default {
 <style lang="scss" scoped>
 .container {
 	min-height: 100vh;
+	background-color: #C1D0B7;
 }
 
-/* 🌟 右上角悬浮按钮组 */
-.top-actions {
-	position: fixed;
-	right: 16px;
-	z-index: 100;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.action-btn {
-	background-color: rgba(255, 255, 255, 0.55);
-	backdrop-filter: blur(5px);
-	border-radius: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.icon-only {
-	width: 36px;
-	height: 36px;
-	border-radius: 50%;
-}
-
-.share-btn {
-	padding: 0;
-	margin: 0;
-	line-height: 1;
-	background-color: rgba(255, 255, 255, 0.55);
-	&::after {
-		border: none;
-	}
-}
-
-.pill-btn {
-	padding: 6px 16px;
-	height: 36px;
-	box-sizing: border-box;
-
-	text {
-		font-size: 14px;
-		font-weight: 500;
-		color: #333;
-	}
-}
-
-/* 🌟 植物头部卡片 */
 .plant-header-card {
 	margin: 10px 16px;
 	padding: 20px;
 	background-color: rgba(255, 255, 255, 0.55);
-	/* 纯白背景更干净，或者微透 */
 	border-radius: 24px;
 	box-shadow: 0 8px 20px rgba(107, 136, 87, 0.08);
 }
 
-/* 上半部分：左图右文 */
 .card-top {
 	display: flex;
 	margin-bottom: 20px;
@@ -457,7 +250,6 @@ export default {
 	margin-right: 16px;
 	background-color: #eee;
 	flex-shrink: 0;
-	/* 防止图片被挤压 */
 }
 
 .placeholder {
@@ -469,7 +261,6 @@ export default {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	/* 上下撑开 */
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
@@ -486,7 +277,6 @@ export default {
 	color: #888;
 	line-height: 1.4;
 	margin-bottom: 8px;
-	/* 限制显示两行 */
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
@@ -494,7 +284,6 @@ export default {
 	overflow: hidden;
 }
 
-/* 标签样式 */
 .tag-list {
 	display: flex;
 	flex-wrap: wrap;
@@ -504,35 +293,20 @@ export default {
 .tag-item {
 	background-color: #566C44;
 	border-radius: 100px;
-	/* 改大一点确保是正圆角 */
-
-	/* 🌟 改法：使用 Flex 居中，不再单纯依赖 padding */
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-
-	/* 🌟 设定固定高度，比 padding 更稳 */
 	height: 22px;
 	padding: 0 10px;
-	/* 只控制左右间距 */
 
 	text {
 		font-size: 11px;
 		color: #fff;
 		line-height: 1;
-		/* 消除文字自带行高 */
-
-		/* 🌟 视觉微调：如果觉得还偏下，就给个底部 padding 把它顶上去 */
 		padding-bottom: 2px;
 	}
 }
 
-.add-tag {
-	background-color: #ccc;
-	padding: 2px 8px;
-}
-
-/* 分割线 */
 .card-divider {
 	height: 1px;
 	background-color: #f0f0f0;
@@ -540,7 +314,6 @@ export default {
 	width: 100%;
 }
 
-/* 下半部分：统计数据 */
 .stats-row {
 	display: flex;
 	justify-content: space-between;
@@ -558,7 +331,6 @@ export default {
 			color: #2F3E25;
 			margin-bottom: 4px;
 			font-family: 'DIN', sans-serif;
-			/* 如果有数字字体更好 */
 		}
 
 		.stat-label {
@@ -574,120 +346,25 @@ export default {
 	}
 }
 
-/* ... 下面保持原有的 CSS ... */
-.section-container {
-	margin: 24px 0;
-	padding-left: 16px;
+.log-section {
+	padding: 0 16px;
 }
 
 .section-header {
 	display: flex;
 	align-items: center;
 	margin-bottom: 16px;
-	padding-right: 16px;
 }
 
 .section-title {
 	font-size: 18px;
 	font-weight: bold;
 	color: #333;
-	margin-right: auto;
-}
-
-.care-scroll-view {
-	width: 100%;
-	white-space: nowrap;
-	height: 160rpx; // 确保高度足够展示 120rpx 的内容
-}
-
-.care-list {
-	display: inline-flex;
-	padding-right: 60rpx;
-	height: 100%;
-}
-
-.care-item {
-	display: inline-flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	margin-right: 20px;
-	width: 120rpx;
-	flex-shrink: 0;
-}
-
-.care-icon-box {
-	width: 100rpx;
-	height: 100rpx;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin-bottom: 8px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.care-name {
-	font-size: 11px;
-	color: #555;
-	text-align: center;
-	width: 100%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	line-height: 1.2;
-}
-
-/* 快捷入口 */
-.quick-links {
-	display: flex;
-	justify-content: space-between;
-	margin: 0 16px 24px 16px;
-	gap: 12px;
-}
-
-.link-card {
-	flex: 1;
-	background-color: rgba(255, 255, 255, 0.6);
-	border: 1px solid rgba(255, 255, 255, 1);
-	border-radius: 16px;
-	padding: 16px 12px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.link-left {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.link-text {
-	font-size: 14px;
-	font-weight: 500;
-	color: #333;
-}
-
-/* 日志部分 */
-.log-section {
-	padding: 0 16px;
 }
 
 .header-left {
 	display: flex;
 	align-items: center;
-}
-
-.header-right {
-	display: flex;
-	align-items: center;
-	margin-left: auto;
-}
-
-.edit-btn {
-	font-size: 14px;
-	color: #666;
 }
 
 .log-list {
@@ -792,12 +469,15 @@ export default {
 	border-radius: 8px;
 }
 
-.delete-icon {
-	padding: 10px;
-}
-
 .log-text {
 	font-size: 13px;
 	color: #333;
+}
+
+.empty-logs {
+	text-align: center;
+	padding: 40px 0;
+	color: #999;
+	font-size: 14px;
 }
 </style>

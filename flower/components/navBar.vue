@@ -1,8 +1,9 @@
 <template>
     <view class="nav-back-button" hover-class="nav-back-button-hover" :style="{width:menuButtonInfo.height+'px',
     height:menuButtonInfo.height+'px',top:menuButtonInfo.top+'px',
-    left: paddingLeft + 'px'}" @click="back">
-        <view class="iconfont plant-fanhui nav-back-icon"></view>
+    left: paddingLeft + 'px'}" @click="handleBack">
+        <uni-icons v-if="isHome" type="home" size="20" color="#333"></uni-icons>
+        <view v-else class="iconfont plant-fanhui nav-back-icon"></view>
     </view>
 </template>
 
@@ -13,49 +14,35 @@ export default {
      */
     name: 'navBar',
     /**
-     * 组件涉及的事件声明，只有声明过的事件，才能被正常发送
-     */
-    emits: [],
-    /**
-     * 属性声明，组件的使用者会传递这些属性值到组件
+     * 属性声明
      */
     props: {
         navText: {
             type: String,
             default: "",
         },
+        isHome: {
+            type: Boolean,
+            default: false
+        }
     },
-    /**
-     * 组件内部变量声明
-     */
     data() {
         return {
             menuButtonInfo:{},
             paddingLeft:0
         }
     },
-    /**
-     * 属性变化监听器实现
-     */
-    watch: {
-
-    },
-    /**
-     * 规则：如果没有配置expose，则methods中的方法均对外暴露，如果配置了expose，则以expose的配置为准向外暴露
-     * ['publicMethod'] 含义为：只有 `publicMethod` 在实例上可用
-     * 
-     * 注意：如果在data中声明了一个变量，此时组件配置了 expose字段，但未在expose字段中包含此变量。会导致该变量被标记为`private`：仅能在组件内使用，不能在组件外访问
-     */
-    //expose: [''],
     methods: {
-        back(){
+        handleBack(){
             wx.vibrateShort({ type: 'medium' })
-            uni.navigateBack()
+            if (this.isHome) {
+                uni.reLaunch({
+                    url: '/pages/index/index'
+                })
+            } else {
+                uni.navigateBack()
+            }
         }
-        /**
-      * 内部使用的组件方法
-      */
-        //privateMethod() {}
     },
     /**
      * [可选实现] 组件被创建，组件第一个生命周期，
