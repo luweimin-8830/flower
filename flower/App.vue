@@ -71,11 +71,11 @@ page {
 	page {
 		--bg-color: #566C44;
 		--bg-btn-color: #151515 --card-bg: #1e1e1e;
-		--text-color: #ffffff;
+		--text-color: #f5f5f5;
 		--text-sub: #777777;
 		--border-color: #333333;
 		/* 主题色通常在深色模式下需要调亮一点点，或者保持不变 */
-		--primary-color: #0a84ff;
+		--primary-color: #FAF2CB;
 	}
 }
 
