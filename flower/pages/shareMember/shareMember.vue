@@ -1,5 +1,5 @@
 <template>
-    <navBar title="加入家庭" />
+    <navBar :isHome="true" title="加入家庭" />
     <view :style="{ height: topBarHeight + 'px' }"></view>
 
     <view class="container">

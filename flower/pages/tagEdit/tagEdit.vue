@@ -38,10 +38,14 @@
                                     :auto-close="true">
                                     <view class="list-item">
                                         <template v-if="item.isEditing">
-                                            <input class="edit-input" v-model="item.tempName" :focus="true" />
-                                            <view class="action-group">
-                                                <view class="mini-btn save-btn" @click.stop="saveEdit(index)">保存</view>
-                                                <view class="mini-btn cancel-btn" @click.stop="cancelEdit(index)">取消</view>
+                                            <view class="edit-container">
+                                                <input class="edit-input" v-model="item.tempName" :focus="true"
+                                                    @confirm="saveEdit(index)" />
+                                                <view class="edit-actions">
+                                                    <text class="edit-btn cancel" @click.stop="cancelEdit(index)">取消</text>
+                                                    <view class="edit-divider"></view>
+                                                    <text class="edit-btn save" @click.stop="saveEdit(index)">保存</text>
+                                                </view>
                                             </view>
                                         </template>
                                         <template v-else>
@@ -455,6 +459,56 @@ export default {
     width: 100%;
     box-sizing: border-box;
     background-color: transparent;
+}
+
+/* --- 编辑模式样式 --- */
+.edit-container {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    padding: 0 12px;
+    height: 38px;
+    margin-right: 12px;
+    border: 1px solid rgba(74, 97, 57, 0.1);
+}
+
+.edit-input {
+    flex: 1;
+    font-size: 14px;
+    color: #2F3E25;
+}
+
+.edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.edit-btn {
+    font-size: 13px;
+    padding: 6px 8px;
+    transition: all 0.2s;
+}
+
+.edit-btn:active {
+    opacity: 0.6;
+}
+
+.edit-btn.cancel {
+    color: #888;
+}
+
+.edit-btn.save {
+    color: #4A6139;
+    font-weight: bold;
+}
+
+.edit-divider {
+    width: 1px;
+    height: 12px;
+    background-color: rgba(0, 0, 0, 0.08);
 }
 
 .left-info {
