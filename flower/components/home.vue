@@ -28,7 +28,7 @@
             <view class="header-action-container">
                 <template v-if="!isEditMode">
                     <view class="search-box-wrapper">
-                        <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称" radius="20" :focus="false"
+                        <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称或标签" radius="20" :focus="false"
                             v-model="searchValue" bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
                         </uni-search-bar>
                     </view>
@@ -208,6 +208,10 @@ export default {
      * 属性变化监听器实现
      */
     watch: {
+        searchValue() {
+            // 当搜索内容变化（包括清空）时实时过滤
+            this.filterPlants();
+        },
         allPlantsList: {
             handler(newVal, oldVal) {
                 if (newVal) {
@@ -362,17 +366,22 @@ export default {
         filterPlants() {
             const currentTag = this.tagList[this.currentTagIndex];
             const tagId = currentTag ? currentTag.id : 0;
-            let filtered = [];
-            if (tagId === 0) {
-
-                filtered = this.allPlantsList;
-            } else {
-                // 🟢 只过滤，不 map
-                filtered = this.allPlantsList.filter(plant => {
-                    return plant.tags && plant.tags.some(t => t.id === tagId);
-                });
-            }
-            this.plantsList = filtered;
+            const search = this.searchValue ? this.searchValue.trim().toLowerCase() : '';
+            
+            this.plantsList = this.allPlantsList.filter(plant => {
+                // 1. 检查选中的顶部标签过滤 (如果不是“全部”)
+                const matchesTag = tagId === 0 || (plant.tags && plant.tags.some(t => t.id === tagId));
+                
+                // 2. 检查搜索关键词 (匹配名称或关联标签名)
+                let matchesSearch = true;
+                if (search) {
+                    const matchesName = plant.name.toLowerCase().includes(search);
+                    const matchesTagName = plant.tags && plant.tags.some(t => t.name.toLowerCase().includes(search));
+                    matchesSearch = matchesName || matchesTagName;
+                }
+                
+                return matchesTag && matchesSearch;
+            });
         },
         async handleFamilyChange(e) {
             const selectedIndex = e.detail.value;
