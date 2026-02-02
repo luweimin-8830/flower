@@ -55,9 +55,24 @@ export default {
         
         // 监听家庭切换
         uni.$on('familyChanged', this.handleFamilyChanged);
+        
+        // 监听数据刷新事件（与首页、详情页保持一致）
+        uni.$on('refreshHomeList', () => {
+            this.loadPhotos();
+        });
+        
+        // 监听页面显示事件，每次页面显示时刷新数据
+        uni.$on('tabChange', (tabIndex) => {
+            // 假设相册页是特定的tab索引，根据实际情况调整
+            if (tabIndex === 'photoAlbum') {
+                this.loadPhotos();
+            }
+        });
     },
     beforeUnmount() {
         uni.$off('familyChanged', this.handleFamilyChanged);
+        uni.$off('refreshHomeList');
+        uni.$off('tabChange');
     },
     methods: {
         initPageInfo() {
@@ -77,6 +92,11 @@ export default {
         },
         async handleFamilyChanged(newFamilyId) {
             this.currentFamilyId = newFamilyId;
+            await this.loadPhotos();
+        },
+        // 处理图片上传完成事件
+        async handlePhotoUploaded() {
+            console.log('检测到新图片上传，刷新相册');
             await this.loadPhotos();
         },
         async loadPhotos() {
@@ -158,6 +178,11 @@ export default {
         onReachBottom() {
             // 分页逻辑可以在此添加
         }
+    },
+    // 添加页面显示时的生命周期钩子
+    onShow() {
+        // 页面显示时刷新数据
+        this.loadPhotos();
     }
 };
 </script>
