@@ -335,13 +335,13 @@ export default {
             return {
                 title: `邀请你加入家庭 "${name}"`,
                 path: `/pages/shareMember/shareMember?familyId=${id}&familyName=${name}`,
-                imageUrl: '/static/share.png'
+                imageUrl: '/static/share.jpg'
             }
         }
         return {
             title: '我的家庭',
             path: '/pages/index/index',
-            imageUrl: '/static/share.png'
+            imageUrl: '/static/share.jpg'
         }
     },
     onLoad() {

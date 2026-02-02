@@ -211,7 +211,7 @@ const _sfc_main = {
     return {
       title: "分享我的植物",
       path: "/pages/index/index",
-      imageUrl: "/static/share.png"
+      imageUrl: "/static/share.jpg"
     };
   }
 };
