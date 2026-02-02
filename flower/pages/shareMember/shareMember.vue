@@ -68,9 +68,19 @@ export default {
                     icon: 'success'
                 });
                 
-                // 刷新本地缓存
+                // 1. 自动切换到该家庭
+                const targetFamilyId = parseInt(this.familyId);
+                await callContainer("/api/family/switch", {
+                    familyId: targetFamilyId
+                });
+                
+                // 2. 刷新并同步本地缓存
                 const user = await callContainer("/api/login")
                 uni.setStorageSync('family', user.data.family)
+                uni.setStorageSync('familyId', targetFamilyId)
+                
+                // 3. 通知首页刷新
+                uni.$emit('familyChanged', targetFamilyId);
                 
                 setTimeout(() => {
                     uni.reLaunch({ url: '/pages/index/index' })
