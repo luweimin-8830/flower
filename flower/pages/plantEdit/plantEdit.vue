@@ -285,7 +285,7 @@ export default {
 				}
 			} else {
 				try {
-					const plant = await callContainer("/api/plant/add", {
+					const plantRes = await callContainer("/api/plant/add", {
 						"name": this.plant.name,
 						"familyId": Number(this.familyId),
 						"coverId": this.plant.coverId,
@@ -293,7 +293,23 @@ export default {
 						"birthday": this.plant.birthday,
 						"tags": this.plant.tags
 					})
-					console.log("call container plant add", plant)
+					console.log("call container plant add", plantRes)
+					
+					// 新增植物后，同步插入一条成长记录
+					if (plantRes.data && plantRes.data.id) {
+						const newPlantId = plantRes.data.id;
+						const logTime = this.plant.birthday ? `${this.plant.birthday}T12:00:00Z` : new Date().toISOString();
+						
+						await callContainer("/api/plant/log/add", {
+							familyId: Number(this.familyId),
+							plantId: Number(newPlantId),
+							actionType: 'record',
+							content: '入户初始记录',
+							logTime: logTime,
+							images: this.plant.coverId ? [{ id: this.plant.coverId }] : []
+						});
+					}
+					
 					uni.$emit('refreshHomeList', { needRefresh: true });
 				} catch (error) {
 					console.error(error)

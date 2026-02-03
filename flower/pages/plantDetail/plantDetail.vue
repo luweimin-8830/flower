@@ -5,6 +5,9 @@
 		<!-- 🌟 新增：右上角操作按钮 (悬浮在导航栏之上) -->
 		<!-- topBarHeight 是状态栏高度，我们需要往下一点点 -->
 		<view class="top-actions" :style="{ top: (topBarHeight + 8) + 'px' }">
+			<view class="action-btn icon-only" @click="handleNotification">
+				<uni-icons type="notification" size="20" color="#333"></uni-icons>
+			</view>
 			<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
 				<uni-icons type="upload" size="20" color="#333"></uni-icons>
 			</button>
@@ -17,6 +20,48 @@
 		<view :style="{ height: topBarHeight + 44 + 'px' }"></view>
 
 		<scroll-view scroll-y class="main-scroll" :enable-back-to-top="true">
+			<!-- 提醒时间选择弹窗 -->
+			<uni-calendar
+				ref="remindCalendar"
+				:insert="false"
+				:clear-date="true"
+				:startDate="todayDate"
+				@confirm="onRemindConfirm"
+			/>
+
+			<!-- 提醒事项输入弹窗 -->
+			<uni-popup ref="remindPopup" type="center">
+				<view class="remind-modal">
+					<view class="modal-header">
+						<text class="modal-title">预约提醒</text>
+					</view>
+					<view class="modal-body">
+						<view class="input-group">
+							<text class="label">日期</text>
+							<text class="value">{{ remindData.date }}</text>
+						</view>
+						<view class="input-group">
+							<text class="label">时间</text>
+							<picker mode="time" :value="remindData.time" @change="e => remindData.time = e.detail.value">
+								<view class="time-picker-value">{{ remindData.time }}</view>
+							</picker>
+						</view>
+						<view class="input-group vertical">
+							<text class="label">事项内容</text>
+							<textarea 
+								class="remind-textarea" 
+								v-model="remindData.content" 
+								placeholder="输入提醒内容,如:该浇水了"
+								maxlength="20"
+							/>
+						</view>
+					</view>
+					<view class="modal-footer">
+						<button class="btn cancel" @click="$refs.remindPopup.close()">取消</button>
+						<button class="btn confirm" @click="saveRemind">保存预约</button>
+					</view>
+				</view>
+			</uni-popup>
 
 			<!-- 🌟 修改：植物基本信息卡片 -->
 			<view class="plant-header-card">
@@ -199,13 +244,22 @@ export default {
 			careActions: [],
 			logList: [],
 			totalLogCount: 0,
-			isManageMode: false
+			isManageMode: false,
+			todayDate: '',
+			remindData: {
+				date: '',
+				time: '08:00',
+				content: ''
+			}
 		};
 	},
 	async onLoad(options) {
 		const app = getApp()
 		const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
 		this.topBarHeight = app.globalData.topBarHeight || menuButtonInfo.top;
+
+		const now = new Date();
+		this.todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
 		if (options && options.id) {
 			this.plantId = options.id
@@ -375,6 +429,103 @@ export default {
 		},
 		handleShareClick() {
 			console.log('用户点击了分享按钮');
+		},
+		handleNotification() {
+			this.requestSubscribe();
+		},
+		requestSubscribe() {
+			const templateId = 'jtmMCRDxoFP3AEDRAi0yNGo9PXI_3BGyb7bcqdlSJk4';
+			wx.requestSubscribeMessage({
+				tmplIds: [templateId],
+				success: (res) => {
+					if (res[templateId] === 'accept') {
+						uni.showToast({
+							title: '订阅成功',
+							icon: 'success'
+						});
+						// 订阅成功后弹出时间选择器
+						setTimeout(() => {
+							this.$refs.remindCalendar.open();
+						}, 500);
+					} else if (res[templateId] === 'reject') {
+						uni.showToast({
+							title: '已取消订阅',
+							icon: 'none'
+						});
+					}
+				},
+				fail: (err) => {
+					console.error('订阅消息失败：', err);
+					if (err.errCode === 20004) {
+						uni.showModal({
+							title: '提示',
+							content: '请在小程序设置中开启订阅消息通知',
+							confirmText: '去设置',
+							success: (modalRes) => {
+								if (modalRes.confirm) {
+									wx.openSetting();
+								}
+							}
+						});
+					}
+				}
+			});
+		},
+		onRemindConfirm(e) {
+			this.remindData.date = e.fulldate;
+			this.remindData.content = ''; // 重置内容
+			
+			// 优先从配置中获取默认提醒时间
+			const userInfo = uni.getStorageSync('userInfo');
+			if (userInfo && userInfo.remindTime) {
+				this.remindData.time = userInfo.remindTime;
+			} else {
+				this.remindData.time = '08:00';
+			}
+			
+			this.$refs.remindPopup.open();
+		},
+		async saveRemind() {
+			if (!this.remindData.content.trim()) {
+				return uni.showToast({ title: '请输入提醒内容', icon: 'none' });
+			}
+			
+			try {
+				uni.showLoading({ title: '保存预约...' });
+				
+				const fullRemindTime = `${this.remindData.date} ${this.remindData.time}`;
+				const familyId = uni.getStorageSync('familyId');
+				
+				await callContainer('/api/remind/add', {
+					familyId: Number(familyId),
+					plantId: Number(this.plantId),
+					remindTime: fullRemindTime,
+					content: this.remindData.content,
+					actionType: 'remind'
+				});
+				
+				// 同时记录一条日志
+				await callContainer('/api/plant/log/add', {
+					familyId: Number(familyId),
+					plantId: Number(this.plantId),
+					actionType: 'remind',
+					content: `【预约提醒】${this.remindData.content}`,
+					logTime: `${this.remindData.date}T${this.remindData.time}:00Z`,
+					images: []
+				});
+				
+				uni.showToast({
+					title: '预约成功',
+					icon: 'success'
+				});
+				this.$refs.remindPopup.close();
+				this.getLogs(); // 刷新详情页日志列表
+			} catch (e) {
+				console.error(e);
+				uni.showToast({ title: '预约失败', icon: 'none' });
+			} finally {
+				uni.hideLoading();
+			}
 		},
 		goAlbum() { }
 	}
@@ -799,5 +950,83 @@ export default {
 .log-text {
 	font-size: 13px;
 	color: #333;
+}
+
+.remind-modal {
+	width: 600rpx;
+	background-color: #fff;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	
+	.modal-header {
+		text-align: center;
+		margin-bottom: 30rpx;
+		.modal-title {
+			font-size: 18px;
+			font-weight: bold;
+			color: #333;
+		}
+	}
+	
+	.input-group {
+		display: flex;
+		align-items: center;
+		padding: 20rpx 0;
+		border-bottom: 1px solid #f5f5f5;
+		
+		&.vertical {
+			flex-direction: column;
+			align-items: flex-start;
+			border-bottom: none;
+		}
+		
+		.label {
+			width: 140rpx;
+			font-size: 15px;
+			color: #666;
+		}
+		
+		.value, .time-picker-value {
+			font-size: 15px;
+			color: #333;
+			font-weight: 500;
+		}
+		
+		.remind-textarea {
+			width: 100%;
+			height: 160rpx;
+			background-color: #f9f9f9;
+			border-radius: 10rpx;
+			padding: 20rpx;
+			margin-top: 16rpx;
+			font-size: 14px;
+		}
+	}
+	
+	.modal-footer {
+		display: flex;
+		gap: 20rpx;
+		margin-top: 40rpx;
+		
+		.btn {
+			flex: 1;
+			height: 80rpx;
+			line-height: 80rpx;
+			border-radius: 40rpx;
+			font-size: 15px;
+			
+			&::after { border: none; }
+			
+			&.cancel {
+				background-color: #f5f5f5;
+				color: #666;
+			}
+			
+			&.confirm {
+				background-color: #4A6139;
+				color: #fff;
+			}
+		}
+	}
 }
 </style>

@@ -191,9 +191,18 @@ type Value struct {
 func SendSubscribeMessage(ctx context.Context, task *model.RemindTask) error {
 	templateID := "jtmMCRDxoFP3AEDRAi0yNGo9PXI_3BGyb7bcqdlSJk4"
 	
+	plantName := "植物养护提醒"
+	if task.PlantID > 0 {
+		var plant model.Plant
+		err := dao.GetDB(ctx).First(&plant, task.PlantID).Error
+		if err == nil && plant.Name != "" {
+			plantName = plant.Name
+		}
+	}
+
 	// 组装订阅消息内容
 	data := map[string]Value{
-		"thing8": {Value: "植物养护提醒"}, // 作物名称
+		"thing8": {Value: plantName}, // 作物名称
 		"thing4": {Value: "需要关注"},   // 作物状态
 		"time6":  {Value: task.RemindTime.Format("2006-01-02 15:04")}, // 时间
 		"thing7": {Value: "请及时查看您的植物状态"}, // 温馨提示

@@ -297,15 +297,15 @@ export default {
 					actionType: 'remind'
 				});
 				
-				// 同时记录一条日志（可选，或者由后端自动生成）
-				await callContainer('/api/plant/log/add', {
-					familyId: Number(this.familyId),
-					plantId: 0,
-					actionType: 'remind',
-					content: `【预约提醒】${this.remindData.content}`,
-					logTime: `${this.remindData.date}T${this.remindData.time}:00Z`,
-					images: []
-				});
+				// 同时记录一条日志（可选，或者由后端自动生成）暂时不考虑
+				// await callContainer('/api/plant/log/add', {
+				// 	familyId: Number(this.familyId),
+				// 	plantId: 0,
+				// 	actionType: 'remind',
+				// 	content: `【预约提醒】${this.remindData.content}`,
+				// 	logTime: `${this.remindData.date}T${this.remindData.time}:00Z`,
+				// 	images: []
+				// });
 				
 				uni.showToast({
 					title: '预约成功',
