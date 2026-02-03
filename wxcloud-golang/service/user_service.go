@@ -149,3 +149,12 @@ func JoinFamily(ctx context.Context, openID string, familyID uint) error {
 	}
 	return dao.CreateFamilyMember(ctx, member)
 }
+
+func UpdateUserRemindTime(ctx context.Context, openID string, remindTime string) error {
+	user, err := dao.GetUserByOpenID(ctx, openID)
+	if err != nil {
+		return err
+	}
+	user.RemindTime = remindTime
+	return dao.UpdateUser(ctx, user)
+}

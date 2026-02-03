@@ -33,6 +33,10 @@ type JoinFamilyRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
 }
 
+type UpdateUserRequest struct {
+	RemindTime string `json:"remindTime" binding:"required"`
+}
+
 func IndexHandler(c *gin.Context) {
 	response.SuccessMsg(c, "Hello Succulent")
 }
@@ -181,4 +185,20 @@ func JoinFamilyHandler(c *gin.Context) {
 		return
 	}
 	response.Success(c, "加入成功")
+}
+
+func UpdateUserHandler(c *gin.Context) {
+	var req UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 400, "参数错误")
+		return
+	}
+	OPENID := c.GetHeader("X-WX-OPENID")
+	ctx := c.Request.Context()
+	err := service.UpdateUserRemindTime(ctx, OPENID, req.RemindTime)
+	if err != nil {
+		response.Fail(c, "更新失败: "+err.Error())
+		return
+	}
+	response.Success(c, "更新成功")
 }

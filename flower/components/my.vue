@@ -12,15 +12,25 @@
                 </view>
                 <uni-icons type="right" size="16" color="#999"></uni-icons>
             </view>
-            <!-- 分割线 -->
-            <!-- <view class="divider"></view> -->
-            <!-- <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
-                <view class="left-content">
-                    <uni-icons type="settings" size="22" color="#4A6139" class="menu-icon"></uni-icons>
-                    <text class="menu-text">日常养护管理</text>
+        </view>
+    </view>
+    <view class="section-container">
+        <!-- 标题 -->
+        <text class="section-title">设置</text>
+        <!-- 卡片容器 -->
+        <view class="card-box">
+            <picker mode="time" :value="remindTime" @change="handleTimeChange">
+                <view class="menu-item" hover-class="item-hover">
+                    <view class="left-content">
+                        <uni-icons type="notification" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                        <text class="menu-text">提醒时间</text>
+                    </view>
+                    <view class="right-content">
+                        <text class="time-text">{{ remindTime }}</text>
+                        <uni-icons type="right" size="16" color="#999"></uni-icons>
+                    </view>
                 </view>
-                <uni-icons type="right" size="16" color="#999"></uni-icons>
-            </view> -->
+            </picker>
         </view>
     </view>
     <view class="section-container">
@@ -63,14 +73,47 @@
 </template>
 
 <script>
+import { callContainer } from '../utils/request.js';
+
 export default {
     name: 'my',
     data() {
         return {
             topBarHeight: 0,
+            remindTime: '08:00'
         }
     },
     methods: {
+        async loadUserData() {
+            const userInfo = uni.getStorageSync('userInfo');
+            if (userInfo && userInfo.remindTime) {
+                this.remindTime = userInfo.remindTime;
+            }
+        },
+        async handleTimeChange(e) {
+            const newTime = e.detail.value;
+            this.remindTime = newTime;
+            
+            try {
+                uni.showLoading({ title: '保存中...' });
+                await callContainer('/api/user/update', {
+                    remindTime: newTime
+                });
+                
+                // 更新本地存储
+                const userInfo = uni.getStorageSync('userInfo') || {};
+                userInfo.remindTime = newTime;
+                uni.setStorageSync('userInfo', userInfo);
+                
+                uni.showToast({ title: '设置已更新', icon: 'success' });
+                wx.vibrateShort({ type: "medium" });
+            } catch (error) {
+                console.error('更新提醒时间失败:', error);
+                uni.showToast({ title: '更新失败', icon: 'none' });
+            } finally {
+                uni.hideLoading();
+            }
+        },
         handleNav(type) {
             // 这里处理点击事件
             console.log('点击了:', type);
@@ -87,6 +130,7 @@ export default {
     created() {
         const app = getApp()
         this.topBarHeight = app.globalData.topBarHeight;
+        this.loadUserData();
     }
 }
 </script>
@@ -159,6 +203,12 @@ export default {
     color: #2F3E25;
     /* 深橄榄绿文字 */
     font-weight: 400;
+}
+
+.time-text {
+    font-size: 14px;
+    color: #6B8857;
+    margin-right: 4px;
 }
 
 /* 分割线 */

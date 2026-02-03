@@ -16,10 +16,20 @@
 					color="#566C44"
 					@change="onDateChange"
 				/>
+
+				<!-- 提醒时间选择弹窗 -->
+				<uni-calendar
+					ref="remindCalendar"
+					:insert="false"
+					:clear-date="true"
+					:startDate="todayDate"
+					@confirm="onRemindConfirm"
+				/>
 				
 				<view class="day-detail">
 					<view class="detail-header">
 						<text class="detail-title">{{ selectedDate }} 记录</text>
+						<uni-icons type="notification" size="20" color="#6B8857" @click="requestSubscribe"></uni-icons>
 					</view>
 					
 					<view class="log-list">
@@ -70,7 +80,8 @@ export default {
 			allLogs: [],
 			careActions: [],
 			familyId: 0,
-			selectedDates: [] // uni-calendar markers
+			selectedDates: [], // uni-calendar markers
+			todayDate: ''
 		};
 	},
 	computed: {
@@ -97,7 +108,8 @@ export default {
 			}
 			this.familyId = uni.getStorageSync('familyId');
 			const now = new Date();
-			this.selectedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+			this.todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+			this.selectedDate = this.todayDate;
 			
 			await Promise.all([
 				this.getCareActions(),
@@ -169,6 +181,52 @@ export default {
 			uni.navigateTo({
 				url: `/pages/logEdit/logEdit?id=${log.id}&plantId=${log.plantId}`
 			});
+		},
+		requestSubscribe() {
+			const templateId = 'jtmMCRDxoFP3AEDRAi0yNGo9PXI_3BGyb7bcqdlSJk4';
+			wx.requestSubscribeMessage({
+				tmplIds: [templateId],
+				success: (res) => {
+					if (res[templateId] === 'accept') {
+						uni.showToast({
+							title: '订阅成功',
+							icon: 'success'
+						});
+						// 订阅成功后弹出时间选择器
+						setTimeout(() => {
+							this.$refs.remindCalendar.open();
+						}, 500);
+					} else if (res[templateId] === 'reject') {
+						uni.showToast({
+							title: '已取消订阅',
+							icon: 'none'
+						});
+					}
+				},
+				fail: (err) => {
+					console.error('订阅消息失败：', err);
+					if (err.errCode === 20004) {
+						uni.showModal({
+							title: '提示',
+							content: '请在小程序设置中开启订阅消息通知',
+							confirmText: '去设置',
+							success: (modalRes) => {
+								if (modalRes.confirm) {
+									wx.openSetting();
+								}
+							}
+						});
+					}
+				}
+			});
+		},
+		onRemindConfirm(e) {
+			console.log('选择的提醒日期：', e.fulldate);
+			uni.showToast({
+				title: `已预约 ${e.fulldate} 提醒`,
+				icon: 'none'
+			});
+			// 这里通常需要调用后端接口保存该提醒任务
 		}
 	}
 };

@@ -54,6 +54,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/login", handler.UserLoginHandler)
+		api.POST("/user/update", handler.UpdateUserHandler)
 		family := api.Group("/family")
 		{
 			family.POST("/", handler.GetFamilyHandler)

@@ -14,7 +14,8 @@ type User struct {
 	Name            string `json:"name"`
 	CreatedAT       time.Time
 	LastDateAT      time.Time
-	CurrentFamilyID *uint `json:"currentFamilyId" gorm:"default:null"`
+	CurrentFamilyID *uint  `json:"currentFamilyId" gorm:"default:null"`
+	RemindTime      string `json:"remindTime" gorm:"type:varchar(5);default:'08:00'"`
 }
 
 type Family struct {
