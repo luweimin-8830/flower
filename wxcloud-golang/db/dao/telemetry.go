@@ -45,3 +45,8 @@ func execWithSpan(ctx context.Context, operation, table string, fn func(*gorm.DB
 
 	return nil
 }
+
+// GetDB 返回绑定了 Context 的数据库连接
+func GetDB(ctx context.Context) *gorm.DB {
+	return db.Conn(ctx)
+}
