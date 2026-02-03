@@ -34,7 +34,7 @@ const _sfc_main = {
     },
     textColor: {
       type: String,
-      default: "#000000"
+      default: "#333"
     },
     maxlength: {
       type: [Number, String],
@@ -157,7 +157,7 @@ if (!Math) {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: common_vendor.p({
-      color: "#c0c4cc",
+      color: "var(--primary-color)",
       size: "18",
       type: "search"
     }),
@@ -179,7 +179,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     n: $data.show && ($props.clearButton === "always" || $props.clearButton === "auto" && $data.searchVal !== "") && !$props.readonly
   }, $data.show && ($props.clearButton === "always" || $props.clearButton === "auto" && $data.searchVal !== "") && !$props.readonly ? {
     o: common_vendor.p({
-      color: "#c0c4cc",
+      color: "var(--primary-color)",
       size: "20",
       type: "clear"
     }),

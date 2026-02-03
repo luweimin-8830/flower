@@ -26,6 +26,11 @@
   align-items: center;
   color: #B3B3B3;
 }
+@media (prefers-color-scheme: dark) {
+.uni-searchbar__box-icon-search {
+    color: #333;
+}
+}
 .uni-searchbar__box-search-input {
   flex: 1;
   font-size: 14px;
@@ -40,13 +45,13 @@
 }
 .uni-searchbar__text-placeholder {
   font-size: 14px;
-  color: #B3B3B3;
+  color: #333;
   margin-left: 5px;
   text-align: left;
 }
 @media (prefers-color-scheme: dark) {
 .uni-searchbar__text-placeholder {
-    color: #f5f5f5;
+    color: #333;
 }
 }
 .uni-searchbar__cancel {

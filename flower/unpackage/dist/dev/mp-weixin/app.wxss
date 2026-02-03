@@ -2671,7 +2671,7 @@ page {
   --text-color: #333333;
   --text-sub: #999999;
   --border-color: #e5e5e5;
-  --primary-color: #007aff;
+  --primary-color: #566C44;
 }
 @media (prefers-color-scheme: dark) {
 :root,

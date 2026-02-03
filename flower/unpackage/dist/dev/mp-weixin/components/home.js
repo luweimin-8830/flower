@@ -107,7 +107,7 @@ const _sfc_main = {
         ]);
         const familyList = (familyListResult == null ? void 0 : familyListResult.data) || [];
         const cachedFamilyId = familyIdResult == null ? void 0 : familyIdResult.data;
-        common_vendor.index.__f__("log", "at components/home.vue:252", "loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
+        common_vendor.index.__f__("log", "at components/home.vue:255", "loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
         if (familyList && Array.isArray(familyList) && familyList.length > 0) {
           this.familyRange = familyList.map((item) => ({
             text: item.name,
@@ -129,7 +129,7 @@ const _sfc_main = {
         await this.getTagList();
         await this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:284", "加载家庭数据失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:287", "加载家庭数据失败:", error);
       }
     },
     async refreshFamilyList() {
@@ -159,7 +159,7 @@ const _sfc_main = {
           this.familyRange = [];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:326", "刷新家庭列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:329", "刷新家庭列表失败:", error);
       }
     },
     async getPlantsList() {
@@ -168,7 +168,7 @@ const _sfc_main = {
         const plants = await utils_request.callContainer("/api/plant/list", {
           "familyId": familyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:336", "plants list:", plants);
+        common_vendor.index.__f__("log", "at components/home.vue:339", "plants list:", plants);
         const newData = (plants == null ? void 0 : plants.data) || [];
         newData.forEach((item, idx) => {
           if (item.tags && item.tags.length > 0) {
@@ -186,7 +186,7 @@ const _sfc_main = {
         });
         this.filterPlants();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:363", "获取植物列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:366", "获取植物列表失败:", error);
       }
     },
     filterPlants() {
@@ -212,13 +212,13 @@ const _sfc_main = {
         await utils_request.callContainer("/api/family/switch", {
           familyId: newFamilyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:396", "家庭切换成功");
+        common_vendor.index.__f__("log", "at components/home.vue:399", "家庭切换成功");
         await new Promise((resolve) => {
           common_vendor.index.setStorage({ key: "familyId", data: newFamilyId, success: resolve });
         });
         common_vendor.index.$emit("familyChanged", newFamilyId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:407", "切换家庭失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:410", "切换家庭失败:", error);
         const errorMsg = (error == null ? void 0 : error.msg) || (error == null ? void 0 : error.message) || "切换家庭失败，请稍后重试";
         common_vendor.index.showToast({
           title: errorMsg,
@@ -246,7 +246,7 @@ const _sfc_main = {
       common_vendor.wx$1.vibrateShort({ type: "light" });
     },
     toggleFamilySelect() {
-      common_vendor.index.__f__("log", "at components/home.vue:454", "触发家庭选择器");
+      common_vendor.index.__f__("log", "at components/home.vue:457", "触发家庭选择器");
     },
     onTouchStart() {
       this.isSelecting = true;
@@ -263,7 +263,7 @@ const _sfc_main = {
           utils_request.callContainer("/api/tag/", { familyId }),
           utils_request.callContainer("/api/care/", { familyId: Number(familyId) })
         ]);
-        common_vendor.index.__f__("log", "at components/home.vue:475", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:478", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", id: 0 },
@@ -278,14 +278,14 @@ const _sfc_main = {
         if (this.careOptions.length > 0) {
           this.batchActionType = this.careOptions[0].type;
         }
-        common_vendor.index.__f__("log", "at components/home.vue:494", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:497", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:502", "获取标签列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:505", "获取标签列表失败:", error);
       }
     },
     enterEditMode(item) {
@@ -309,7 +309,7 @@ const _sfc_main = {
               common_vendor.index.showToast({ title: "已删除", icon: "success" });
               await this.getPlantsList();
             } catch (e) {
-              common_vendor.index.__f__("error", "at components/home.vue:525", "删除失败:", e);
+              common_vendor.index.__f__("error", "at components/home.vue:528", "删除失败:", e);
               common_vendor.index.showToast({ title: "删除失败", icon: "none" });
             } finally {
               common_vendor.index.hideLoading();
@@ -377,7 +377,7 @@ const _sfc_main = {
         this.exitEditMode();
         await this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:596", "批量操作失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:599", "批量操作失败:", error);
         common_vendor.index.showToast({ title: "操作失败", icon: "none" });
       } finally {
         common_vendor.index.hideLoading();
@@ -476,7 +476,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:718", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:721", "callContainer login:", user);
     const userInfo = user.data.user;
     const familyList = user.data.family;
     await new Promise((resolve) => {
@@ -519,23 +519,28 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     b: $data.isSelecting ? 1 : "",
     c: common_vendor.t(((_a = $data.familyRange[$data.currentFamilyIndex]) == null ? void 0 : _a.text) || "选择家庭"),
-    d: $data.currentFamilyIndex,
-    e: $data.familyRange,
-    f: common_vendor.o((...args) => $options.handleFamilyChange && $options.handleFamilyChange(...args)),
-    g: $data.isSelecting ? 1 : "",
-    h: $data.menuButtonInfo.height + "px",
-    i: $data.menuButtonInfo.height / 2 + "px",
-    j: $data.menuButtonInfo.top + "px",
-    k: $data.paddingLeft + "px",
-    l: common_vendor.o((...args) => $options.toggleFamilySelect && $options.toggleFamilySelect(...args)),
-    m: common_vendor.o((...args) => $options.onTouchStart && $options.onTouchStart(...args)),
-    n: common_vendor.o((...args) => $options.onTouchEnd && $options.onTouchEnd(...args)),
-    o: $data.topBarHeight + "px",
-    p: !$data.isEditMode
+    d: common_vendor.p({
+      type: "bottom",
+      size: "14",
+      color: "var(--primary-color)"
+    }),
+    e: $data.currentFamilyIndex,
+    f: $data.familyRange,
+    g: common_vendor.o((...args) => $options.handleFamilyChange && $options.handleFamilyChange(...args)),
+    h: $data.isSelecting ? 1 : "",
+    i: $data.menuButtonInfo.height + "px",
+    j: $data.menuButtonInfo.height / 2 + "px",
+    k: $data.menuButtonInfo.top + "px",
+    l: $data.paddingLeft + "px",
+    m: common_vendor.o((...args) => $options.toggleFamilySelect && $options.toggleFamilySelect(...args)),
+    n: common_vendor.o((...args) => $options.onTouchStart && $options.onTouchStart(...args)),
+    o: common_vendor.o((...args) => $options.onTouchEnd && $options.onTouchEnd(...args)),
+    p: $data.topBarHeight + "px",
+    q: !$data.isEditMode
   }, !$data.isEditMode ? {
-    q: common_vendor.o($options.searchPlant),
-    r: common_vendor.o(($event) => $data.searchValue = $event),
-    s: common_vendor.p({
+    r: common_vendor.o($options.searchPlant),
+    s: common_vendor.o(($event) => $data.searchValue = $event),
+    t: common_vendor.p({
       placeholder: "输入植物名称或标签",
       radius: "20",
       focus: false,
@@ -544,29 +549,29 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       cancelButton: "none",
       modelValue: $data.searchValue
     }),
-    t: common_vendor.p({
+    v: common_vendor.p({
       type: "plusempty",
       size: "22",
       color: "#333"
     }),
-    v: common_vendor.o((...args) => $options.goAddPage && $options.goAddPage(...args))
+    w: common_vendor.o((...args) => $options.goAddPage && $options.goAddPage(...args))
   } : {
-    w: common_vendor.o((...args) => $options.exitEditMode && $options.exitEditMode(...args)),
-    x: common_vendor.p({
+    x: common_vendor.o((...args) => $options.exitEditMode && $options.exitEditMode(...args)),
+    y: common_vendor.p({
       span: 6
     }),
-    y: common_vendor.o((...args) => $options.handleBatchDone && $options.handleBatchDone(...args)),
-    z: common_vendor.p({
+    z: common_vendor.o((...args) => $options.handleBatchDone && $options.handleBatchDone(...args)),
+    A: common_vendor.p({
       span: 6,
       push: 12
     }),
-    A: common_vendor.p({
+    B: common_vendor.p({
       gutter: 20
     })
   }, {
-    B: !$data.isEditMode
+    C: !$data.isEditMode
   }, !$data.isEditMode ? {
-    C: common_vendor.f($data.tagList, (item, index, i0) => {
+    D: common_vendor.f($data.tagList, (item, index, i0) => {
       return {
         a: common_vendor.t(item.name),
         b: "tag-text-" + index,
@@ -576,16 +581,16 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         f: common_vendor.o(($event) => $options.selectTag(index, item), item.id)
       };
     }),
-    D: common_vendor.s($options.sliderStyle),
-    E: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0)
+    E: common_vendor.s($options.sliderStyle),
+    F: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0)
   } : {
-    F: common_vendor.p({
+    G: common_vendor.p({
       type: $data.isSelectAll ? "checkbox-filled" : "circle",
       size: "20",
       color: "#6B8857"
     }),
-    G: common_vendor.o((...args) => $options.toggleSelectAll && $options.toggleSelectAll(...args)),
-    H: common_vendor.f($data.careOptions, (item, k0, i0) => {
+    H: common_vendor.o((...args) => $options.toggleSelectAll && $options.toggleSelectAll(...args)),
+    I: common_vendor.f($data.careOptions, (item, k0, i0) => {
       return {
         a: common_vendor.n(item.icon),
         b: $data.batchActionType === item.type ? "#fff" : "#666",
@@ -596,11 +601,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     })
   }, {
-    I: $data.plantsList.length === 0
+    J: $data.plantsList.length === 0
   }, $data.plantsList.length === 0 ? {
-    J: common_assets._imports_0
+    K: common_assets._imports_0
   } : {
-    K: common_vendor.w(({
+    L: common_vendor.w(({
       item
     }, s0, i0) => {
       return common_vendor.e({
@@ -608,7 +613,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         b: $data.loadedImagesMap[item.id] ? 1 : "",
         c: common_vendor.o(($event) => $options.onImgLoad(item))
       }, $data.isEditMode ? {
-        d: "045d88fd-8-" + i0 + ",045d88fd-7",
+        d: "045d88fd-9-" + i0 + ",045d88fd-8",
         e: common_vendor.p({
           type: $data.selectedPlantIds.includes(item.id) ? "checkbox-filled" : "circle",
           size: "22",
@@ -620,7 +625,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         h: common_vendor.t(item.name),
         i: item.tags
       }, item.tags ? {} : {}, $data.isEditMode ? {
-        j: "045d88fd-9-" + i0 + ",045d88fd-7",
+        j: "045d88fd-10-" + i0 + ",045d88fd-8",
         k: common_vendor.p({
           type: "trash-filled",
           size: "14",
@@ -635,12 +640,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     }, {
       name: "item",
-      path: "K",
-      vueId: "045d88fd-7"
+      path: "L",
+      vueId: "045d88fd-8"
     }),
-    L: $data.isEditMode,
     M: $data.isEditMode,
-    N: common_vendor.p({
+    N: $data.isEditMode,
+    O: common_vendor.p({
       list: $data.plantsList,
       idKey: "id",
       cols: "2"

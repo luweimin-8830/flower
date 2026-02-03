@@ -192,6 +192,11 @@
   display: flex;
   align-items: center;
 }
+.family-name-wrapper.data-v-045d88fd {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
 .family-select-text.data-v-045d88fd {
   font-size: 14px;
   color: #333;

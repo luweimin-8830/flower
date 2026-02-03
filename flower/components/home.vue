@@ -15,7 +15,10 @@
             </view>
             <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'"
                 @change="handleFamilyChange">
-                <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
+                <view class="family-name-wrapper">
+                    <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
+                    <uni-icons type="bottom" size="14" color="var(--primary-color)" style="margin-left: 4px;"></uni-icons>
+                </view>
             </picker>
         </view>
 
@@ -968,6 +971,12 @@ export default {
     margin: 0;
     display: flex;
     align-items: center;
+}
+
+.family-name-wrapper {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
 }
 
 .family-select-text {

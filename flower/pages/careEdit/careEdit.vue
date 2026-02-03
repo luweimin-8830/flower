@@ -2,7 +2,7 @@
     <view class="page-wrapper">
         <navBar title="养护管理" />
         <view :style="{ height: topBarHeight + 'px' }"></view>
-        
+
         <scroll-view scroll-y class="main-scroll" :show-scrollbar="false" :enhanced="true">
             <view class="page-container">
                 <!-- 1. 创建/编辑养护项区域 -->
@@ -20,29 +20,29 @@
                         <view class="form-item">
                             <text class="label">选择图标</text>
                             <view class="options-grid">
-                                <view v-for="icon in iconOptions" :key="icon" 
-                                    class="option-item icon-item" 
-                                    :class="{ 'active': formData.icon === icon }"
-                                    @click="formData.icon = icon">
-                                    <view class="iconfont" :class="icon" :style="{ fontSize: '20px', color: formData.icon === icon ? '#fff' : '#666' }"></view>
+                                <view v-for="icon in iconOptions" :key="icon" class="option-item icon-item"
+                                    :class="{ 'active': formData.icon === icon }" @click="formData.icon = icon">
+                                    <view class="iconfont" :class="icon"
+                                        :style="{ fontSize: '20px', color: formData.icon === icon ? '#fff' : '#666' }">
+                                    </view>
                                 </view>
                             </view>
                         </view>
                         <view class="form-item">
                             <text class="label">选择颜色</text>
                             <view class="options-grid">
-                                <view v-for="color in colorOptions" :key="color" 
-                                    class="option-item color-item" 
-                                    :class="{ 'active': formData.color === color }"
-                                    :style="{ backgroundColor: color }"
+                                <view v-for="color in colorOptions" :key="color" class="option-item color-item"
+                                    :class="{ 'active': formData.color === color }" :style="{ backgroundColor: color }"
                                     @click="formData.color = color">
-                                    <uni-icons v-if="formData.color === color" type="checkmarkempty" size="16" color="#fff"></uni-icons>
+                                    <uni-icons v-if="formData.color === color" type="checkmarkempty" size="16"
+                                        color="#fff"></uni-icons>
                                 </view>
                             </view>
                         </view>
                         <view class="btn-group">
                             <view class="action-btn cancel" v-if="isEditing" @click="resetForm">取消</view>
-                            <view class="action-btn save" :class="{ 'disabled': !formData.name || !formData.type }" @click="handleSubmit">
+                            <view class="action-btn save" :class="{ 'disabled': !formData.name || !formData.type }"
+                                @click="handleSubmit">
                                 {{ isEditing ? '保存修改' : '立即添加' }}
                             </view>
                         </view>
@@ -67,7 +67,8 @@
                                     <view class="list-item" @click="startEdit(item)">
                                         <view class="left-info">
                                             <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                                <view class="iconfont" :class="item.icon" style="font-size: 20px; color: #fff;"></view>
+                                                <view class="iconfont" :class="item.icon"
+                                                    style="font-size: 20px; color: #333;"></view>
                                             </view>
                                             <view class="care-text-info">
                                                 <text class="care-name">{{ item.name }}</text>
@@ -85,13 +86,15 @@
                         <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
                             <block v-for="(item, index) in careList" :key="item.id">
                                 <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40"
-                                    @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
-                                    :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
+                                    @change="onDragChange($event, index)" @touchstart="onDragStart(index)"
+                                    @touchend="onDragEnd" :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
                                     <view class="list-item sort-inner">
                                         <view class="left-info">
-                                            <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
+                                            <uni-icons type="bars" size="20" color="#8FA385"
+                                                class="drag-handle"></uni-icons>
                                             <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                                <view class="iconfont" :class="item.icon" style="font-size: 20px; color: #fff;"></view>
+                                                <view class="iconfont" :class="item.icon"
+                                                    style="font-size: 20px; color: #333;"></view>
                                             </view>
                                             <text class="care-name">{{ item.name }}</text>
                                         </view>
@@ -102,7 +105,7 @@
                         </movable-area>
                     </view>
                 </view>
-                
+
                 <!-- 底部安全区域占位 -->
                 <view class="safe-area-bottom"></view>
             </view>
@@ -132,12 +135,12 @@ export default {
             swipeOptions: [{ text: '删除', style: { backgroundColor: '#dd524d' } }],
             careList: [],
             iconOptions: [
-                'plant-shequhuodong', 'plant-kongzhonghuayuan', 'plant-dianpu', 'plant-a-xiujian13', 
+                'plant-shequhuodong', 'plant-kongzhonghuayuan', 'plant-dianpu', 'plant-a-xiujian13',
                 'plant-chuchong1', 'plant-shifei1', 'plant-a-xiujian23', 'plant-jiaoshui1', 'plant-chuchong2', 'plant-jiaoshui2',
                 'plant-a-Frame9', 'plant-a-Frame1'
             ],
             colorOptions: [
-                '#D6EAF8', '#DCECC9', '#F2D7D5', '#E8E0D5', 
+                '#D6EAF8', '#DCECC9', '#F2D7D5', '#E8E0D5',
                 '#FEF5E7', '#EBDEF0', '#E5E8E8', '#A2D9CE',
                 '#FAD7A0', '#D2B4DE', '#F1948A', '#85C1E9'
             ],
@@ -154,7 +157,7 @@ export default {
                 // 优先从 storage 获取，如果没有则尝试获取家庭列表并使用第一个
                 let fId = uni.getStorageSync('familyId');
                 console.log("Current familyId from storage:", fId);
-                
+
                 if (!fId) {
                     console.log("Storage 中无 familyId，尝试从缓存的家庭列表获取");
                     const families = uni.getStorageSync('family');
@@ -163,7 +166,7 @@ export default {
                         uni.setStorageSync('familyId', fId);
                     }
                 }
-                
+
                 // 如果还是没有，可能需要重新登录获取
                 if (!fId) {
                     console.log("仍然没有 familyId，调用登录接口获取");
@@ -176,15 +179,15 @@ export default {
                     }
                     uni.hideLoading();
                 }
-                
+
                 if (fId) {
                     this.familyId = Number(fId);
                     await this.getCareList();
                 } else {
                     uni.showToast({ title: '未找到家庭信息', icon: 'none' });
                 }
-            } catch (e) { 
-                console.error("loadData error:", e); 
+            } catch (e) {
+                console.error("loadData error:", e);
                 uni.hideLoading();
             }
         },
@@ -199,18 +202,18 @@ export default {
                     }));
                     this.areaHeight = this.careList.length * ROW_HEIGHT;
                 }
-            } catch (e) { 
+            } catch (e) {
                 console.error("getCareList error:", e);
                 uni.showToast({ title: '获取列表失败', icon: 'none' });
             }
         },
         resetForm() {
-            this.formData = { 
-                id: null, 
-                name: '', 
-                type: '', 
-                icon: this.iconOptions[0], 
-                color: this.colorOptions[0] 
+            this.formData = {
+                id: null,
+                name: '',
+                type: '',
+                icon: this.iconOptions[0],
+                color: this.colorOptions[0]
             };
             this.isEditing = false;
         },
@@ -295,7 +298,6 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: #C1D0B7;
 }
 
 .main-scroll {
@@ -322,6 +324,10 @@ export default {
     margin-bottom: 12px;
     margin-left: 4px;
     display: block;
+
+    @media (prefers-color-scheme: dark) {
+        color: #FAF2CB;
+    }
 }
 
 .card-box {
@@ -336,18 +342,24 @@ export default {
 
 .form-item {
     margin-bottom: 12px;
+
     .label {
         font-size: 12px;
         color: #666;
         margin-bottom: 4px;
         display: block;
     }
+
     .input-field {
         height: 40px;
-        background-color: rgba(255,255,255,0.7);
+        background-color: rgba(255, 255, 255, 0.7);
         border-radius: 8px;
         padding: 0 12px;
         font-size: 14px;
+
+        @media (prefers-color-scheme: dark) {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
     }
 }
 
@@ -368,7 +380,7 @@ export default {
     background-color: #fff;
     transition: all 0.2s;
     border: 1px solid transparent;
-    
+
     &.active {
         border-color: #4A6139;
         transform: scale(1.1);
@@ -402,9 +414,20 @@ export default {
     border-radius: 22px;
     font-size: 14px;
     font-weight: bold;
-    &.save { background-color: #4A6139; color: #fff; }
-    &.cancel { background-color: #eee; color: #666; }
-    &.disabled { opacity: 0.5; }
+
+    &.save {
+        background-color: #4A6139;
+        color: #fff;
+    }
+
+    &.cancel {
+        background-color: #eee;
+        color: #666;
+    }
+
+    &.disabled {
+        opacity: 0.5;
+    }
 }
 
 .section-header {
@@ -421,8 +444,16 @@ export default {
     padding: 4px 10px;
     background-color: rgba(255, 255, 255, 0.6);
     border-radius: 12px;
-    text { font-size: 12px; color: #666; }
-    .active-text { color: #4A6139; font-weight: bold; }
+
+    text {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .active-text {
+        color: #4A6139;
+        font-weight: bold;
+    }
 }
 
 .list-item {
@@ -452,8 +483,17 @@ export default {
 .care-text-info {
     display: flex;
     flex-direction: column;
-    .care-name { font-size: 15px; color: #333; font-weight: 500; }
-    .care-type { font-size: 11px; color: #999; }
+
+    .care-name {
+        font-size: 15px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .care-type {
+        font-size: 11px;
+        color: #999;
+    }
 }
 
 .divider {
@@ -462,8 +502,23 @@ export default {
     margin-left: 64px;
 }
 
-.sort-area { width: 100%; }
-.sort-item { width: 100%; height: 60px; z-index: 1; background-color: rgba(255, 255, 255, 0.7); }
-.sort-item[style*="z-index: 99"] { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background-color: #fff; }
-.drag-handle { margin-right: 8px; }
+.sort-area {
+    width: 100%;
+}
+
+.sort-item {
+    width: 100%;
+    height: 60px;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.sort-item[style*="z-index: 99"] {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+.drag-handle {
+    margin-right: 8px;
+}
 </style>

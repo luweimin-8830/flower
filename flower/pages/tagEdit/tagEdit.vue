@@ -42,7 +42,8 @@
                                                 <input class="edit-input" v-model="item.tempName" :focus="true"
                                                     @confirm="saveEdit(index)" />
                                                 <view class="edit-actions">
-                                                    <text class="edit-btn cancel" @click.stop="cancelEdit(index)">取消</text>
+                                                    <text class="edit-btn cancel"
+                                                        @click.stop="cancelEdit(index)">取消</text>
                                                     <view class="edit-divider"></view>
                                                     <text class="edit-btn save" @click.stop="saveEdit(index)">保存</text>
                                                 </view>
@@ -68,12 +69,14 @@
                         <!-- 🌟 模式 B: 排序模式 (支持拖拽) -->
                         <movable-area v-else :style="{ height: areaHeight + 'px' }" class="sort-area">
                             <block v-for="(item, index) in tagsList" :key="item.id">
-                                <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40" :disabled="false"
-                                    @change="onDragChange($event, index)" @touchstart="onDragStart(index)" @touchend="onDragEnd"
+                                <movable-view class="sort-item" :y="item.y" direction="vertical" :damping="40"
+                                    :disabled="false" @change="onDragChange($event, index)"
+                                    @touchstart="onDragStart(index)" @touchend="onDragEnd"
                                     :style="{ zIndex: curDragIndex === index ? 99 : 1 }">
                                     <view class="list-item sort-inner">
                                         <view class="left-info">
-                                            <uni-icons type="bars" size="20" color="#8FA385" class="drag-handle"></uni-icons>
+                                            <uni-icons type="bars" size="20" color="#8FA385"
+                                                class="drag-handle"></uni-icons>
                                             <text class="tag-name">{{ item.name }}</text>
                                         </view>
                                         <view class="count-badge">
@@ -227,10 +230,10 @@ export default {
             console.log('新的顺序 ID:', sortedIds);
 
             try {
-                
+
                 // 这里调用你的后端接口保存顺序
                 const tagSort = await callContainer("/api/tag/sort", { tagIds: sortedIds });
-                console.log("call container tag sort:",tagSort)
+                console.log("call container tag sort:", tagSort)
                 // uni.showToast({ title: '顺序已保存', icon: 'success' });
             } catch (e) {
                 console.error(e);
@@ -303,7 +306,6 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: #C1D0B7;
 }
 
 .main-scroll {
@@ -327,6 +329,10 @@ export default {
     margin-bottom: 10px;
     margin-left: 4px;
     display: block;
+
+    @media (prefers-color-scheme: dark) {
+        color: #FAF2CB;
+    }
 }
 
 .card-box {
@@ -346,29 +352,36 @@ export default {
 }
 
 .sort-btn {
-    display: flex;          /* 开启 Flex 布局 */
-    align-items: center;    /* 垂直居中 */
-    gap: 4px;              /* 图标和文字之间的间距 */
-    padding: 6px 12px;      /* 稍微调整一下内边距 */
-    background-color: rgba(255,255,255,0.6);
+    display: flex;
+    /* 开启 Flex 布局 */
+    align-items: center;
+    /* 垂直居中 */
+    gap: 4px;
+    /* 图标和文字之间的间距 */
+    padding: 6px 12px;
+    /* 稍微调整一下内边距 */
+    background-color: rgba(255, 255, 255, 0.6);
     border-radius: 12px;
-    transition: all 0.2s;   /* 加个过渡动画更丝滑 */
+    transition: all 0.2s;
+    /* 加个过渡动画更丝滑 */
 }
 
 /* 点击时的反馈效果 */
 .sort-btn:active {
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .sort-btn text {
     font-size: 13px;
     color: #666;
-    line-height: 1; /* 防止文字垂直方向有偏差 */
+    line-height: 1;
+    /* 防止文字垂直方向有偏差 */
 }
 
 /* 图标基础样式 */
 .plant-paixu {
-    font-size: 14px; /* 大小跟文字匹配 */
+    font-size: 14px;
+    /* 大小跟文字匹配 */
     color: #666;
 }
 

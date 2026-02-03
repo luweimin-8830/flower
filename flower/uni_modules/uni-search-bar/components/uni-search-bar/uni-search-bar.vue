@@ -4,7 +4,7 @@
 			@click="searchClick">
 			<view class="uni-searchbar__box-icon-search">
 				<slot name="searchIcon">
-					<uni-icons color="#c0c4cc" size="18" type="search" />
+					<uni-icons color="var(--primary-color)" size="18" type="search" />
 				</slot>
 			</view>
 			<input v-if="show || searchVal" :focus="showSync" :disabled="readonly" :placeholder="placeholderText" :maxlength="maxlength"
@@ -14,7 +14,7 @@
 			<view v-if="show && (clearButton==='always'||clearButton==='auto'&&searchVal!=='') &&!readonly"
 				class="uni-searchbar__box-icon-clear" @click="clear">
 				<slot name="clearIcon">
-					<uni-icons color="#c0c4cc" size="20" type="clear" />
+					<uni-icons color="var(--primary-color)" size="20" type="clear" />
 				</slot>
 			</view>
 		</view>
@@ -89,7 +89,7 @@
 			},
 			textColor: {
 				type: String,
-				default: "#000000"
+				default: "#333"
 			},
 			maxlength: {
 				type: [Number, String],
@@ -268,6 +268,9 @@
 		justify-content: center;
 		align-items: center;
 		color: #B3B3B3;
+		@media (prefers-color-scheme: dark) {
+			color: #333;
+		}
 	}
 
 	.uni-searchbar__box-search-input {
@@ -292,11 +295,11 @@
 
 	.uni-searchbar__text-placeholder {
 		font-size: 14px;
-		color: #B3B3B3;
+		color: #333;
 		margin-left: 5px;
 		text-align: left;
 		@media (prefers-color-scheme: dark) {
-			color: #f5f5f5;
+			color: #333;
 		}
 	}
 
