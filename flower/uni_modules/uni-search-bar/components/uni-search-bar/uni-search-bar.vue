@@ -295,6 +295,9 @@
 		color: #B3B3B3;
 		margin-left: 5px;
 		text-align: left;
+		@media (prefers-color-scheme: dark) {
+			color: #f5f5f5;
+		}
 	}
 
 	.uni-searchbar__cancel {

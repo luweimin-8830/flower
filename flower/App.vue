@@ -48,21 +48,15 @@ export default {
 /* icon font 引入*/
 @import '@/static/iconfont.css';
 
-// 设置整个项目的背景色
 :root,
 page {
 	--bg-color: #C1D0B7;
-	--bg-btn-color: #ffffff;
+	--bg-btn-color: rgba(255, 255, 255, 0.55);
 	--card-bg: #f8f8f8;
-	/* 卡片背景 */
 	--text-color: #333333;
-	/* 主文本 */
 	--text-sub: #999999;
-	/* 副文本 */
 	--border-color: #e5e5e5;
-	/* 边框 */
 	--primary-color: #007aff;
-	/* 主题色 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -70,11 +64,11 @@ page {
 	:root,
 	page {
 		--bg-color: #566C44;
-		--bg-btn-color: #151515 --card-bg: #1e1e1e;
+		--bg-btn-color: rgba(0, 0, 0, 0.3);
+		--card-bg: #2C3E26;
 		--text-color: #f5f5f5;
-		--text-sub: #777777;
-		--border-color: #333333;
-		/* 主题色通常在深色模式下需要调亮一点点，或者保持不变 */
+		--text-sub: #a0a0a0;
+		--border-color: #4A5D3B;
 		--primary-color: #FAF2CB;
 	}
 }
@@ -83,6 +77,16 @@ page {
 	background-color: var(--bg-color);
 	color: var(--text-color);
 	transition: background-color 0.3s, color, 0.3s;
+}
+
+/* 全局组件暗色适配 */
+@media (prefers-color-scheme: dark) {
+    .uni-popup__wrapper {
+        background-color: transparent !important;
+    }
+    input, textarea {
+        color: var(--text-color) !important;
+    }
 }
 
 /*

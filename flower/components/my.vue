@@ -7,10 +7,10 @@
         <view class="card-box">
             <view class="menu-item" hover-class="item-hover" @click="handleNav('family')">
                 <view class="left-content">
-                    <uni-icons type="staff" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                    <uni-icons type="staff" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
                     <text class="menu-text">家庭管理</text>
                 </view>
-                <uni-icons type="right" size="16" color="#999"></uni-icons>
+                <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
             </view>
         </view>
     </view>
@@ -22,12 +22,12 @@
             <picker mode="time" :value="remindTime" @change="handleTimeChange">
                 <view class="menu-item" hover-class="item-hover">
                     <view class="left-content">
-                        <uni-icons type="notification" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                        <uni-icons type="notification" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
                         <text class="menu-text">提醒时间</text>
                     </view>
                     <view class="right-content">
                         <text class="time-text">{{ remindTime }}</text>
-                        <uni-icons type="right" size="16" color="#999"></uni-icons>
+                        <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
                     </view>
                 </view>
             </picker>
@@ -40,19 +40,19 @@
         <view class="card-box">
             <view class="menu-item" hover-class="item-hover" @click="handleNav('tag')">
                 <view class="left-content">
-                    <uni-icons type="flag" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                    <uni-icons type="flag" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
                     <text class="menu-text">植物标签管理</text>
                 </view>
-                <uni-icons type="right" size="16" color="#999"></uni-icons>
+                <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
             </view>
             <!-- 分割线 -->
             <view class="divider"></view>
             <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
                 <view class="left-content">
-                    <uni-icons type="settings" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                    <uni-icons type="settings" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
                     <text class="menu-text">日常养护管理</text>
                 </view>
-                <uni-icons type="right" size="16" color="#999"></uni-icons>
+                <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
             </view>
         </view>
     </view>
@@ -62,10 +62,10 @@
             <button class="contact-btn" open-type="contact" hover-class="item-hover">
                 <view class="menu-item">
                     <view class="left-content">
-                        <uni-icons type="chat" size="22" color="#4A6139" class="menu-icon"></uni-icons>
+                        <uni-icons type="chat" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
                         <text class="menu-text">联系客服</text>
                     </view>
-                    <uni-icons type="right" size="16" color="#999"></uni-icons>
+                    <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
                 </view>
             </button>
         </view>
@@ -146,7 +146,7 @@ export default {
 /* 标题样式 */
 .section-title {
     font-size: 14px;
-    color: #333;
+    color: var(--text-color);
     /* 深色文字 */
     font-weight: 500;
     margin-bottom: 8px;
@@ -157,7 +157,7 @@ export default {
 
 /* 卡片主体样式 */
 .card-box {
-    background-color: rgba(255, 255, 255, 0.55);
+    background-color: var(--bg-btn-color);
     /* 截图中的浅绿色背景 */
     /* 如果觉得颜色太深，可以试试 rgba(214, 232, 208, 0.6) */
 
@@ -200,21 +200,21 @@ export default {
 /* 文字样式 */
 .menu-text {
     font-size: 15px;
-    color: #2F3E25;
+    color: var(--text-color);
     /* 深橄榄绿文字 */
     font-weight: 400;
 }
 
 .time-text {
     font-size: 14px;
-    color: #6B8857;
+    color: var(--primary-color);
     margin-right: 4px;
 }
 
 /* 分割线 */
 .divider {
     height: 1px;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--border-color);
     /* 极淡的分割线 */
     width: 100%;
     /* 如果想让分割线不顶头，可以加 margin-left: 32px; */

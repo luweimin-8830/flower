@@ -9,7 +9,7 @@
   overflow: hidden;
   /* 禁止整个页面拖动 */
   box-sizing: border-box;
-  background-color: #C1D0B7;
+  background-color: var(--bg-color);
   /* 建议加个背景色，防止列表滚动到底部露白 */
 }
 
@@ -18,7 +18,7 @@
   flex-shrink: 0;
   /* 禁止压缩 */
   z-index: 10;
-  background-color: #C1D0B7;
+  background-color: var(--bg-color);
   /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
   /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
@@ -30,22 +30,22 @@
 .save-btn-rect.data-v-045d88fd {
   width: 100%;
   height: 74rpx;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--bg-btn-color);
   border-radius: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   font-size: 28rpx;
-  color: #333;
+  color: var(--text-color);
 }
 .clean-btn.data-v-045d88fd:active,
 .save-btn-rect.data-v-045d88fd:active {
   transform: scale(0.92) translateY(2px);
 }
 .save-btn-rect.data-v-045d88fd {
-  color: #6B8857;
+  color: var(--primary-color);
   font-weight: bold;
 }
 .action-selection-bar.data-v-045d88fd {
@@ -64,7 +64,7 @@
 }
 .select-all-wrapper .select-all-text.data-v-045d88fd {
   font-size: 10px;
-  color: #6B8857;
+  color: var(--primary-color);
   margin-top: 4rpx;
 }
 .action-scroll-view.data-v-045d88fd {
@@ -87,20 +87,20 @@
   margin-right: 20rpx;
   width: 120rpx;
   height: 120rpx;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--bg-btn-color);
   border-radius: 24rpx;
   transition: all 0.2s;
   flex-shrink: 0;
 }
 .action-item.active.data-v-045d88fd {
-  background: #6B8857;
+  background: var(--primary-color);
 }
 .action-item.active .action-name.data-v-045d88fd {
   color: #fff;
 }
 .action-item .action-name.data-v-045d88fd {
   font-size: 11px;
-  color: #666;
+  color: var(--text-sub);
   margin-top: 8rpx;
   width: 100%;
   text-align: center;
@@ -116,7 +116,7 @@
   top: 10rpx;
   right: 10rpx;
   z-index: 5;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--bg-btn-color);
   border-radius: 50%;
   width: 44rpx;
   height: 44rpx;
@@ -142,14 +142,14 @@
   position: fixed;
   z-index: 999;
   /* --- 核心毛玻璃样式 --- */
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--bg-btn-color);
   /* 半透明白底 */
   backdrop-filter: blur(10px);
   /* 模糊背景 */
   -webkit-backdrop-filter: blur(10px);
   /* 兼容 iOS */
   border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
   /* 极细的浅色边框 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   /* 增强阴影效果 */
@@ -198,6 +198,14 @@
   opacity: 0.9;
   font-weight: 500;
 }
+@media (prefers-color-scheme: dark) {
+.family-select-text.data-v-045d88fd {
+    color: var(--primary-color);
+}
+.family-select-icon.data-v-045d88fd .uni-icons {
+    color: var(--primary-color) !important;
+}
+}
 .header-action-container.data-v-045d88fd {
   display: flex;
   align-items: center;
@@ -234,6 +242,14 @@
 .data-v-045d88fd .uni-searchbar {
   padding: 10px 0 !important;
   /* 去掉左右默认 padding */
+}
+@media (prefers-color-scheme: dark) {
+.data-v-045d88fd .uni-searchbar .uni-searchbar__box-search-input {
+    color: #f5f5f5 !important;
+}
+.data-v-045d88fd .uni-searchbar .uni-searchbar__text-placeholder {
+    color: rgba(245, 245, 245, 0.7) !important;
+}
 }
 
 /* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */
@@ -282,12 +298,22 @@
   color: #666;
   transition: all 0.3s;
 }
+@media (prefers-color-scheme: dark) {
+.tag-item.data-v-045d88fd {
+    color: #f5f5f5;
+}
+}
 .tag-item.active.data-v-045d88fd {
   color: #6B8857;
   /* 选中颜色 */
   font-weight: bold;
   font-size: 20px;
   /* 选中稍微变大 */
+}
+@media (prefers-color-scheme: dark) {
+.tag-item.active.data-v-045d88fd {
+    color: #FAF2CB;
+}
 }
 
 /* 下划线动画样式 */
@@ -308,6 +334,11 @@
   /* 确保在文字下方或上方 */
   pointer-events: none;
   /* 不影响点击 */
+}
+@media (prefers-color-scheme: dark) {
+.slider-bar.data-v-045d88fd {
+    background-color: #FAF2CB;
+}
 }
 .active-line.data-v-045d88fd {
   position: absolute;
@@ -398,31 +429,6 @@ from {
 }
 to {
     transform: scaleX(1);
-}
-}
-/* --- 深色模式适配 --- */
-@media (prefers-color-scheme: dark) {
-.family-select.data-v-045d88fd {
-    background-color: rgba(30, 30, 30, 0.5);
-    /* 半透明黑底 */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    /* 浅白边框 */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-.data-v-045d88fd .uni-select__input-text {
-    color: #fff;
-}
-.tag-item.data-v-045d88fd {
-    color: #aaa;
-}
-.tag-item.active.data-v-045d88fd {
-    color: #409eff;
-}
-.active-line.data-v-045d88fd {
-    background-color: #409eff;
-}
-.slider-bar.data-v-045d88fd {
-    background-color: #8bb374;
 }
 }
 .waterfall-wrapper.data-v-045d88fd {

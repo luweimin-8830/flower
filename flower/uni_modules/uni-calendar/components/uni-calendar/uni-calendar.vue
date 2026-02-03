@@ -423,6 +423,11 @@
 
 	.uni-calendar__content {
 		background-color: #fff;
+		/* #ifndef APP-NVUE */
+		@media (prefers-color-scheme: dark) {
+			background-color: #6B8857;
+		}
+		/* #endif */
 	}
 
 	.uni-calendar__header {
@@ -437,6 +442,10 @@
 		border-bottom-color: $uni-border-color;
 		border-bottom-style: solid;
 		border-bottom-width: 1px;
+
+		@media (prefers-color-scheme: dark) {
+			border-bottom-color: rgba(255, 255, 255, 0.1);
+		}
 	}
 
 	.uni-calendar--fixed-top {
@@ -448,6 +457,10 @@
 		border-top-color: $uni-border-color;
 		border-top-style: solid;
 		border-top-width: 1px;
+
+		@media (prefers-color-scheme: dark) {
+			border-top-color: rgba(255, 255, 255, 0.1);
+		}
 	}
 
 	.uni-calendar--fixed-width {
@@ -467,6 +480,11 @@
 		border-bottom-left-radius: 25px;
 		color: $uni-text-color;
 		background-color: $uni-bg-color-hover;
+
+		@media (prefers-color-scheme: dark) {
+			background-color: rgba(255, 255, 255, 0.15);
+			color: #f5f5f5;
+		}
 	}
 
 	.uni-calendar__header-text {
@@ -474,6 +492,10 @@
 		width: 100px;
 		font-size: $uni-font-size-base;
 		color: $uni-text-color;
+
+		@media (prefers-color-scheme: dark) {
+			color: #f5f5f5;
+		}
 	}
 
 	.uni-calendar__header-btn-box {
@@ -496,6 +518,11 @@
 		border-top-color: $uni-color-subtitle;
 		border-top-style: solid;
 		border-top-width: 2px;
+
+		@media (prefers-color-scheme: dark) {
+			border-left-color: #f5f5f5;
+			border-top-color: #f5f5f5;
+		}
 	}
 
 	.uni-calendar--left {
@@ -531,10 +558,18 @@
 		border-bottom-color: #F5F5F5;
 		border-bottom-style: solid;
 		border-bottom-width: 1px;
+
+		@media (prefers-color-scheme: dark) {
+			border-bottom-color: rgba(255, 255, 255, 0.05);
+		}
 	}
 
 	.uni-calendar__weeks-day-text {
 		font-size: 14px;
+
+		@media (prefers-color-scheme: dark) {
+			color: #f5f5f5;
+		}
 	}
 
 	.uni-calendar__box {

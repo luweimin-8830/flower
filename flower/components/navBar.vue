@@ -2,7 +2,7 @@
     <view class="nav-back-button" hover-class="nav-back-button-hover" :style="{width:menuButtonInfo.height+'px',
     height:menuButtonInfo.height+'px',top:menuButtonInfo.top+'px',
     left: paddingLeft + 'px'}" @click="handleBack">
-        <uni-icons v-if="isHome" type="home" size="20" color="#333"></uni-icons>
+        <uni-icons v-if="isHome" type="home" size="20" color="var(--primary-color)"></uni-icons>
         <view v-else class="iconfont plant-fanhui nav-back-icon"></view>
     </view>
 </template>
@@ -61,37 +61,22 @@ export default {
     .nav-back-button{
         position: fixed;
         z-index: 999;
-        opacity:0.55;
-        background-color: #fff;
-        // backdrop-filter: blur(10px);
+        opacity:0.85;
+        background-color: var(--bg-btn-color);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(0,0,0,0.08);
+        border: 1px solid var(--border-color);
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         transition: transform 0.1s,background-color 0.2s;
     }
     .nav-back-icon{
         font-size: 20px;
-        // color: var(--text-color,#333);
-        color:#333
-    
+        color: var(--text-color);
     }
     .nav-back-button-hover {
         transform: scale(0.92);
-        background-color: #f5f5f5; 
-        opacity:0.65;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-    }
-    @media (prefers-color-scheme: dark) {
-        .nav-back-button {
-            background-color: rgba(30, 30, 30, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-        .nav-back-button-hover {
-            background-color: rgba(50, 50, 50, 0.8);
-        }
+        opacity:1;
     }
 </style>

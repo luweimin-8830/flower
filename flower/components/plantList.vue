@@ -349,7 +349,6 @@ export default {
     flex-direction: column;
     padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
-    background-color: #C1D0B7;
 }
 
 // 固定头部
@@ -357,7 +356,6 @@ export default {
     position: sticky;
     top: 0;
     z-index: 998;
-    background-color: #C1D0B7;
 }
 
 // 内容区域
@@ -415,7 +413,7 @@ export default {
 
 // 分组容器
 .plant-group {
-    margin-bottom: 20rpx;
+    margin-bottom: 0;
 }
 
 // 分组标题
@@ -428,6 +426,12 @@ export default {
     position: sticky;
     top: 0;
     z-index: 10;
+
+    @media (prefers-color-scheme: dark) {
+        color: #FAF2CB;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+    }
 }
 
 // 自定义植物项样式
@@ -440,8 +444,16 @@ export default {
     align-items: center;
     gap: 24rpx;
     
+    @media (prefers-color-scheme: dark) {
+        background: transparent;
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+
     &:active {
         background: rgba(107, 136, 87, 0.1);
+        @media (prefers-color-scheme: dark) {
+            background: rgba(255, 255, 255, 0.08);
+        }
     }
 }
 
@@ -472,6 +484,10 @@ export default {
     font-size: 15px;
     color: #333;
     font-weight: 500;
+
+    @media (prefers-color-scheme: dark) {
+        color: #f5f5f5;
+    }
 }
 
 .plant-desc {
@@ -480,6 +496,10 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    @media (prefers-color-scheme: dark) {
+        color: rgba(245, 245, 245, 0.5);
+    }
 }
 
 // 右侧索引条
@@ -500,11 +520,19 @@ export default {
     color: #6B8857;
     font-weight: 500;
     line-height: 1.2;
+
+    @media (prefers-color-scheme: dark) {
+        color: #FAF2CB;
+    }
     
     &:active {
         color: #fff;
         background: #6B8857;
         border-radius: 50%;
+        @media (prefers-color-scheme: dark) {
+            background: #FAF2CB;
+            color: #0A3323;
+        }
     }
 }
 

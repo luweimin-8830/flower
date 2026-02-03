@@ -357,7 +357,6 @@ export default {
     min-height: 100vh;
     padding: 20px 16px;
     box-sizing: border-box;
-    background-color: #C1D0B7;
 }
 
 .header-row {
@@ -372,6 +371,9 @@ export default {
     font-size: 15px;
     font-weight: bold;
     color: #4A6139;
+    @media (prefers-color-scheme: dark) {
+        color: #FAF2CB;
+    }
 }
 
 .sort-btn {

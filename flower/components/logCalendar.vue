@@ -332,7 +332,7 @@ export default {
 	flex-direction: column;
 	padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
-	background-color: #C1D0B7;
+	background-color: var(--bg-color);
 }
 
 // 固定头部
@@ -340,7 +340,7 @@ export default {
     position: sticky;
     top: 0;
     z-index: 998;
-	background-color: #C1D0B7;
+	background-color: var(--bg-color);
 }
 
 .scroll-body {
@@ -350,7 +350,7 @@ export default {
 
 .log-calendar {
 	margin: 12px;
-	background-color: rgba(255,255,255,0.55);
+	background-color: var(--bg-btn-color);
 	border-radius: 16px;
 	overflow: hidden;
 }
@@ -374,20 +374,20 @@ export default {
 .detail-title {
 	font-size: 16px;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-color);
 }
 
 .add-btn {
 	display: flex;
 	align-items: center;
 	gap: 4px;
-	background-color: #fff;
+	background-color: var(--bg-btn-color);
 	padding: 4px 10px;
 	border-radius: 20px;
-	border: 1px solid #eee;
+	border: 1px solid var(--border-color);
 	text {
 		font-size: 13px;
-		color: #4A6139;
+		color: var(--text-color);
 	}
 }
 
@@ -397,7 +397,7 @@ export default {
 		text-align: center;
 		.empty-text {
 			font-size: 14px;
-			color: #999;
+			color: var(--text-sub);
 		}
 	}
 }
@@ -405,7 +405,7 @@ export default {
 .log-item {
 	display: flex;
 	padding: 12px;
-	background-color: rgba(255,255,255,0.6);
+	background-color: var(--bg-btn-color);
 	border-radius: 12px;
 	margin-bottom: 10px;
 	box-shadow: 0 2px 6px rgba(0,0,0,0.02);
@@ -431,17 +431,17 @@ export default {
 			.log-name {
 				font-size: 15px;
 				font-weight: 500;
-				color: #333;
+				color: var(--text-color);
 			}
 			.log-time {
 				font-size: 12px;
-				color: #999;
+				color: var(--text-sub);
 			}
 		}
 		
 		.log-content {
 			font-size: 13px;
-			color: #666;
+			color: var(--text-color);
 			line-height: 1.4;
 			margin-bottom: 8px;
 			display: block;
@@ -470,11 +470,15 @@ export default {
 		display: block !important;
 		background-color: #ff4d4f !important;
 	}
+	// 暗黑模式日历适配
+	.uni-calendar-item__weeks-box-text {
+		color: var(--text-color) !important;
+	}
 }
 
 .remind-modal {
 	width: 600rpx;
-	background-color: #fff;
+	background-color: var(--card-bg);
 	border-radius: 20rpx;
 	padding: 30rpx;
 	
@@ -484,7 +488,7 @@ export default {
 		.modal-title {
 			font-size: 18px;
 			font-weight: bold;
-			color: #333;
+			color: var(--text-color);
 		}
 	}
 	
@@ -492,7 +496,7 @@ export default {
 		display: flex;
 		align-items: center;
 		padding: 20rpx 0;
-		border-bottom: 1px solid #f5f5f5;
+		border-bottom: 1px solid var(--border-color);
 		
 		&.vertical {
 			flex-direction: column;
@@ -503,23 +507,24 @@ export default {
 		.label {
 			width: 140rpx;
 			font-size: 15px;
-			color: #666;
+			color: var(--text-sub);
 		}
 		
 		.value, .time-picker-value {
 			font-size: 15px;
-			color: #333;
+			color: var(--text-color);
 			font-weight: 500;
 		}
 		
 		.remind-textarea {
 			width: 90%;
 			height: 160rpx;
-			background-color: #f9f9f9;
+			background-color: var(--bg-btn-color);
 			border-radius: 10rpx;
 			padding: 20rpx;
 			margin-top: 16rpx;
 			font-size: 14px;
+			color: var(--text-color);
 		}
 	}
 	
@@ -538,8 +543,8 @@ export default {
 			&::after { border: none; }
 			
 			&.cancel {
-				background-color: #f5f5f5;
-				color: #666;
+				background-color: var(--border-color);
+				color: var(--text-sub);
 			}
 			
 			&.confirm {

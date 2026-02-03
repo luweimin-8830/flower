@@ -11,7 +11,7 @@
             left: paddingLeft + 'px'
         }" @click="toggleFamilySelect" @touchstart="onTouchStart" @touchend="onTouchEnd">
             <view class="family-select-icon" :class="{ 'selecting': isSelecting }">
-                <uni-icons type="home" size="18" color="#6B8857"></uni-icons>
+                <uni-icons type="home" size="18" color="var(--primary-color)"></uni-icons>
             </view>
             <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'"
                 @change="handleFamilyChange">
@@ -765,7 +765,7 @@ export default {
     overflow: hidden;
     /* 禁止整个页面拖动 */
     box-sizing: border-box;
-    background-color: #C1D0B7;
+    background-color: var(--bg-color);
     /* 建议加个背景色，防止列表滚动到底部露白 */
 }
 
@@ -774,7 +774,7 @@ export default {
     flex-shrink: 0;
     /* 禁止压缩 */
     z-index: 10;
-    background-color: #C1D0B7;
+    background-color: var(--bg-color);
     /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
     /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
@@ -788,15 +788,15 @@ export default {
 .save-btn-rect {
     width: 100%;
     height: 74rpx;
-    background: rgba(255, 255, 255, 0.55);
+    background: var(--bg-btn-color);
     border-radius: 60rpx;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     font-size: 28rpx;
-    color: #333;
+    color: var(--text-color);
 
     &:active {
         transform: scale(0.92) translateY(2px);
@@ -804,7 +804,7 @@ export default {
 }
 
 .save-btn-rect {
-    color: #6B8857;
+    color: var(--primary-color);
     font-weight: bold;
 }
 
@@ -825,7 +825,7 @@ export default {
 
     .select-all-text {
         font-size: 10px;
-        color: #6B8857;
+        color: var(--primary-color);
         margin-top: 4rpx;
     }
 }
@@ -852,13 +852,13 @@ export default {
     margin-right: 20rpx;
     width: 120rpx;
     height: 120rpx;
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--bg-btn-color);
     border-radius: 24rpx;
     transition: all 0.2s;
     flex-shrink: 0;
 
     &.active {
-        background: #6B8857;
+        background: var(--primary-color);
         .action-name {
             color: #fff;
         }
@@ -866,7 +866,7 @@ export default {
 
     .action-name {
         font-size: 11px;
-        color: #666;
+        color: var(--text-sub);
         margin-top: 8rpx;
         width: 100%;
         text-align: center;
@@ -884,7 +884,7 @@ export default {
     top: 10rpx;
     right: 10rpx;
     z-index: 5;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--bg-btn-color);
     border-radius: 50%;
     width: 44rpx;
     height: 44rpx;
@@ -913,14 +913,14 @@ export default {
     z-index: 999;
 
     /* --- 核心毛玻璃样式 --- */
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: var(--bg-btn-color);
     /* 半透明白底 */
     backdrop-filter: blur(10px);
     /* 模糊背景 */
     -webkit-backdrop-filter: blur(10px);
     /* 兼容 iOS */
     border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
     /* 极细的浅色边框 */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     /* 增强阴影效果 */
@@ -977,6 +977,16 @@ export default {
     font-weight: 500;
 }
 
+@media (prefers-color-scheme: dark) {
+    .family-select-text {
+        color: var(--primary-color);
+    }
+
+    .family-select-icon ::v-deep .uni-icons {
+        color: var(--primary-color) !important;
+    }
+}
+
 
 
 .header-action-container {
@@ -1026,6 +1036,15 @@ export default {
 ::v-deep .uni-searchbar {
     padding: 10px 0 !important;
     /* 去掉左右默认 padding */
+
+    @media (prefers-color-scheme: dark) {
+        .uni-searchbar__box-search-input {
+            color: #f5f5f5 !important;
+        }
+        .uni-searchbar__text-placeholder {
+            color: rgba(245, 245, 245, 0.7) !important;
+        }
+    }
 }
 
 /* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */
@@ -1081,6 +1100,10 @@ export default {
     color: #666;
     transition: all 0.3s;
 
+    @media (prefers-color-scheme: dark) {
+        color: #f5f5f5;
+    }
+
     &.active {
         // color:#BC3823;
         color: #6B8857;
@@ -1088,6 +1111,10 @@ export default {
         font-weight: bold;
         font-size: 20px;
         /* 选中稍微变大 */
+
+        @media (prefers-color-scheme: dark) {
+            color: #FAF2CB;
+        }
     }
 }
 
@@ -1102,6 +1129,11 @@ export default {
     // background-color: #BC3823;
     background-color: #6B8857;
     /* 下划线颜色 */
+
+    @media (prefers-color-scheme: dark) {
+        background-color: #FAF2CB;
+    }
+
     border-radius: 2px;
 
     /* 动画配置 */
@@ -1218,37 +1250,6 @@ export default {
 
     to {
         transform: scaleX(1);
-    }
-}
-
-/* --- 深色模式适配 --- */
-@media (prefers-color-scheme: dark) {
-    .family-select {
-        background-color: rgba(30, 30, 30, 0.5);
-        /* 半透明黑底 */
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        /* 浅白边框 */
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    ::v-deep .uni-select__input-text {
-        color: #fff;
-    }
-
-    .tag-item {
-        color: #aaa;
-
-        &.active {
-            color: #409eff;
-        }
-    }
-
-    .active-line {
-        background-color: #409eff;
-    }
-
-    .slider-bar {
-        background-color: #8bb374;
     }
 }
 

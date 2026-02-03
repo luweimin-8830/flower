@@ -115,11 +115,20 @@
 	.uni-calendar-item__weeks-box-text {
 		font-size: $uni-font-size-base;
 		color: $uni-text-color;
+
+		@media (prefers-color-scheme: dark) {
+			color: #f5f5f5;
+		}
 	}
 
 	.uni-calendar-item__weeks-lunar-text {
 		font-size: $uni-font-size-sm;
 		color: $uni-text-color;
+
+		@media (prefers-color-scheme: dark) {
+			color: #f5f5f5;
+			opacity: 0.8;
+		}
 	}
 
 	.uni-calendar-item__weeks-box-item {
@@ -148,33 +157,59 @@
 	.uni-calendar-item--disable {
 		background-color: rgba(249, 249, 249, $uni-opacity-disabled);
 		color: $uni-text-color-disable;
+
+		@media (prefers-color-scheme: dark) {
+			background-color: transparent;
+			color: rgba(255, 255, 255, 0.2);
+		}
 	}
 
 	.uni-calendar-item--isDay-text {
 		color: #566C44;
+		@media (prefers-color-scheme: dark) {
+			color: #FAF2CB;
+		}
 	}
 
 	.uni-calendar-item--isDay {
 		background-color: #566C44;
 		opacity: 0.8;
 		color: #fff;
+
+		@media (prefers-color-scheme: dark) {
+			background-color: #FAF2CB;
+			color: #566C44;
+		}
 	}
 
 	.uni-calendar-item--extra {
 		color: $uni-color-error;
 		opacity: 0.8;
+		@media (prefers-color-scheme: dark) {
+			color: #ffbcbc;
+		}
 	}
 
 	.uni-calendar-item--checked {
 		background-color: #566C44;
 		color: #fff;
 		opacity: 0.8;
+
+		@media (prefers-color-scheme: dark) {
+			background-color: #FAF2CB;
+			color: #566C44;
+		}
 	}
 
 	.uni-calendar-item--multiple {
 		background-color: #566C44;
 		color: #fff;
 		opacity: 0.8;
+
+		@media (prefers-color-scheme: dark) {
+			background-color: #FAF2CB;
+			color: #566C44;
+		}
 	}
 	.uni-calendar-item--before-checked {
 		background-color: #ff5a5f;

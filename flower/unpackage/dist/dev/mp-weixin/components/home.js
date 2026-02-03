@@ -515,7 +515,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     a: common_vendor.p({
       type: "home",
       size: "18",
-      color: "#6B8857"
+      color: "var(--primary-color)"
     }),
     b: $data.isSelecting ? 1 : "",
     c: common_vendor.t(((_a = $data.familyRange[$data.currentFamilyIndex]) == null ? void 0 : _a.text) || "选择家庭"),

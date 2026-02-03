@@ -62,7 +62,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     b: common_vendor.p({
       type: "home",
       size: "20",
-      color: "#333"
+      color: "var(--primary-color)"
     })
   } : {}, {
     c: $data.menuButtonInfo.height + "px",

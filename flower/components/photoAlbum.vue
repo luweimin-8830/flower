@@ -193,7 +193,6 @@ export default {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: #C1D0B7;
 }
 
 .content-container {
@@ -217,6 +216,10 @@ export default {
     font-size: 32rpx;
     font-weight: bold;
     color: #566C44;
+
+    @media (prefers-color-scheme: dark) {
+        color: #FAF2CB;
+    }
 }
 
 .photo-grid {
@@ -267,6 +270,10 @@ export default {
     margin-top: 20rpx;
     font-size: 14px;
     color: #999;
+
+    @media (prefers-color-scheme: dark) {
+        color: rgba(245, 245, 245, 0.6);
+    }
 }
 
 .empty-icon {
@@ -274,6 +281,11 @@ export default {
     height: 120rpx;
     opacity: 0.4;
     filter: grayscale(100%);
+
+    @media (prefers-color-scheme: dark) {
+        opacity: 0.6;
+        filter: grayscale(100%) brightness(1.5);
+    }
 }
 
 .safe-area-bottom {

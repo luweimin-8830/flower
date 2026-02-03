@@ -6,9 +6,9 @@
     "backgroundTextStyle": "dark"
   },
   "dark": {
-    "navBackgroundColor": "#191919",
+    "navBackgroundColor": "#566C44",
     "navTextStyle": "white",
-    "backgroundColor": "#111111",
+    "backgroundColor": "#566C44",
     "backgroundTextStyle": "light"
   }
 }

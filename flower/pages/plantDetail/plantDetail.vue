@@ -6,10 +6,10 @@
 		<!-- topBarHeight 是状态栏高度，我们需要往下一点点 -->
 		<view class="top-actions" :style="{ top: (topBarHeight + 8) + 'px' }">
 			<view class="action-btn icon-only" @click="handleNotification">
-				<uni-icons type="notification" size="20" color="#333"></uni-icons>
+				<uni-icons type="notification" size="20" color="var(--text-color)"></uni-icons>
 			</view>
 			<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
-				<uni-icons type="upload" size="20" color="#333"></uni-icons>
+				<uni-icons type="upload" size="20" color="var(--text-color)"></uni-icons>
 			</button>
 			<view class="action-btn pill-btn" @click="goEdit">
 				<text>编辑</text>
@@ -19,7 +19,7 @@
 		<!-- 占位符 -->
 		<view :style="{ height: topBarHeight + 44 + 'px' }"></view>
 
-		<scroll-view scroll-y class="main-scroll" :enable-back-to-top="true">
+		<view class="main-content">
 			<!-- 提醒时间选择弹窗 -->
 			<uni-calendar
 				ref="remindCalendar"
@@ -123,7 +123,7 @@
 						<view class="care-item" v-for="(item, index) in careActions" :key="index"
 							@click="handleCare(item)">
 							<view class="care-icon-box" :style="{ backgroundColor: item.color }">
-								<view class="iconfont" :class="item.icon" style="font-size: 28px; color: #fff;" v-if="item.icon"></view>
+								<view class="iconfont" :class="item.icon" style="font-size: 28px; color: #333;" v-if="item.icon"></view>
 								<image v-else :src="item.img" class="care-img"></image>
 							</view>
 							<text class="care-name">{{ item.name }}</text>
@@ -154,53 +154,54 @@
 			<view class="log-section">
 				<view class="section-header">
 					<view class="header-left">
-						<uni-icons type="compose" size="20" color="#333"></uni-icons>
+						<uni-icons type="compose" size="20" color="var(--primary-color)"></uni-icons>
 						<text class="section-title" style="margin-left: 6px;">植物日志</text>
 					</view>
 					<view class="header-right">
 						<text class="edit-btn" @click="isManageMode = !isManageMode">{{ isManageMode ? '完成' : '编辑' }}</text>
-						<uni-icons type="plusempty" size="24" color="#333" style="margin-left: 15px;" @click="goAddLog"></uni-icons>
+						<uni-icons type="plusempty" size="24" color="var(--primary-color)" style="margin-left: 15px;" @click="goAddLog"></uni-icons>
 					</view>
 				</view>
 				<!-- 日志列表 -->
-				<view class="log-list">
-					<view v-for="(group, gIndex) in logList" :key="gIndex" class="log-group">
-						<text class="log-date-header">{{ group.dateStr }}</text>
-						<view v-for="(log, lIndex) in group.items" :key="lIndex" class="log-item" @click="goEditLog(log)">
-							<view class="log-time-col">
-								<text class="log-time">{{ log.time }}</text>
-								<text class="log-date-mini">{{ log.dateMini }}</text>
-							</view>
-							<view class="log-timeline">
-								<view class="dot"></view>
-								<view class="line" v-if="lIndex !== group.items.length - 1"></view>
-							</view>
-							<view class="log-content-box">
-								<view class="log-tag pill" :style="{ backgroundColor: log.color + '33' || '#D6EAF8' }">
-									<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 16px;" :style="{ color: log.color || '#4A90E2' }"></view>
-									<text class="log-text">{{ log.actionName }}</text>
+				<scroll-view scroll-y class="log-scroll-inner" :enable-back-to-top="true">
+					<view class="log-list">
+						<view v-for="(group, gIndex) in logList" :key="gIndex" class="log-group">
+							<text class="log-date-header">{{ group.dateStr }}</text>
+							<view v-for="(log, lIndex) in group.items" :key="lIndex" class="log-item" @click="goEditLog(log)">
+								<view class="log-time-col">
+									<text class="log-time">{{ log.time }}</text>
+									<text class="log-date-mini">{{ log.dateMini }}</text>
 								</view>
-								<view class="log-content" v-if="log.content">{{ log.content }}</view>
+								<view class="log-timeline">
+									<view class="dot"></view>
+									<view class="line" v-if="lIndex !== group.items.length - 1"></view>
+								</view>
+								<view class="log-content-box">
+									<view class="log-tag pill" :style="{ backgroundColor: log.color + '33' || '#D6EAF8' }">
+										<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 16px;" :style="{ color: log.color || '#4A90E2' }"></view>
+										<text class="log-text">{{ log.actionName }}</text>
+									</view>
+									<view class="log-content" v-if="log.content">{{ log.content }}</view>
+									
+									<!-- 图片展示 -->
+									<view class="log-images" v-if="log.images && log.images.length > 0">
+										<image v-for="(img, iIndex) in log.images" :key="iIndex" 
+											:src="img.url" mode="aspectFill" class="log-img"
+											@click.stop="previewLogImages(log.images, iIndex)"></image>
+									</view>
+								</view>
 								
-								<!-- 图片展示 -->
-								<view class="log-images" v-if="log.images && log.images.length > 0">
-									<image v-for="(img, iIndex) in log.images" :key="iIndex" 
-										:src="img.url" mode="aspectFill" class="log-img"
-										@click.stop="previewLogImages(log.images, iIndex)"></image>
+								<!-- 管理模式下的删除按钮 -->
+								<view class="delete-icon" v-if="isManageMode" @click.stop="handleDeleteLog(log.id)">
+									<uni-icons type="minus-filled" size="20" color="#dd524d"></uni-icons>
 								</view>
-							</view>
-							
-							<!-- 管理模式下的删除按钮 -->
-							<view class="delete-icon" v-if="isManageMode" @click.stop="handleDeleteLog(log.id)">
-								<uni-icons type="minus-filled" size="20" color="#dd524d"></uni-icons>
 							</view>
 						</view>
 					</view>
-				</view>
+					<view style="height: 100px;"></view>
+				</scroll-view>
 			</view>
-
-			<view style="height: 100px;"></view>
-		</scroll-view>
+		</view>
 	</view>
 </template>
 
@@ -534,7 +535,17 @@ export default {
 
 <style lang="scss" scoped>
 .container {
-	min-height: 100vh;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.main-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 /* 🌟 右上角悬浮按钮组 */
@@ -548,7 +559,7 @@ export default {
 }
 
 .action-btn {
-	background-color: rgba(255, 255, 255, 0.55);
+	background-color: rgba(255, 255, 255, 0.5);
 	backdrop-filter: blur(5px);
 	border-radius: 20px;
 	display: flex;
@@ -567,7 +578,7 @@ export default {
 	padding: 0;
 	margin: 0;
 	line-height: 1;
-	background-color: rgba(255, 255, 255, 0.55);
+	background-color: rgba(255, 255, 255, 0.5);
 	&::after {
 		border: none;
 	}
@@ -582,6 +593,9 @@ export default {
 		font-size: 14px;
 		font-weight: 500;
 		color: #333;
+		@media (prefers-color-scheme: dark) {
+			color: #FAF2CB;
+		}
 	}
 }
 
@@ -590,7 +604,6 @@ export default {
 	margin: 10px 16px;
 	padding: 20px;
 	background-color: rgba(255, 255, 255, 0.55);
-	/* 纯白背景更干净，或者微透 */
 	border-radius: 24px;
 	box-shadow: 0 8px 20px rgba(107, 136, 87, 0.08);
 }
@@ -608,11 +621,11 @@ export default {
 	margin-right: 16px;
 	background-color: #eee;
 	flex-shrink: 0;
-	/* 防止图片被挤压 */
+
 }
 
 .placeholder {
-	background-color: #E0E0E0;
+	background-color: #eee;
 }
 
 .plant-info {
@@ -620,7 +633,6 @@ export default {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	/* 上下撑开 */
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
@@ -637,12 +649,12 @@ export default {
 	color: #888;
 	line-height: 1.4;
 	margin-bottom: 8px;
-	/* 限制显示两行 */
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
 	line-clamp: 2;
 	overflow: hidden;
+
 }
 
 /* 标签样式 */
@@ -655,32 +667,18 @@ export default {
 .tag-item {
 	background-color: #566C44;
 	border-radius: 100px;
-	/* 改大一点确保是正圆角 */
-
-	/* 🌟 改法：使用 Flex 居中，不再单纯依赖 padding */
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-
-	/* 🌟 设定固定高度，比 padding 更稳 */
 	height: 22px;
 	padding: 0 10px;
-	/* 只控制左右间距 */
 
 	text {
 		font-size: 11px;
 		color: #fff;
 		line-height: 1;
-		/* 消除文字自带行高 */
-
-		/* 🌟 视觉微调：如果觉得还偏下，就给个底部 padding 把它顶上去 */
 		padding-bottom: 2px;
 	}
-}
-
-.add-tag {
-	background-color: #ccc;
-	padding: 2px 8px;
 }
 
 /* 分割线 */
@@ -689,6 +687,10 @@ export default {
 	background-color: #f0f0f0;
 	margin-bottom: 16px;
 	width: 100%;
+
+	@media (prefers-color-scheme: dark) {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
 }
 
 /* 下半部分：统计数据 */
@@ -709,7 +711,7 @@ export default {
 			color: #2F3E25;
 			margin-bottom: 4px;
 			font-family: 'DIN', sans-serif;
-			/* 如果有数字字体更好 */
+
 		}
 
 		.stat-label {
@@ -725,7 +727,6 @@ export default {
 	}
 }
 
-/* ... 下面保持原有的 CSS ... */
 .section-container {
 	margin: 24px 0;
 	padding-left: 16px;
@@ -743,12 +744,16 @@ export default {
 	font-weight: bold;
 	color: #333;
 	margin-right: auto;
+
+	@media (prefers-color-scheme: dark) {
+		color: #f5f5f5;
+	}
 }
 
 .care-scroll-view {
 	width: 100%;
 	white-space: nowrap;
-	height: 160rpx; // 确保高度足够展示 120rpx 的内容
+	height: 160rpx;
 }
 
 .care-list {
@@ -776,69 +781,71 @@ export default {
 	justify-content: center;
 	margin-bottom: 8px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+
+	@media (prefers-color-scheme: dark) {
+		box-shadow: none;
+	}
 }
 
 .care-name {
 	font-size: 11px;
-	color: #555;
+	color: #666;
 	text-align: center;
 	width: 100%;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	line-height: 1.2;
-}
 
-/* 快捷入口 */
-.quick-links {
-	display: flex;
-	justify-content: space-between;
-	margin: 0 16px 24px 16px;
-	gap: 12px;
-}
-
-.link-card {
-	flex: 1;
-	background-color: rgba(255, 255, 255, 0.6);
-	border: 1px solid rgba(255, 255, 255, 1);
-	border-radius: 16px;
-	padding: 16px 12px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.link-left {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.link-text {
-	font-size: 14px;
-	font-weight: 500;
-	color: #333;
+	@media (prefers-color-scheme: dark) {
+		color: rgba(245, 245, 245, 0.6);
+	}
 }
 
 /* 日志部分 */
 .log-section {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 	padding: 0 16px;
+	overflow: hidden;
+}
+
+.log-scroll-inner {
+	flex: 1;
+	height: 0;
 }
 
 .header-left {
 	display: flex;
 	align-items: center;
+
+	@media (prefers-color-scheme: dark) {
+		::v-deep .uni-icons {
+			color: #FAF2CB !important;
+		}
+	}
 }
 
 .header-right {
 	display: flex;
 	align-items: center;
 	margin-left: auto;
+
+	@media (prefers-color-scheme: dark) {
+		::v-deep .uni-icons {
+			color: #FAF2CB !important;
+		}
+	}
 }
 
 .edit-btn {
 	font-size: 14px;
-	color: #666;
+	color: #888;
+
+	@media (prefers-color-scheme: dark) {
+		color: rgba(245, 245, 245, 0.6);
+	}
 }
 
 .log-list {
@@ -855,6 +862,10 @@ export default {
 	color: #333;
 	margin-bottom: 16px;
 	display: block;
+
+	@media (prefers-color-scheme: dark) {
+		color: #FAF2CB;
+	}
 }
 
 .log-item {
@@ -875,12 +886,20 @@ export default {
 	font-size: 16px;
 	font-weight: bold;
 	color: #333;
+
+	@media (prefers-color-scheme: dark) {
+		color: #f5f5f5;
+	}
 }
 
 .log-date-mini {
 	font-size: 12px;
 	color: #999;
 	margin-top: 2px;
+
+	@media (prefers-color-scheme: dark) {
+		color: rgba(245, 245, 245, 0.4);
+	}
 }
 
 .log-timeline {
@@ -898,13 +917,21 @@ export default {
 	border-radius: 50%;
 	z-index: 1;
 	margin-top: 6px;
+
+	@media (prefers-color-scheme: dark) {
+		background-color: #FAF2CB;
+	}
 }
 
 .line {
 	flex: 1;
 	width: 1px;
-	background-color: #ddd;
+	background-color: #eee;
 	margin-top: 4px;
+
+	@media (prefers-color-scheme: dark) {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
 }
 
 .log-content-box {
@@ -921,6 +948,10 @@ export default {
 	border-radius: 20px;
 	gap: 6px;
 	margin-bottom: 6px;
+
+	@media (prefers-color-scheme: dark) {
+		filter: brightness(0.9);
+	}
 }
 
 .log-content {
@@ -929,6 +960,10 @@ export default {
 	line-height: 1.5;
 	margin-bottom: 8px;
 	word-break: break-all;
+
+	@media (prefers-color-scheme: dark) {
+		color: rgba(245, 245, 245, 0.7);
+	}
 }
 
 .log-images {
@@ -950,6 +985,10 @@ export default {
 .log-text {
 	font-size: 13px;
 	color: #333;
+
+	@media (prefers-color-scheme: dark) {
+		color: #f5f5f5;
+	}
 }
 
 .remind-modal {
@@ -957,6 +996,10 @@ export default {
 	background-color: #fff;
 	border-radius: 20rpx;
 	padding: 30rpx;
+
+	@media (prefers-color-scheme: dark) {
+		background-color: #1a1a1a;
+	}
 	
 	.modal-header {
 		text-align: center;
@@ -965,6 +1008,9 @@ export default {
 			font-size: 18px;
 			font-weight: bold;
 			color: #333;
+			@media (prefers-color-scheme: dark) {
+				color: #f5f5f5;
+			}
 		}
 	}
 	
@@ -972,7 +1018,11 @@ export default {
 		display: flex;
 		align-items: center;
 		padding: 20rpx 0;
-		border-bottom: 1px solid #f5f5f5;
+		border-bottom: 1px solid #eee;
+
+		@media (prefers-color-scheme: dark) {
+			border-bottom-color: rgba(255, 255, 255, 0.1);
+		}
 		
 		&.vertical {
 			flex-direction: column;
@@ -984,12 +1034,18 @@ export default {
 			width: 140rpx;
 			font-size: 15px;
 			color: #666;
+			@media (prefers-color-scheme: dark) {
+				color: rgba(245, 245, 245, 0.6);
+			}
 		}
 		
 		.value, .time-picker-value {
 			font-size: 15px;
 			color: #333;
 			font-weight: 500;
+			@media (prefers-color-scheme: dark) {
+				color: #f5f5f5;
+			}
 		}
 		
 		.remind-textarea {
@@ -1000,6 +1056,12 @@ export default {
 			padding: 20rpx;
 			margin-top: 16rpx;
 			font-size: 14px;
+			color: #333;
+
+			@media (prefers-color-scheme: dark) {
+				background-color: rgba(255, 255, 255, 0.05);
+				color: #f5f5f5;
+			}
 		}
 	}
 	
@@ -1019,12 +1081,20 @@ export default {
 			
 			&.cancel {
 				background-color: #f5f5f5;
-				color: #666;
+				color: #888;
+				@media (prefers-color-scheme: dark) {
+					background-color: rgba(255, 255, 255, 0.1);
+					color: rgba(245, 245, 245, 0.6);
+				}
 			}
 			
 			&.confirm {
-				background-color: #4A6139;
+				background-color: #566C44;
 				color: #fff;
+				@media (prefers-color-scheme: dark) {
+					background-color: #FAF2CB;
+					color: #0A3323;
+				}
 			}
 		}
 	}
