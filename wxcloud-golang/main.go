@@ -8,6 +8,7 @@ import (
 
 	"wxcloud-golang/db"
 	"wxcloud-golang/handler"
+	"wxcloud-golang/service"
 	"wxcloud-golang/telemetry"
 
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,9 @@ func main() {
 		log.Fatalf("mysql init failed: %+v", err)
 	}
 
+	// 启动提醒任务工作者
+	service.StartRemindWorker()
+
 	r := gin.Default()
 	telemetry.UseMiddleware(r, cfg.ServiceName)
 
@@ -55,6 +59,7 @@ func main() {
 	{
 		api.POST("/login", handler.UserLoginHandler)
 		api.POST("/user/update", handler.UpdateUserHandler)
+		api.POST("/remind/add", handler.AddRemindHandler)
 		family := api.Group("/family")
 		{
 			family.POST("/", handler.GetFamilyHandler)

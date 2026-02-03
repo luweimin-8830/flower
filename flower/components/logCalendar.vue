@@ -25,6 +25,40 @@
 					:startDate="todayDate"
 					@confirm="onRemindConfirm"
 				/>
+
+				<!-- 提醒事项输入弹窗 -->
+				<uni-popup ref="remindPopup" type="center">
+					<view class="remind-modal">
+						<view class="modal-header">
+							<text class="modal-title">预约提醒</text>
+						</view>
+						<view class="modal-body">
+							<view class="input-group">
+								<text class="label">日期</text>
+								<text class="value">{{ remindData.date }}</text>
+							</view>
+							<view class="input-group">
+								<text class="label">时间</text>
+								<picker mode="time" :value="remindData.time" @change="e => remindData.time = e.detail.value">
+									<view class="time-picker-value">{{ remindData.time }}</view>
+								</picker>
+							</view>
+							<view class="input-group vertical">
+								<text class="label">事项内容</text>
+								<textarea 
+									class="remind-textarea" 
+									v-model="remindData.content" 
+									placeholder="输入提醒内容,如:该浇水了"
+									maxlength="20"
+								/>
+							</view>
+						</view>
+						<view class="modal-footer">
+							<button class="btn cancel" @click="$refs.remindPopup.close()">取消</button>
+							<button class="btn confirm" @click="saveRemind">保存预约</button>
+						</view>
+					</view>
+				</uni-popup>
 				
 				<view class="day-detail">
 					<view class="detail-header">
@@ -81,7 +115,12 @@ export default {
 			careActions: [],
 			familyId: 0,
 			selectedDates: [], // uni-calendar markers
-			todayDate: ''
+			todayDate: '',
+			remindData: {
+				date: '',
+				time: '08:00',
+				content: ''
+			}
 		};
 	},
 	computed: {
@@ -110,6 +149,12 @@ export default {
 			const now = new Date();
 			this.todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 			this.selectedDate = this.todayDate;
+			
+			// 从用户信息中获取默认提醒时间
+			const userInfo = uni.getStorageSync('userInfo');
+			if (userInfo && userInfo.remindTime) {
+				this.remindData.time = userInfo.remindTime;
+			}
 			
 			await Promise.all([
 				this.getCareActions(),
@@ -221,12 +266,59 @@ export default {
 			});
 		},
 		onRemindConfirm(e) {
-			console.log('选择的提醒日期：', e.fulldate);
-			uni.showToast({
-				title: `已预约 ${e.fulldate} 提醒`,
-				icon: 'none'
-			});
-			// 这里通常需要调用后端接口保存该提醒任务
+			this.remindData.date = e.fulldate;
+			this.remindData.content = ''; // 重置内容
+			
+			// 优先从配置中获取默认提醒时间
+			const userInfo = uni.getStorageSync('userInfo');
+			if (userInfo && userInfo.remindTime) {
+				this.remindData.time = userInfo.remindTime;
+			} else {
+				this.remindData.time = '08:00';
+			}
+			
+			this.$refs.remindPopup.open();
+		},
+		async saveRemind() {
+			if (!this.remindData.content.trim()) {
+				return uni.showToast({ title: '请输入提醒内容', icon: 'none' });
+			}
+			
+			try {
+				uni.showLoading({ title: '保存预约...' });
+				
+				const fullRemindTime = `${this.remindData.date} ${this.remindData.time}`;
+				
+				await callContainer('/api/remind/add', {
+					familyId: Number(this.familyId),
+					plantId: 0, 
+					remindTime: fullRemindTime,
+					content: this.remindData.content,
+					actionType: 'remind'
+				});
+				
+				// 同时记录一条日志（可选，或者由后端自动生成）
+				await callContainer('/api/plant/log/add', {
+					familyId: Number(this.familyId),
+					plantId: 0,
+					actionType: 'remind',
+					content: `【预约提醒】${this.remindData.content}`,
+					logTime: `${this.remindData.date}T${this.remindData.time}:00Z`,
+					images: []
+				});
+				
+				uni.showToast({
+					title: '预约成功',
+					icon: 'success'
+				});
+				this.$refs.remindPopup.close();
+				this.getLogs(); // 刷新列表
+			} catch (e) {
+				console.error(e);
+				uni.showToast({ title: '预约失败', icon: 'none' });
+			} finally {
+				uni.hideLoading();
+			}
 		}
 	}
 };
@@ -377,6 +469,84 @@ export default {
 	.uni-calendar-item__weeks-box-circle {
 		display: block !important;
 		background-color: #ff4d4f !important;
+	}
+}
+
+.remind-modal {
+	width: 600rpx;
+	background-color: #fff;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	
+	.modal-header {
+		text-align: center;
+		margin-bottom: 30rpx;
+		.modal-title {
+			font-size: 18px;
+			font-weight: bold;
+			color: #333;
+		}
+	}
+	
+	.input-group {
+		display: flex;
+		align-items: center;
+		padding: 20rpx 0;
+		border-bottom: 1px solid #f5f5f5;
+		
+		&.vertical {
+			flex-direction: column;
+			align-items: flex-start;
+			border-bottom: none;
+		}
+		
+		.label {
+			width: 140rpx;
+			font-size: 15px;
+			color: #666;
+		}
+		
+		.value, .time-picker-value {
+			font-size: 15px;
+			color: #333;
+			font-weight: 500;
+		}
+		
+		.remind-textarea {
+			width: 90%;
+			height: 160rpx;
+			background-color: #f9f9f9;
+			border-radius: 10rpx;
+			padding: 20rpx;
+			margin-top: 16rpx;
+			font-size: 14px;
+		}
+	}
+	
+	.modal-footer {
+		display: flex;
+		gap: 20rpx;
+		margin-top: 40rpx;
+		
+		.btn {
+			flex: 1;
+			height: 80rpx;
+			line-height: 80rpx;
+			border-radius: 40rpx;
+			font-size: 15px;
+			
+			&::after { border: none; }
+			
+			&.cancel {
+				background-color: #f5f5f5;
+				color: #666;
+			}
+			
+			&.confirm {
+				background-color: #4A6139;
+				color: #fff;
+			}
+		}
 	}
 }
 </style>

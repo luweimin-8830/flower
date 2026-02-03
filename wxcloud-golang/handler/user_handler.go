@@ -37,6 +37,14 @@ type UpdateUserRequest struct {
 	RemindTime string `json:"remindTime" binding:"required"`
 }
 
+type AddRemindRequest struct {
+	FamilyID   uint   `json:"familyId"`
+	PlantID    uint   `json:"plantId"`
+	RemindTime string `json:"remindTime" binding:"required"` // 格式: 2026-03-19 08:00
+	Content    string `json:"content" binding:"required"`
+	ActionType string `json:"actionType"`
+}
+
 func IndexHandler(c *gin.Context) {
 	response.SuccessMsg(c, "Hello Succulent")
 }
@@ -201,4 +209,34 @@ func UpdateUserHandler(c *gin.Context) {
 		return
 	}
 	response.Success(c, "更新成功")
+}
+
+func AddRemindHandler(c *gin.Context) {
+	var req AddRemindRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 400, "参数错误")
+		return
+	}
+
+	OPENID := c.GetHeader("X-WX-OPENID")
+	ctx := c.Request.Context()
+
+	// 解析时间
+	loc, _ := time.LoadLocation("Local")
+	remindTime, err := time.ParseInLocation("2006-01-02 15:04", req.RemindTime, loc)
+	if err != nil {
+		// 尝试带秒的格式
+		remindTime, err = time.ParseInLocation("2006-01-02 15:04:05", req.RemindTime, loc)
+		if err != nil {
+			response.Fail(c, "时间格式错误，请使用 YYYY-MM-DD HH:mm")
+			return
+		}
+	}
+
+	err = service.AddRemindTask(ctx, OPENID, req.FamilyID, req.PlantID, remindTime, req.Content, req.ActionType)
+	if err != nil {
+		response.Fail(c, "预约失败: "+err.Error())
+		return
+	}
+	response.Success(c, "预约成功")
 }
