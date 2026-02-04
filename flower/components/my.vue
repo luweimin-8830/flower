@@ -16,7 +16,7 @@
             <view class="divider"></view>
             <view class="menu-item" hover-class="item-hover" @click="handleNav('display')">
                 <view class="left-content">
-                    <uni-icons type="shop" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
+                    <uni-icons type="medal" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
                     <text class="menu-text">陈列室</text>
                 </view>
                 <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>

@@ -76,7 +76,7 @@
 							</view>
 							<view class="log-info">
 								<view class="log-top">
-									<text class="log-name">{{ log.name }}</text>
+									<text class="log-name">{{ log.displayName }}</text>
 									<text class="log-time">{{ formatTime(log.logTime) }}</text>
 								</view>
 								<text class="log-content" v-if="log.content">{{ log.content }}</text>
@@ -126,14 +126,46 @@ export default {
 	computed: {
 		currentLogs() {
 			if (!this.selectedDate) return [];
-			return this.allLogs.filter(log => {
+			const filtered = this.allLogs.filter(log => {
 				const logDate = log.logTime.split('T')[0];
 				return logDate === this.selectedDate;
 			});
+
+			// 按时间、动作类型、内容进行分组合并
+			const groups = {};
+			filtered.forEach(log => {
+				// 精确到分钟的 key，用于判定是否是同一次批量操作
+				const timeKey = log.logTime.substring(0, 16); 
+				const key = `${timeKey}_${log.actionType}_${log.content}`;
+				
+				if (!groups[key]) {
+					groups[key] = {
+						...log,
+						count: 1,
+						plants: [log.name]
+					};
+				} else {
+					groups[key].count++;
+					if (log.name) groups[key].plants.push(log.name);
+				}
+			});
+
+			return Object.values(groups).map(g => {
+				return {
+					...g,
+					displayName: g.count > 1 ? `${g.actionName || g.name} (共 ${g.count} 棵)` : g.name
+				};
+			}).sort((a, b) => new Date(b.logTime) - new Date(a.logTime));
 		}
 	},
 	mounted() {
 		this.initData();
+		uni.$on('refreshLogCalendar', () => {
+			this.getLogs();
+		});
+	},
+	destroyed() {
+		uni.$off('refreshLogCalendar');
 	},
 	methods: {
 		async initData() {

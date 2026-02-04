@@ -660,6 +660,9 @@ export default {
                 uni.showToast({ title: '操作成功', icon: 'success' });
                 this.exitEditMode();
 
+                // 触发日历记录刷新
+                uni.$emit('refreshLogCalendar');
+
                 // 🚀 优化刷新逻辑：刷新当前已加载的所有数据，而不是跳回第一页
                 const currentLoadedCount = this.plantsList.length;
                 const res = await callContainer("/api/plant/list", {

@@ -436,6 +436,7 @@ const _sfc_main = {
         });
         common_vendor.index.showToast({ title: "操作成功", icon: "success" });
         this.exitEditMode();
+        common_vendor.index.$emit("refreshLogCalendar");
         const currentLoadedCount = this.plantsList.length;
         const res = await utils_request.callContainer("/api/plant/list", {
           familyId: this.value,
@@ -455,7 +456,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:684", "批量操作失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:687", "批量操作失败:", error);
         common_vendor.index.showToast({ title: "操作失败", icon: "none" });
       } finally {
         common_vendor.index.hideLoading();
@@ -540,7 +541,7 @@ const _sfc_main = {
       }
       const cachedFamilyId = common_vendor.index.getStorageSync("familyId");
       if (this.value && cachedFamilyId && String(this.value) !== String(cachedFamilyId)) {
-        common_vendor.index.__f__("log", "at components/home.vue:790", "检测到家庭 ID 变更，执行强制同步");
+        common_vendor.index.__f__("log", "at components/home.vue:793", "检测到家庭 ID 变更，执行强制同步");
         this.loadFamilyData();
       }
     }
@@ -551,7 +552,7 @@ const _sfc_main = {
   async created() {
     var _a;
     common_vendor.index.$on("refreshHomeList", () => {
-      common_vendor.index.__f__("log", "at components/home.vue:802", "收到全局刷新指令，正在重置列表...");
+      common_vendor.index.__f__("log", "at components/home.vue:805", "收到全局刷新指令，正在重置列表...");
       this.page = 1;
       this.isNoMore = false;
       this.getPlantsList(false);
@@ -564,7 +565,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:816", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:819", "callContainer login:", user);
     const userInfo = user.data.user;
     const familyList = user.data.family;
     await new Promise((resolve) => {

@@ -1,9 +1,9 @@
 <template>
 	<view class="container">
 		<navBar />
-		<view class="page-title" :style="{ top: menuButtonInfo.top + 'px' }">陈列室</view>
-
-		<view :style="{ height: topBarHeight + 'px' }"></view>
+		<view class="page-title" :style="{ height: topBarHeight + 'px' }">
+			<text :style="{ marginTop: menuButtonInfo.top + 'px', height: menuButtonInfo.height + 'px', display: 'flex', alignItems: 'center' }">陈列室</text>
+		</view>
 
 		<scroll-view scroll-y class="scroll-area" @scrolltolower="loadMore">
 			<view v-if="plants.length === 0 && !loading" class="empty-state">
@@ -116,25 +116,35 @@ export default {
 	width: 100%;
 	color: #333;
 	position: fixed;
+	left: 0;
+	top: 0;
 	font-size: 34rpx;
 	font-weight: bold;
 	text-align: center;
 	z-index: 1000;
+	pointer-events: none;
+	display: flex;
+	justify-content: center;
+
+	@media (prefers-color-scheme: dark) {
+		color: #eee;
+	}
 }
 
 .scroll-area {
-	height: calc(100vh - 100rpx);
+	height: 100vh;
 }
 
 .plant-grid {
 	padding: 20rpx;
-	display: flex;
-	flex-wrap: wrap;
+	padding-top: calc(var(--status-bar-height) + 160rpx);
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
 	gap: 20rpx;
 }
 
 .plant-card {
-	width: calc(50% - 10rpx);
+	width: 100%;
 	background-color: #fff;
 	border-radius: 20rpx;
 	overflow: hidden;

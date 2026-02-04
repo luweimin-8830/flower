@@ -129,13 +129,13 @@
 				<!-- 下半部分：统计数据 -->
 				<view class="stats-row">
 					<view class="stat-item">
-						<text class="stat-val">{{ plant.birthday }}</text>
-						<text class="stat-label">到家日期</text>
+						<text class="stat-val">{{ plant.deathAt ? plant.deathAt : plant.birthday }}</text>
+						<text class="stat-label">{{ plant.deathAt ? '离去日期' : '到家日期' }}</text>
 					</view>
 					<view class="vertical-line"></view>
 					<view class="stat-item">
-						<text class="stat-val">{{ plant.daysCount }}</text>
-						<text class="stat-label">养护天数</text>
+						<text class="stat-val">{{ plant.deathAt ? companionDays : plant.daysCount }}</text>
+						<text class="stat-label">{{ plant.deathAt ? '陪伴天数' : '养护天数' }}</text>
 					</view>
 					<view class="vertical-line"></view>
 					<view class="stat-item">
@@ -192,7 +192,7 @@
 						<uni-icons type="compose" size="20" color="var(--primary-color)"></uni-icons>
 						<text class="section-title" style="margin-left: 6px;">植物日志</text>
 					</view>
-					<view class="header-right">
+					<view class="header-right" v-if="!plant.deathAt">
 						<text class="edit-btn" @click="isManageMode = !isManageMode">{{ isManageMode ? '完成' : '编辑' }}</text>
 						<uni-icons type="plusempty" size="24" color="var(--primary-color)" style="margin-left: 15px;" @click="goAddLog"></uni-icons>
 					</view>
@@ -290,6 +290,15 @@ export default {
 			}
 		};
 	},
+	computed: {
+		companionDays() {
+			if (!this.plant.deathAt || !this.plant.birthday) return 0;
+			const start = new Date(this.plant.birthday.replace(/-/g, '/'));
+			const end = new Date(this.plant.deathAt.replace(/-/g, '/'));
+			const diff = end.getTime() - start.getTime();
+			return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1; // 包含起始和结束当天
+		}
+	},
 	async onLoad(options) {
 		const app = getApp()
 		const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
@@ -345,6 +354,7 @@ export default {
 				})
 				this.plant = result.data
 				this.plant.birthday = this.plant.birthday ? this.plant.birthday.split('T')[0] : '';
+				this.plant.deathAt = this.plant.deathAt ? this.plant.deathAt.split('T')[0] : '';
 			} catch (error) {
 				console.error(error)
 			}

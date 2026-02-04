@@ -25,9 +25,7 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img" v-if="cover"
-					:src="cover"
-					mode="aspectFill" />
+				<image class="plant-img" v-if="cover" :src="cover" mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImages">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
@@ -132,8 +130,8 @@ export default {
 			isCalendarOpen: false,
 			isSave: true,
 			option: 'add',
-			plantId:0,
-			cover:'/static/default.svg',
+			plantId: 0,
+			cover: '/static/default.svg',
 		}
 	},
 	methods: {
@@ -295,22 +293,23 @@ export default {
 						"tags": this.plant.tags
 					})
 					console.log("call container plant add", plantRes)
-					
+
 					// 新增植物后，同步插入一条成长记录
 					if (plantRes.data && plantRes.data.id) {
 						const newPlantId = plantRes.data.id;
-						const logTime = this.plant.birthday ? `${this.plant.birthday}T12:00:00Z` : new Date().toISOString();
-						
+						// 确保 logTime 格式为 YYYY-MM-DD
+						const logTime = this.plant.birthday || new Date().toISOString().split('T')[0];
+
 						await callContainer("/api/plant/log/add", {
 							familyId: Number(this.familyId),
-							plantId: Number(newPlantId),
+							plantIds: [Number(newPlantId)],
 							actionType: 'record',
 							content: '入户初始记录',
 							logTime: logTime,
-							images: this.plant.coverId ? [{ id: this.plant.coverId }] : []
+							imageIds: this.plant.coverId ? [this.plant.coverId] : []
 						});
 					}
-					
+
 					uni.$emit('refreshHomeList');
 				} catch (error) {
 					console.error(error)
@@ -500,7 +499,7 @@ $text-color: #566C44;
 }
 
 .form-item {
-	background-color: $bg-color;
+	background-color: rgba(255, 255, 255, 0.55);
 	margin-bottom: 30rpx;
 
 	/* 默认状态：透明边框 (占位，防止抖动) */
@@ -508,6 +507,10 @@ $text-color: #566C44;
 
 	/* 过渡效果 */
 	transition: all 0.3s ease;
+
+	@media (prefers-color-scheme: dark) {
+		background-color: rgba(0, 0, 0, 0.2);
+	}
 }
 
 /* 聚焦状态：当添加了 focused 类名时 */
@@ -516,7 +519,11 @@ $text-color: #566C44;
 	background-color: #f5f5f5;
 	/* 聚焦时背景变白，更像输入框，体验更好 */
 	box-shadow: 0 4rpx 12rpx rgba(86, 108, 68, 0.15);
+
 	/* 加一点阴影 */
+	@media (prefers-color-scheme: dark) {
+		background-color: rgba(0, 0, 0, 0.5);
+	}
 }
 
 /* 1. 名称输入框 */
@@ -562,7 +569,7 @@ $text-color: #566C44;
 }
 
 .date-pill {
-	background-color: #E8F0E8;
+	background-color: rgba(255, 255, 255, 0.55);
 	padding: 16rpx 50rpx;
 	border-radius: 50rpx;
 	display: flex;
@@ -584,7 +591,7 @@ $text-color: #566C44;
 /* 单个标签 */
 .tag-item {
 	/* 默认状态：浅色背景，深色字 */
-	background-color: $bg-color;
+	background-color: rgba(255, 255, 255, 0.55);
 	padding: 12rpx 32rpx;
 	border-radius: 40rpx;
 	display: flex;
@@ -603,9 +610,13 @@ $text-color: #566C44;
 
 	/* 选中状态：深色背景，浅色字 (互换颜色) */
 	&.active {
-		background-color: $text-color;
+		background-color: #566C44;
 		/* #566C44 */
 		box-shadow: 0 4rpx 10rpx rgba(86, 108, 68, 0.3);
+
+		@media (prefers-color-scheme: dark) {
+			background-color: #6B8857;
+		}
 
 		text {
 			color: #fff;
