@@ -97,7 +97,7 @@
 
         <!-- 🌟 4. 中间独立滚动区域 -->
         <!-- flex:1 让它自动填满剩余空间，height:0 防止被内容撑大 -->
-        <scroll-view scroll-y class="content-scroll-view">
+        <scroll-view scroll-y class="content-scroll-view" @scrolltolower="onScrollToLower">
             <!-- 空状态 -->
             <view v-if="plantsList.length === 0" class="empty-wrapper">
                 <image src="/static/icon/c2m.svg" class="empty-icon" mode="aspectFit"></image>
@@ -195,6 +195,12 @@ export default {
             isSelectAll: false,
             careOptions: [],
             batchActionType: '',
+            // 分页相关
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            isLoading: false,
+            isNoMore: false,
         }
     },
     computed: {
@@ -211,8 +217,8 @@ export default {
      */
     watch: {
         searchValue() {
-            // 当搜索内容变化（包括清空）时实时过滤
-            this.filterPlants();
+            // 搜索内容变化时重置分页并重新请求
+            this.getPlantsList();
         },
         allPlantsList: {
             handler(newVal, oldVal) {
@@ -328,62 +334,70 @@ export default {
                 console.error("刷新家庭列表失败:", error);
             }
         },
-        async getPlantsList() {
+        async getPlantsList(isLoadMore = false) {
+            if (this.isLoading || (isLoadMore && this.isNoMore)) return;
+
+            if (!isLoadMore) {
+                this.page = 1;
+                this.isNoMore = false;
+                this.plantsList = [];
+            }
+
+            this.isLoading = true;
             const familyId = this.value;
+            const currentTag = this.tagList[this.currentTagIndex];
 
             try {
-                const plants = await callContainer("/api/plant/list", {
-                    "familyId": familyId
-                })
-                console.log("plants list:", plants)
-                const newData = plants?.data || [];
-
-                // 打印原始数据的 tags
-                newData.forEach((item, idx) => {
-                    if (item.tags && item.tags.length > 0) {
-                    }
+                const res = await callContainer("/api/plant/list", {
+                    familyId: familyId,
+                    page: this.page,
+                    pageSize: this.pageSize,
+                    tagId: currentTag ? currentTag.id : 0,
+                    keyword: this.searchValue
                 });
 
-                // 🔥 关键修复：完全冻结所有对象，防止被修改
-                this.allPlantsList = newData.map(item => {
-                    // 深拷贝 tags 数组
+                console.log("plants list res:", res);
+                
+                // 处理分页返回的数据格式
+                let rawData = [];
+                if (res?.data?.list) {
+                    rawData = res.data.list;
+                    this.total = res.data.total;
+                } else if (Array.isArray(res?.data)) {
+                    // 兼容老接口
+                    rawData = res.data;
+                    this.total = rawData.length;
+                }
+
+                // 处理数据冻结
+                const frozenData = rawData.map(item => {
                     let frozenTags = null;
                     if (item.tags && Array.isArray(item.tags)) {
-                        frozenTags = item.tags.map(tag => ({ ...tag }));
-                        // 冻结每个 tag 对象
-                        frozenTags.forEach(tag => Object.freeze(tag));
-                        // 冻结 tags 数组
+                        frozenTags = item.tags.map(tag => Object.freeze({ ...tag }));
                         Object.freeze(frozenTags);
                     }
-
-                    // 创建新对象并冻结（不再需要 isLoaded 属性）
                     const newItem = { ...item, tags: frozenTags };
                     return Object.freeze(newItem);
                 });
-                this.filterPlants();
+
+                if (isLoadMore) {
+                    this.plantsList = [...this.plantsList, ...frozenData];
+                } else {
+                    this.plantsList = frozenData;
+                }
+
+                this.isNoMore = this.plantsList.length >= this.total;
             } catch (error) {
-                console.error("获取植物列表失败:", error)
+                console.error("获取植物列表失败:", error);
+            } finally {
+                this.isLoading = false;
             }
         },
-        filterPlants() {
-            const currentTag = this.tagList[this.currentTagIndex];
-            const tagId = currentTag ? currentTag.id : 0;
-            const search = this.searchValue ? this.searchValue.trim().toLowerCase() : '';
-            
-            this.plantsList = this.allPlantsList.filter(plant => {
-                // 1. 检查选中的顶部标签过滤 (如果不是“全部”)
-                const matchesTag = tagId === 0 || (plant.tags && plant.tags.some(t => t.id === tagId));
-                
-                // 2. 检查搜索关键词 (匹配名称或关联标签名)
-                let matchesSearch = true;
-                if (search) {
-                    const matchesName = plant.name.toLowerCase().includes(search);
-                    const matchesTagName = plant.tags && plant.tags.some(t => t.name.toLowerCase().includes(search));
-                    matchesSearch = matchesName || matchesTagName;
-                }
-                
-                return matchesTag && matchesSearch;
-            });
+        onScrollToLower() {
+            if (!this.isNoMore && !this.isLoading) {
+                this.page++;
+                this.getPlantsList(true);
+            }
         },
         async handleFamilyChange(e) {
             const selectedIndex = e.detail.value;
@@ -609,9 +623,9 @@ export default {
             if (this.currentTagIndex === index) return;
             wx.vibrateShort({ type: "medium" })
 
-            // 优化标签切换逻辑：先更新索引，再过滤，避免中间状态
+            // 优化标签切换逻辑：先更新索引，再请求，由后端过滤
             this.currentTagIndex = index;
-            this.filterPlants();
+            this.getPlantsList();
 
             // 滑块动画逻辑
             const query = uni.createSelectorQuery().in(this);

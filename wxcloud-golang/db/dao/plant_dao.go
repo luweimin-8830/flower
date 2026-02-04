@@ -46,7 +46,7 @@ func GetPlantByFamilyID(ctx context.Context, familyID uint) ([]model.Plant, erro
 	return plants, err
 }
 
-func GetPlantsPaged(ctx context.Context, familyID uint, isDead bool, page, pageSize int) ([]model.Plant, int64, error) {
+func GetPlantsPaged(ctx context.Context, familyID uint, isDead bool, page, pageSize int, tagID uint, keyword string) ([]model.Plant, int64, error) {
 	var plants []model.Plant
 	var total int64
 	err := execWithSpan(ctx, "SELECT", "plant", func(conn *gorm.DB) error {
@@ -55,6 +55,14 @@ func GetPlantsPaged(ctx context.Context, familyID uint, isDead bool, page, pageS
 			query = query.Where("death_at IS NOT NULL")
 		} else {
 			query = query.Where("death_at IS NULL")
+		}
+
+		if tagID > 0 {
+			query = query.Joins("JOIN plant_tags ON plant_tags.plant_id = plants.id").Where("plant_tags.tag_id = ?", tagID)
+		}
+
+		if keyword != "" {
+			query = query.Where("name LIKE ?", "%"+keyword+"%")
 		}
 
 		query.Count(&total)

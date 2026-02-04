@@ -41,9 +41,11 @@ type UpdatePlantRequest struct {
 }
 
 type GetPlantsRequest struct {
-	FamilyID uint `json:"familyId" binding:"required"`
-	Page     int  `json:"page"`
-	PageSize int  `json:"pageSize"`
+	FamilyID uint   `json:"familyId" binding:"required"`
+	Page     int    `json:"page"`
+	PageSize int    `json:"pageSize"`
+	TagID    uint   `json:"tagId"`
+	Keyword  string `json:"keyword"`
 }
 
 type plantRequest struct {
@@ -158,7 +160,7 @@ func GetPlantsHandler(c *gin.Context) {
 		if req.PageSize <= 0 {
 			req.PageSize = 20
 		}
-		plants, total, err := service.GetPlantsPaged(ctx, req.FamilyID, false, req.Page, req.PageSize)
+		plants, total, err := service.GetPlantsPaged(ctx, req.FamilyID, false, req.Page, req.PageSize, req.TagID, req.Keyword)
 		if err != nil {
 			response.Fail(c, "获取失败:"+err.Error())
 			return
@@ -193,7 +195,7 @@ func GetDeadPlantsHandler(c *gin.Context) {
 		req.Page = 1
 	}
 
-	plants, total, err := service.GetPlantsPaged(ctx, req.FamilyID, true, req.Page, req.PageSize)
+	plants, total, err := service.GetPlantsPaged(ctx, req.FamilyID, true, req.Page, req.PageSize, req.TagID, req.Keyword)
 	if err != nil {
 		response.Fail(c, "获取失败:"+err.Error())
 		return

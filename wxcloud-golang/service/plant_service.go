@@ -27,8 +27,8 @@ func GetPlants(ctx context.Context, familyID uint) ([]model.Plant, error) {
 	return dao.GetPlantByFamilyID(ctx, familyID)
 }
 
-func GetPlantsPaged(ctx context.Context, familyID uint, isDead bool, page, pageSize int) ([]model.Plant, int64, error) {
-	return dao.GetPlantsPaged(ctx, familyID, isDead, page, pageSize)
+func GetPlantsPaged(ctx context.Context, familyID uint, isDead bool, page, pageSize int, tagID uint, keyword string) ([]model.Plant, int64, error) {
+	return dao.GetPlantsPaged(ctx, familyID, isDead, page, pageSize, tagID, keyword)
 }
 
 func GetPlant(ctx context.Context, id uint) (*model.Plant, error) {
