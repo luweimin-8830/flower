@@ -58,7 +58,7 @@ func GetPlantsPaged(ctx context.Context, familyID uint, isDead bool, page, pageS
 		}
 
 		if tagID > 0 {
-			query = query.Joins("JOIN plant_tags ON plant_tags.plant_id = plants.id").Where("plant_tags.tag_id = ?", tagID)
+			query = query.Joins("JOIN plant_tags ON plant_tags.plant_id = plant.id").Where("plant_tags.tag_id = ?", tagID)
 		}
 
 		if keyword != "" {
