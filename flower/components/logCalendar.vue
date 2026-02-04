@@ -188,10 +188,9 @@ export default {
 				this.remindData.time = userInfo.remindTime;
 			}
 			
-			await Promise.all([
-				this.getCareActions(),
-				this.getLogs()
-			]);
+			// 必须先获取养护配置，因为日志列表依赖它来匹配图标
+			await this.getCareActions();
+			await this.getLogs();
 		},
 		async getCareActions() {
 			try {
@@ -210,24 +209,22 @@ export default {
 				const res = await callContainer("/api/plant/log/list", params);
 				if (res.data) {
 					this.allLogs = res.data.map(log => {
+						// 1. 尝试从养护配置中匹配
 						let action = this.careActions.find(a => a.type === log.actionType);
 						
-						// 处理特殊类型 'record' (成长记录)
-						if (!action && (log.actionType === 'record' || log.actionType === 'Growth')) {
-							action = {
-								name: '成长记录',
-								icon: 'plant-zhiwuzhiyuan-duorouzhiwuyuan',
-								color: '#A7C190'
-							};
-						}
-
-						return {
+						// 2. 特殊处理成长记录 (record)
+						const isRecord = log.actionType === 'record' || log.actionType === 'Growth';
+						
+						// 3. 构建最终显示的日志对象
+						const finalLog = {
 							...log,
-							// 优先使用后端返回的 name，其次使用前端匹配到的 action.name，最后兜底使用 actionType
-							name: log.name || (action ? action.name : log.actionType),
-							icon: log.icon || (action ? action.icon : 'plant-jiaoshui1'),
-							color: log.color || (action ? action.color : '#4A6139')
+							name: log.name || (action ? action.name : (isRecord ? '成长记录' : log.actionType)),
+							// 如果是成长记录，强制使用指定图标，否则使用 log.icon 或 action.icon
+							icon: isRecord ? 'plant-zhiwuzhiyuan-duorouzhiwuyuan' : (log.icon || (action ? action.icon : 'plant-jiaoshui1')),
+							color: isRecord ? '#A7C190' : (log.color || (action ? action.color : '#4A6139'))
 						};
+						
+						return finalLog;
 					});
 					
 					// 生成日历标记
