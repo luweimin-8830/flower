@@ -77,10 +77,16 @@ func CreatePlantHandler(c *gin.Context) {
 		tagIDs = append(tagIDs, t.ID)
 	}
 
+	var coverID *uint
+	if req.CoverID > 0 {
+		cid := req.CoverID
+		coverID = &cid
+	}
+
 	plant := &model.Plant{
 		Name:     req.Name,
 		FamilyID: req.FamilyID,
-		CoverID:  req.CoverID,
+		CoverID:  coverID,
 		Desc:     req.Desc,
 		Birthday: birthday,
 		OpenId:   OPENID,

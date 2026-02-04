@@ -145,7 +145,7 @@ const _sfc_main = {
         await this.getTagList();
         await this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:305", "加载家庭数据失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:308", "加载家庭数据失败:", error);
       } finally {
         this.isInitializing = false;
       }
@@ -177,7 +177,7 @@ const _sfc_main = {
           this.familyRange = [];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:349", "刷新家庭列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:352", "刷新家庭列表失败:", error);
       }
     },
     async getPlantsList(isLoadMore = false) {
@@ -199,7 +199,7 @@ const _sfc_main = {
           tagId: currentTag ? currentTag.id : 0,
           keyword: this.searchValue
         });
-        common_vendor.index.__f__("log", "at components/home.vue:374", "plants list res:", res);
+        common_vendor.index.__f__("log", "at components/home.vue:377", "plants list res:", res);
         let rawData = [];
         if ((_a = res == null ? void 0 : res.data) == null ? void 0 : _a.list) {
           rawData = res.data.list;
@@ -222,14 +222,14 @@ const _sfc_main = {
         } else {
           const isSameFirstItem = this.plantsList.length > 0 && frozenData.length > 0 && String(this.plantsList[0].id) === String(frozenData[0].id);
           if (isSameFirstItem && this.page === 1) {
-            common_vendor.index.__f__("log", "at components/home.vue:408", "首屏数据未发生导致位移的变化，保持当前滚动位置");
+            common_vendor.index.__f__("log", "at components/home.vue:411", "首屏数据未发生导致位移的变化，保持当前滚动位置");
           } else {
             this.plantsList = frozenData;
           }
         }
         this.isNoMore = this.plantsList.length >= this.total;
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:417", "获取植物列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:420", "获取植物列表失败:", error);
       } finally {
         this.isLoading = false;
       }
@@ -248,13 +248,13 @@ const _sfc_main = {
         await utils_request.callContainer("/api/family/switch", {
           familyId: newFamilyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:438", "家庭切换成功");
+        common_vendor.index.__f__("log", "at components/home.vue:441", "家庭切换成功");
         await new Promise((resolve) => {
           common_vendor.index.setStorage({ key: "familyId", data: newFamilyId, success: resolve });
         });
         common_vendor.index.$emit("familyChanged", newFamilyId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:449", "切换家庭失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:452", "切换家庭失败:", error);
         const errorMsg = (error == null ? void 0 : error.msg) || (error == null ? void 0 : error.message) || "切换家庭失败，请稍后重试";
         common_vendor.index.showToast({
           title: errorMsg,
@@ -282,7 +282,7 @@ const _sfc_main = {
       common_vendor.wx$1.vibrateShort({ type: "light" });
     },
     toggleFamilySelect() {
-      common_vendor.index.__f__("log", "at components/home.vue:496", "触发家庭选择器");
+      common_vendor.index.__f__("log", "at components/home.vue:499", "触发家庭选择器");
     },
     onTouchStart() {
       this.isSelecting = true;
@@ -299,7 +299,7 @@ const _sfc_main = {
           utils_request.callContainer("/api/tag/", { familyId }),
           utils_request.callContainer("/api/care/", { familyId: Number(familyId) })
         ]);
-        common_vendor.index.__f__("log", "at components/home.vue:517", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:520", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", id: 0 },
@@ -314,14 +314,14 @@ const _sfc_main = {
         if (this.careOptions.length > 0) {
           this.batchActionType = this.careOptions[0].type;
         }
-        common_vendor.index.__f__("log", "at components/home.vue:536", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:539", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:544", "获取标签列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:547", "获取标签列表失败:", error);
       }
     },
     enterEditMode(item) {
@@ -345,7 +345,7 @@ const _sfc_main = {
               common_vendor.index.showToast({ title: "已删除", icon: "success" });
               await this.getPlantsList();
             } catch (e) {
-              common_vendor.index.__f__("error", "at components/home.vue:567", "删除失败:", e);
+              common_vendor.index.__f__("error", "at components/home.vue:570", "删除失败:", e);
               common_vendor.index.showToast({ title: "删除失败", icon: "none" });
             } finally {
               common_vendor.index.hideLoading();
@@ -405,7 +405,7 @@ const _sfc_main = {
           common_vendor.index.showToast({ title: `已选中全部 ${this.selectedPlantIds.length} 项`, icon: "none" });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at components/home.vue:626", "获取全部 ID 失败:", e);
+        common_vendor.index.__f__("error", "at components/home.vue:629", "获取全部 ID 失败:", e);
       } finally {
         common_vendor.index.hideLoading();
       }
@@ -455,7 +455,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:681", "批量操作失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:684", "批量操作失败:", error);
         common_vendor.index.showToast({ title: "操作失败", icon: "none" });
       } finally {
         common_vendor.index.hideLoading();
@@ -540,7 +540,7 @@ const _sfc_main = {
       }
       const cachedFamilyId = common_vendor.index.getStorageSync("familyId");
       if (this.value && cachedFamilyId && String(this.value) !== String(cachedFamilyId)) {
-        common_vendor.index.__f__("log", "at components/home.vue:787", "检测到家庭 ID 变更，执行强制同步");
+        common_vendor.index.__f__("log", "at components/home.vue:790", "检测到家庭 ID 变更，执行强制同步");
         this.loadFamilyData();
       }
     }
@@ -551,7 +551,7 @@ const _sfc_main = {
   async created() {
     var _a;
     common_vendor.index.$on("refreshHomeList", () => {
-      common_vendor.index.__f__("log", "at components/home.vue:799", "收到全局刷新指令，正在重置列表...");
+      common_vendor.index.__f__("log", "at components/home.vue:802", "收到全局刷新指令，正在重置列表...");
       this.page = 1;
       this.isNoMore = false;
       this.getPlantsList(false);
@@ -564,7 +564,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:813", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:816", "callContainer login:", user);
     const userInfo = user.data.user;
     const familyList = user.data.family;
     await new Promise((resolve) => {

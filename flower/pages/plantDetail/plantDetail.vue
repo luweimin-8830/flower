@@ -66,6 +66,28 @@
 				</view>
 			</uni-popup>
 
+			<!-- 🌟 新增：植物凋零弹窗 -->
+			<uni-popup ref="witherPopup" type="center">
+				<view class="remind-modal">
+					<view class="modal-header">
+						<text class="modal-title">植物凋零</text>
+					</view>
+					<view class="modal-body">
+						<view class="hint-text">凋零的植物会移入陈列室中</view>
+						<view class="input-group" style="margin-top: 20rpx;">
+							<text class="label">凋零日期</text>
+							<picker mode="date" :value="witherDate" :start="plant.birthday" :end="todayDate" @change="e => witherDate = e.detail.value">
+								<view class="time-picker-value">{{ witherDate }}</view>
+							</picker>
+						</view>
+					</view>
+					<view class="modal-footer">
+						<button class="btn cancel" @click="$refs.witherPopup.close()">取消</button>
+						<button class="btn confirm wither-confirm" @click="confirmWither">确认</button>
+					</view>
+				</view>
+			</uni-popup>
+
 			<!-- 🌟 修改：植物基本信息卡片 -->
 			<view class="plant-header-card">
 				<!-- 上半部分：左图右文 -->
@@ -250,6 +272,7 @@ export default {
 			totalLogCount: 0,
 			isManageMode: false,
 			todayDate: '',
+			witherDate: '',
 			remindData: {
 				date: '',
 				time: '08:00',
@@ -375,6 +398,32 @@ export default {
 		},
 		handleDeath() {
 			wx.vibrateShort({ type: "light" });
+			this.witherDate = this.todayDate;
+			this.$refs.witherPopup.open();
+		},
+		async confirmWither() {
+			uni.showLoading({ title: '正在处理...' });
+			try {
+				await callContainer('/api/plant/update', {
+					id: Number(this.plantId),
+					deathAt: this.witherDate
+				});
+				
+				uni.hideLoading();
+				uni.showToast({ title: '已移入陈列室', icon: 'success' });
+				this.$refs.witherPopup.close();
+				
+				// 触发首页刷新
+				uni.$emit('refreshHomeList');
+				
+				// 延迟返回首页
+				setTimeout(() => {
+					uni.reLaunch({ url: '/pages/index/index' });
+				}, 1500);
+			} catch (error) {
+				uni.hideLoading();
+				uni.showToast({ title: error.message || '操作失败', icon: 'none' });
+			}
 		},
 		goAddLog() {
 			uni.navigateTo({ url: `/pages/logEdit/logEdit?plantId=${this.plantId}` })
@@ -1119,7 +1168,23 @@ export default {
 					color: #0A3323;
 				}
 			}
+
+			&.wither-confirm {
+				background-color: #8B4513; 
+				color: #fff;
+				@media (prefers-color-scheme: dark) {
+					background-color: #4A3728;
+					color: rgba(245, 245, 245, 0.8);
+				}
+			}
 		}
 	}
+}
+
+.hint-text {
+	font-size: 14px;
+	color: #888;
+	text-align: center;
+	line-height: 1.6;
 }
 </style>

@@ -17,7 +17,8 @@
                 @change="handleFamilyChange">
                 <view class="family-name-wrapper">
                     <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
-                    <uni-icons type="bottom" size="14" color="var(--primary-color)" style="margin-left: 4px;"></uni-icons>
+                    <uni-icons type="bottom" size="14" color="var(--primary-color)"
+                        style="margin-left: 4px;"></uni-icons>
                 </view>
             </picker>
         </view>
@@ -32,7 +33,8 @@
                 <template v-if="!isEditMode">
                     <view class="search-box-wrapper">
                         <uni-search-bar @confirm="searchPlant" placeholder="输入植物名称或标签" radius="20" :focus="false"
-                            v-model="searchValue" bgColor="rgba(255,255,255,0.5)" clearButton="auto" cancelButton="none">
+                            v-model="searchValue" bgColor="rgba(255,255,255,0.5)" clearButton="auto"
+                            cancelButton="none">
                         </uni-search-bar>
                     </view>
                     <view class="add-btn" @click="goAddPage">
@@ -50,7 +52,7 @@
                             <uni-col :span="12">
                                 <view class="selection-info">
                                     <text class="count">已选 {{ selectedPlantIds.length }} 项</text>
-                                    <text v-if="selectedPlantIds.length > 0 && selectedPlantIds.length < total" 
+                                    <text v-if="selectedPlantIds.length > 0 && selectedPlantIds.length < total"
                                         class="select-all-tag" @click="selectAllInTag">选中全部 {{ total }} 项</text>
                                 </view>
                             </uni-col>
@@ -71,8 +73,9 @@
                         :scroll-into-view="'tag-item-' + (currentTagIndex > 1 ? currentTagIndex - 1 : 0)"
                         scroll-with-animation>
                         <view class="tag-flex-box" id="tag-container">
-                            <view v-for="(item, index) in tagList" :key="item.id" :id="'tag-item-' + index" class="tag-item"
-                                :class="{ 'active': currentTagIndex === index }" @click="selectTag(index, item)">
+                            <view v-for="(item, index) in tagList" :key="item.id" :id="'tag-item-' + index"
+                                class="tag-item" :class="{ 'active': currentTagIndex === index }"
+                                @click="selectTag(index, item)">
                                 <text :id="'tag-text-' + index" class="tag-text">{{ item.name }}</text>
                             </view>
                             <view class="slider-bar" :style="sliderStyle"></view>
@@ -91,8 +94,7 @@
                                 <view v-for="item in careOptions" :key="item.type" class="action-item"
                                     :class="{ 'active': batchActionType === item.type }"
                                     @click="batchActionType = item.type">
-                                    <view class="iconfont" :class="item.icon" 
-                                        style="font-size: 18px;"></view>
+                                    <view class="iconfont" :class="item.icon" style="font-size: 18px;"></view>
                                     <text class="action-name">{{ item.name }}</text>
                                 </view>
                             </view>
@@ -110,7 +112,7 @@
                 <image src="/static/icon/c2m.svg" class="empty-icon" mode="aspectFit"></image>
                 <text class="empty-text">点击右上方添加第一颗植物吧</text>
             </view>
-            
+
             <!-- 瀑布流列表 -->
             <view v-else class="waterfall-wrapper">
                 <WaterfallBox :list="plantsList" idKey="id" cols="2">
@@ -122,8 +124,9 @@
                                     :class="{ 'show': loadedImagesMap[item.id] }" @load="onImgLoad(item)"></image>
                                 <!-- 选择框 -->
                                 <view v-if="isEditMode" class="checkbox-wrapper" @click.stop="toggleSelect(item.id)">
-                                    <uni-icons :type="selectedPlantIds.includes(item.id) ? 'checkbox-filled' : 'circle'" 
-                                        size="22" :color="selectedPlantIds.includes(item.id) ? '#6B8857' : 'rgba(255,255,255,0.8)'"></uni-icons>
+                                    <uni-icons :type="selectedPlantIds.includes(item.id) ? 'checkbox-filled' : 'circle'"
+                                        size="22"
+                                        :color="selectedPlantIds.includes(item.id) ? '#6B8857' : 'rgba(255,255,255,0.8)'"></uni-icons>
                                 </view>
                             </view>
                             <view class="plant-info">
@@ -257,7 +260,7 @@ export default {
     methods: {
         async loadFamilyData() {
             if (this.isInitializing) return;
-            
+
             try {
                 this.isInitializing = true;
                 // 🚀 使用同步获取，确保校验逻辑即时执行，防止异步间隙导致的重复触发
@@ -278,13 +281,13 @@ export default {
                     }));
 
                     const targetId = cachedFamilyId || this.familyRange[0].value;
-                    
+
                     // 只有在 ID 真正变化时（如切换家庭）才重置状态
                     if (String(this.value) !== String(targetId)) {
                         this.value = targetId;
                         this.currentFamilyIndex = this.familyRange.findIndex(item => String(item.value) === String(targetId));
                         if (this.currentFamilyIndex === -1) this.currentFamilyIndex = 0;
-                        
+
                         // ID 变化了，需要重置分页和列表
                         this.plantsList = [];
                         this.page = 1;
@@ -372,7 +375,7 @@ export default {
                 });
 
                 console.log("plants list res:", res);
-                
+
                 // 处理分页返回的数据格式
                 let rawData = [];
                 if (res?.data?.list) {
@@ -400,10 +403,10 @@ export default {
                 } else {
                     // 🚀 优化：对比新旧数据第一条的 ID。
                     // 如果 ID 没变且当前已经在第一页，说明内容没有实质更新，不替换引用以保持滚动位置
-                    const isSameFirstItem = this.plantsList.length > 0 && 
-                                          frozenData.length > 0 && 
-                                          String(this.plantsList[0].id) === String(frozenData[0].id);
-                    
+                    const isSameFirstItem = this.plantsList.length > 0 &&
+                        frozenData.length > 0 &&
+                        String(this.plantsList[0].id) === String(frozenData[0].id);
+
                     if (isSameFirstItem && this.page === 1) {
                         console.log("首屏数据未发生导致位移的变化，保持当前滚动位置");
                     } else {
@@ -441,10 +444,10 @@ export default {
                 await new Promise((resolve) => {
                     uni.setStorage({ key: "familyId", data: newFamilyId, success: resolve })
                 });
-                
+
                 // 触发家庭切换事件，通知其他组件
                 uni.$emit('familyChanged', newFamilyId);
-                
+
             } catch (error) {
                 console.error("切换家庭失败:", error);
 
@@ -513,7 +516,7 @@ export default {
                     callContainer("/api/tag/", { familyId: familyId }),
                     callContainer("/api/care/", { familyId: Number(familyId) })
                 ]);
-                
+
                 console.log("tagList:", tagList)
                 const apiTags = tagList?.data || []
                 this.tagList = [
@@ -616,7 +619,7 @@ export default {
                     tagId: currentTag ? currentTag.id : 0,
                     keyword: this.searchValue
                 });
-                
+
                 if (res?.data?.list) {
                     this.selectedPlantIds = res.data.list.map(p => p.id);
                     this.isSelectAll = true;
@@ -645,7 +648,7 @@ export default {
             try {
                 const now = new Date();
                 const logTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                
+
                 await callContainer("/api/plant/log/add", {
                     plantIds: this.selectedPlantIds,
                     actionType: this.batchActionType,
@@ -656,7 +659,7 @@ export default {
 
                 uni.showToast({ title: '操作成功', icon: 'success' });
                 this.exitEditMode();
-                
+
                 // 🚀 优化刷新逻辑：刷新当前已加载的所有数据，而不是跳回第一页
                 const currentLoadedCount = this.plantsList.length;
                 const res = await callContainer("/api/plant/list", {
@@ -666,7 +669,7 @@ export default {
                     tagId: this.tagList[this.currentTagIndex]?.id || 0,
                     keyword: this.searchValue
                 });
-                
+
                 if (res?.data?.list) {
                     this.plantsList = res.data.list.map(item => {
                         let frozenTags = null;
@@ -686,7 +689,7 @@ export default {
         },
         searchPlant(e) {
 
-        
+
         },
         selectTag(index, item) {
             if (this.currentTagIndex === index) return;
@@ -779,7 +782,7 @@ export default {
                 this.isFirstLoad = false;
                 return;
             }
-            
+
             // 🚀 核心逻辑：不再盲目刷新。
             // 只有当缓存中的家庭ID与当前不一致时（说明用户在设置或其他页面改了家庭）才刷新
             const cachedFamilyId = uni.getStorageSync('familyId');
@@ -827,7 +830,7 @@ export default {
 
         // 确定默认家庭ID：优先使用 userInfo 中的 currentFamilyId，否则使用家庭列表的第一个
         const defaultFamilyId = userInfo?.currentFamilyId || (familyList && familyList[0]?.id);
-        
+
 
         // 保存默认家庭ID到缓存
         if (defaultFamilyId) {
@@ -975,6 +978,7 @@ export default {
 
     .iconfont {
         color: #666;
+
         @media (prefers-color-scheme: dark) {
             color: rgba(245, 245, 245, 0.6);
         }
@@ -982,18 +986,22 @@ export default {
 
     &.active {
         background: var(--primary-color);
+
         .action-name {
             color: #fff;
         }
+
         .iconfont {
             color: #fff;
         }
 
         @media (prefers-color-scheme: dark) {
             background: #FAF2CB;
+
             .action-name {
                 color: #0A3323;
             }
+
             .iconfont {
                 color: #0A3323;
             }
@@ -1188,6 +1196,7 @@ export default {
         .uni-searchbar__box-search-input {
             color: #f5f5f5 !important;
         }
+
         .uni-searchbar__text-placeholder {
             color: rgba(245, 245, 245, 0.7) !important;
         }
