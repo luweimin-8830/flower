@@ -308,9 +308,29 @@ export default {
 		uni.$off('switchTab');
 	},
 	onShareAppMessage() {
+		const home = this.$refs.homeComponent;
+		let path = '/pages/index/index';
+		let title = '分享我的植物';
+
+		if (this.onKey === 'c' && home) {
+			const familyId = home.value;
+			const tag = home.tagList[home.currentTagIndex];
+			const tagId = tag ? tag.id : 0;
+			const tagName = tag ? tag.name : '';
+
+			path = `/pages/sharePlantList/sharePlantList?familyId=${familyId}&tagId=${tagId}&tagName=${tagName}`;
+			
+			const familyName = home.familyRange[home.currentFamilyIndex]?.text || '';
+			if (tagName === '全部' || !tagName) {
+				title = familyName ? `分享我的${familyName}` : '分享我的小花园';
+			} else {
+				title = `分享我的【${tagName}】植物`;
+			}
+		}
+
 		return {
-			title: '分享我的植物',
-			path: '/pages/index/index',
+			title: title,
+			path: path,
 			imageUrl: '/static/share.jpg'
 		}
 	}

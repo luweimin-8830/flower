@@ -107,6 +107,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": false
 			}
+		},
+		{
+			"path": "pages/sharePlantList/sharePlantList",
+			"style": {
+				"navigationBarTitleText": "分享列表",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": false
+			}
 		}
 	],
 	"globalStyle": {

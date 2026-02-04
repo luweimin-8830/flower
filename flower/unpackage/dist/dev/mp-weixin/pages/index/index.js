@@ -209,9 +209,26 @@ const _sfc_main = {
     common_vendor.index.$off("switchTab");
   },
   onShareAppMessage() {
+    var _a;
+    const home2 = this.$refs.homeComponent;
+    let path = "/pages/index/index";
+    let title = "分享我的植物";
+    if (this.onKey === "c" && home2) {
+      const familyId = home2.value;
+      const tag = home2.tagList[home2.currentTagIndex];
+      const tagId = tag ? tag.id : 0;
+      const tagName = tag ? tag.name : "";
+      path = `/pages/sharePlantList/sharePlantList?familyId=${familyId}&tagId=${tagId}&tagName=${tagName}`;
+      const familyName = ((_a = home2.familyRange[home2.currentFamilyIndex]) == null ? void 0 : _a.text) || "";
+      if (tagName === "全部" || !tagName) {
+        title = familyName ? `分享我的${familyName}` : "分享我的小花园";
+      } else {
+        title = `分享我的【${tagName}】植物`;
+      }
+    }
     return {
-      title: "分享我的植物",
-      path: "/pages/index/index",
+      title,
+      path,
       imageUrl: "/static/share.jpg"
     };
   }

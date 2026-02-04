@@ -14,6 +14,7 @@ if (!Math) {
   "./pages/logEdit/logEdit.js";
   "./pages/shareDetail/shareDetail.js";
   "./pages/displayRoom/displayRoom.js";
+  "./pages/sharePlantList/sharePlantList.js";
 }
 const _sfc_main = {
   globalData: {

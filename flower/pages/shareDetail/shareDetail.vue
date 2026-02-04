@@ -1,6 +1,6 @@
 <template>
 	<view class="container">
-		<navBar :isHome="true" />
+		<navBar :isHome="!isFromList" />
 
 		<!-- 占位符 - 减小高度让卡片上移 -->
 		<view :style="{ height: topBarHeight + 10 + 'px' }"></view>
@@ -114,13 +114,18 @@ export default {
 			},
 			careActions: [],
 			logList: [],
-			totalLogCount: 0
+			totalLogCount: 0,
+			isFromList: false
 		};
 	},
 	async onLoad(options) {
 		const app = getApp()
 		const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
 		this.topBarHeight = app.globalData.topBarHeight || menuButtonInfo.top;
+
+		if (options && options.from === 'shareList') {
+			this.isFromList = true;
+		}
 
 		if (options && options.id) {
 			this.plantId = options.id

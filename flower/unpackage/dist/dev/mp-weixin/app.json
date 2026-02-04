@@ -11,7 +11,8 @@
     "pages/careEdit/careEdit",
     "pages/logEdit/logEdit",
     "pages/shareDetail/shareDetail",
-    "pages/displayRoom/displayRoom"
+    "pages/displayRoom/displayRoom",
+    "pages/sharePlantList/sharePlantList"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",
