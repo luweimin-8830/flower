@@ -41,33 +41,23 @@ const isRendering = ref(false);
 const instance = getCurrentInstance();
 
 watch(() => props.list, (newVal, oldVal) => {
-    console.log("WaterfallBox - watch triggered");
-    console.log("WaterfallBox - newVal length:", newVal?.length, "oldVal length:", oldVal?.length);
-
-    // 检查是否需要重新渲染
-    let needRebuild = false;
-
-    // 1. 如果是新数据或数量差异较大，需要重新构建
-    if (!oldVal || newVal.length !== oldVal.length) {
-        needRebuild = true;
-        console.log("WaterfallBox - 需要重新构建（长度不同）");
-    }
-    // 2. 如果数量相同，检查每个元素的 ID 是否相同
-    else {
-        for (let i = 0; i < newVal.length; i++) {
-            if (newVal[i][props.idKey] !== oldVal[i][props.idKey]) {
-                needRebuild = true;
-                console.log(`WaterfallBox - 需要重新构建（ID不同）: ${newVal[i][props.idKey]} !== ${oldVal[i][props.idKey]}`);
-                break;
-            }
-        }
-        if (!needRebuild) {
-            console.log("WaterfallBox - 数据完全相同，不需要重新构建");
-        }
+    if (!newVal || newVal.length === 0) {
+        columns.value = Array.from({ length: props.cols }, () => []);
+        tempQueue.value = [];
+        return;
     }
 
-    if (needRebuild) {
-        console.log("WaterfallBox - 开始重新构建列");
+    // 🚀 优化：判断是“追加”还是“重置”
+    // 如果新列表的前半部分和旧列表一致，说明是加载更多
+    const isAppend = oldVal && oldVal.length > 0 && newVal.length > oldVal.length && 
+                   newVal.slice(0, oldVal.length).every((item, i) => item[props.idKey] === oldVal[i][props.idKey]);
+
+    if (isAppend) {
+        console.log("WaterfallBox - 检测到追加数据，增量渲染");
+        const newItems = newVal.slice(oldVal.length);
+        tempQueue.value.push(...newItems);
+    } else {
+        console.log("WaterfallBox - 检测到重置数据，全量重绘");
         columns.value = Array.from({ length: props.cols }, () => []);
         tempQueue.value = [...newVal];
     }
@@ -77,7 +67,7 @@ watch(() => props.list, (newVal, oldVal) => {
             renderNext();
         });
     }
-}, { immediate: true });
+}, { immediate: true, deep: false });
 
 const renderNext = async () => {
     if (tempQueue.value.length === 0) {
@@ -86,28 +76,35 @@ const renderNext = async () => {
     }
 
     isRendering.value = true;
+    
+    // 🚀 优化：一次处理 1 个，但大幅减小延迟
     const item = tempQueue.value.shift();
 
     // 寻找高度最小的列
     let minHeight = Infinity;
     let minColIndex = 0;
 
-    // 遍历所有列获取高度
-    for (let i = 0; i < props.cols; i++) {
-        const height = await getContainerHeight(`#waterfall-column-${i}`);
-        if (height < minHeight) {
-            minHeight = height;
-            minColIndex = i;
+    try {
+        // 遍历所有列获取高度
+        for (let i = 0; i < props.cols; i++) {
+            const height = await getContainerHeight(`#waterfall-column-${i}`);
+            if (height < minHeight) {
+                minHeight = height;
+                minColIndex = i;
+            }
         }
-    }
 
-    // 将数据加入最短的那一列
-    columns.value[minColIndex].push(item);
+        // 将数据加入最短的那一列
+        columns.value[minColIndex].push(item);
 
-    // 等待渲染
-    setTimeout(() => {
+        // 🚀 使用 nextTick 代替 setTimeout，显著提升渲染速度
+        // nextTick 保证 DOM 已更新，此时下一次 getContainerHeight 能拿到正确高度
+        await nextTick();
         renderNext();
-    }, props.gap);
+    } catch (e) {
+        console.error("WaterfallBox render error:", e);
+        isRendering.value = false;
+    }
 };
 
 const getContainerHeight = (selector) => {

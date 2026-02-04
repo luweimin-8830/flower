@@ -275,7 +275,8 @@ export default {
 						"tags": this.plant.tags
 					})
 					console.log("call container plant update", plant)
-					uni.$emit('refreshHomeList', { needRefresh: true });
+					uni.$emit('refreshHomeList');
+					uni.$emit('refreshPlantDetail');
 				} catch (error) {
 					console.error(error)
 				} finally {
@@ -310,7 +311,7 @@ export default {
 						});
 					}
 					
-					uni.$emit('refreshHomeList', { needRefresh: true });
+					uni.$emit('refreshHomeList');
 				} catch (error) {
 					console.error(error)
 				} finally {

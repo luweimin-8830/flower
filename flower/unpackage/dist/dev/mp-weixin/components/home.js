@@ -60,7 +60,10 @@ const _sfc_main = {
       pageSize: 20,
       total: 0,
       isLoading: false,
-      isNoMore: false
+      isNoMore: false,
+      searchTimer: null,
+      // 🚀 新增：防止重复初始化的锁
+      isInitializing: false
     };
   },
   computed: {
@@ -77,7 +80,11 @@ const _sfc_main = {
    */
   watch: {
     searchValue() {
-      this.getPlantsList();
+      if (this.searchTimer)
+        clearTimeout(this.searchTimer);
+      this.searchTimer = setTimeout(() => {
+        this.getPlantsList();
+      }, 500);
     },
     allPlantsList: {
       handler(newVal, oldVal) {
@@ -102,29 +109,32 @@ const _sfc_main = {
   //expose: [''],
   methods: {
     async loadFamilyData() {
+      if (this.isInitializing)
+        return;
       try {
-        const [familyListResult, familyIdResult] = await Promise.all([
-          new Promise((resolve, reject) => {
-            common_vendor.index.getStorage({ key: "family", success: resolve, fail: reject });
-          }),
-          new Promise((resolve, reject) => {
-            common_vendor.index.getStorage({ key: "familyId", success: resolve, fail: reject });
-          })
-        ]);
-        const familyList = (familyListResult == null ? void 0 : familyListResult.data) || [];
-        const cachedFamilyId = familyIdResult == null ? void 0 : familyIdResult.data;
-        common_vendor.index.__f__("log", "at components/home.vue:260", "loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
+        this.isInitializing = true;
+        const cachedFamilyId = common_vendor.index.getStorageSync("familyId");
+        const familyList = common_vendor.index.getStorageSync("family") || [];
+        if (this.value && cachedFamilyId && String(this.value) === String(cachedFamilyId) && this.plantsList.length > 0) {
+          this.isInitializing = false;
+          return;
+        }
         if (familyList && Array.isArray(familyList) && familyList.length > 0) {
           this.familyRange = familyList.map((item) => ({
             text: item.name,
             value: item.id,
             disable: false
           }));
-          this.value = cachedFamilyId || this.familyRange[0].value;
-          this.currentFamilyIndex = this.familyRange.findIndex((item) => item.value === this.value);
-          if (this.currentFamilyIndex === -1) {
-            this.currentFamilyIndex = 0;
-            this.value = this.familyRange[0].value;
+          const targetId = cachedFamilyId || this.familyRange[0].value;
+          if (String(this.value) !== String(targetId)) {
+            this.value = targetId;
+            this.currentFamilyIndex = this.familyRange.findIndex((item) => String(item.value) === String(targetId));
+            if (this.currentFamilyIndex === -1)
+              this.currentFamilyIndex = 0;
+            this.plantsList = [];
+            this.page = 1;
+            this.isNoMore = false;
+            this.currentTagIndex = 0;
           }
         } else {
           this.familyRange = [];
@@ -135,7 +145,9 @@ const _sfc_main = {
         await this.getTagList();
         await this.getPlantsList();
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:292", "加载家庭数据失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:305", "加载家庭数据失败:", error);
+      } finally {
+        this.isInitializing = false;
       }
     },
     async refreshFamilyList() {
@@ -165,7 +177,7 @@ const _sfc_main = {
           this.familyRange = [];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:334", "刷新家庭列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:349", "刷新家庭列表失败:", error);
       }
     },
     async getPlantsList(isLoadMore = false) {
@@ -175,7 +187,6 @@ const _sfc_main = {
       if (!isLoadMore) {
         this.page = 1;
         this.isNoMore = false;
-        this.plantsList = [];
       }
       this.isLoading = true;
       const familyId = this.value;
@@ -188,7 +199,7 @@ const _sfc_main = {
           tagId: currentTag ? currentTag.id : 0,
           keyword: this.searchValue
         });
-        common_vendor.index.__f__("log", "at components/home.vue:359", "plants list res:", res);
+        common_vendor.index.__f__("log", "at components/home.vue:374", "plants list res:", res);
         let rawData = [];
         if ((_a = res == null ? void 0 : res.data) == null ? void 0 : _a.list) {
           rawData = res.data.list;
@@ -209,11 +220,16 @@ const _sfc_main = {
         if (isLoadMore) {
           this.plantsList = [...this.plantsList, ...frozenData];
         } else {
-          this.plantsList = frozenData;
+          const isSameFirstItem = this.plantsList.length > 0 && frozenData.length > 0 && String(this.plantsList[0].id) === String(frozenData[0].id);
+          if (isSameFirstItem && this.page === 1) {
+            common_vendor.index.__f__("log", "at components/home.vue:408", "首屏数据未发生导致位移的变化，保持当前滚动位置");
+          } else {
+            this.plantsList = frozenData;
+          }
         }
         this.isNoMore = this.plantsList.length >= this.total;
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:391", "获取植物列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:417", "获取植物列表失败:", error);
       } finally {
         this.isLoading = false;
       }
@@ -232,13 +248,13 @@ const _sfc_main = {
         await utils_request.callContainer("/api/family/switch", {
           familyId: newFamilyId
         });
-        common_vendor.index.__f__("log", "at components/home.vue:412", "家庭切换成功");
+        common_vendor.index.__f__("log", "at components/home.vue:438", "家庭切换成功");
         await new Promise((resolve) => {
           common_vendor.index.setStorage({ key: "familyId", data: newFamilyId, success: resolve });
         });
         common_vendor.index.$emit("familyChanged", newFamilyId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:423", "切换家庭失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:449", "切换家庭失败:", error);
         const errorMsg = (error == null ? void 0 : error.msg) || (error == null ? void 0 : error.message) || "切换家庭失败，请稍后重试";
         common_vendor.index.showToast({
           title: errorMsg,
@@ -266,7 +282,7 @@ const _sfc_main = {
       common_vendor.wx$1.vibrateShort({ type: "light" });
     },
     toggleFamilySelect() {
-      common_vendor.index.__f__("log", "at components/home.vue:470", "触发家庭选择器");
+      common_vendor.index.__f__("log", "at components/home.vue:496", "触发家庭选择器");
     },
     onTouchStart() {
       this.isSelecting = true;
@@ -283,7 +299,7 @@ const _sfc_main = {
           utils_request.callContainer("/api/tag/", { familyId }),
           utils_request.callContainer("/api/care/", { familyId: Number(familyId) })
         ]);
-        common_vendor.index.__f__("log", "at components/home.vue:491", "tagList:", tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:517", "tagList:", tagList);
         const apiTags = (tagList == null ? void 0 : tagList.data) || [];
         this.tagList = [
           { name: "全部", id: 0 },
@@ -298,14 +314,14 @@ const _sfc_main = {
         if (this.careOptions.length > 0) {
           this.batchActionType = this.careOptions[0].type;
         }
-        common_vendor.index.__f__("log", "at components/home.vue:510", "tags:", this.tagList);
+        common_vendor.index.__f__("log", "at components/home.vue:536", "tags:", this.tagList);
         this.$nextTick(() => {
           setTimeout(() => {
             this.updateSliderPosition(0);
           }, 200);
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:518", "获取标签列表失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:544", "获取标签列表失败:", error);
       }
     },
     enterEditMode(item) {
@@ -329,7 +345,7 @@ const _sfc_main = {
               common_vendor.index.showToast({ title: "已删除", icon: "success" });
               await this.getPlantsList();
             } catch (e) {
-              common_vendor.index.__f__("error", "at components/home.vue:541", "删除失败:", e);
+              common_vendor.index.__f__("error", "at components/home.vue:567", "删除失败:", e);
               common_vendor.index.showToast({ title: "删除失败", icon: "none" });
             } finally {
               common_vendor.index.hideLoading();
@@ -363,17 +379,42 @@ const _sfc_main = {
     toggleSelectAll() {
       if (this.isSelectAll) {
         this.selectedPlantIds = [];
+        this.isSelectAll = false;
       } else {
         this.selectedPlantIds = this.plantsList.map((p) => p.id);
+        this.isSelectAll = true;
       }
-      this.isSelectAll = !this.isSelectAll;
       common_vendor.wx$1.vibrateShort({ type: "light" });
+    },
+    async selectAllInTag() {
+      var _a;
+      common_vendor.index.showLoading({ title: "正在获取全部 ID..." });
+      try {
+        const currentTag = this.tagList[this.currentTagIndex];
+        const res = await utils_request.callContainer("/api/plant/list", {
+          familyId: this.value,
+          page: 1,
+          pageSize: this.total,
+          // 一次性获取所有 ID
+          tagId: currentTag ? currentTag.id : 0,
+          keyword: this.searchValue
+        });
+        if ((_a = res == null ? void 0 : res.data) == null ? void 0 : _a.list) {
+          this.selectedPlantIds = res.data.list.map((p) => p.id);
+          this.isSelectAll = true;
+          common_vendor.index.showToast({ title: `已选中全部 ${this.selectedPlantIds.length} 项`, icon: "none" });
+        }
+      } catch (e) {
+        common_vendor.index.__f__("error", "at components/home.vue:626", "获取全部 ID 失败:", e);
+      } finally {
+        common_vendor.index.hideLoading();
+      }
     },
     checkSelectAll() {
       this.isSelectAll = this.plantsList.length > 0 && this.selectedPlantIds.length === this.plantsList.length;
     },
     async handleBatchDone() {
-      var _a;
+      var _a, _b, _c;
       if (this.selectedPlantIds.length === 0) {
         common_vendor.index.showToast({ title: "请先选择植物", icon: "none" });
         return;
@@ -395,9 +436,26 @@ const _sfc_main = {
         });
         common_vendor.index.showToast({ title: "操作成功", icon: "success" });
         this.exitEditMode();
-        await this.getPlantsList();
+        const currentLoadedCount = this.plantsList.length;
+        const res = await utils_request.callContainer("/api/plant/list", {
+          familyId: this.value,
+          page: 1,
+          pageSize: Math.max(currentLoadedCount, 20),
+          tagId: ((_b = this.tagList[this.currentTagIndex]) == null ? void 0 : _b.id) || 0,
+          keyword: this.searchValue
+        });
+        if ((_c = res == null ? void 0 : res.data) == null ? void 0 : _c.list) {
+          this.plantsList = res.data.list.map((item) => {
+            let frozenTags = null;
+            if (item.tags && Array.isArray(item.tags)) {
+              frozenTags = item.tags.map((tag) => Object.freeze({ ...tag }));
+              Object.freeze(frozenTags);
+            }
+            return Object.freeze({ ...item, tags: frozenTags });
+          });
+        }
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home.vue:612", "批量操作失败:", error);
+        common_vendor.index.__f__("error", "at components/home.vue:681", "批量操作失败:", error);
         common_vendor.index.showToast({ title: "操作失败", icon: "none" });
       } finally {
         common_vendor.index.hideLoading();
@@ -480,14 +538,24 @@ const _sfc_main = {
         this.isFirstLoad = false;
         return;
       }
-      this.loadFamilyData();
-      setTimeout(() => {
-        this.ensureImagesVisible();
-      }, 500);
+      const cachedFamilyId = common_vendor.index.getStorageSync("familyId");
+      if (this.value && cachedFamilyId && String(this.value) !== String(cachedFamilyId)) {
+        common_vendor.index.__f__("log", "at components/home.vue:787", "检测到家庭 ID 变更，执行强制同步");
+        this.loadFamilyData();
+      }
     }
+  },
+  beforeDestroy() {
+    common_vendor.index.$off("refreshHomeList");
   },
   async created() {
     var _a;
+    common_vendor.index.$on("refreshHomeList", () => {
+      common_vendor.index.__f__("log", "at components/home.vue:799", "收到全局刷新指令，正在重置列表...");
+      this.page = 1;
+      this.isNoMore = false;
+      this.getPlantsList(false);
+    });
     const menuButtonInfo = common_vendor.wx$1.getMenuButtonBoundingClientRect();
     this.menuButtonInfo = menuButtonInfo;
     const systemInfo = common_vendor.index.getWindowInfo();
@@ -496,7 +564,7 @@ const _sfc_main = {
     this.topBarHeight = app.globalData.topBarHeight;
     this.windowWidth = app.globalData.windowWidth;
     const user = await utils_request.callContainer("/api/login");
-    common_vendor.index.__f__("log", "at components/home.vue:734", "callContainer login:", user);
+    common_vendor.index.__f__("log", "at components/home.vue:813", "callContainer login:", user);
     const userInfo = user.data.user;
     const familyList = user.data.family;
     await new Promise((resolve) => {
@@ -575,23 +643,31 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       color: "#333"
     }),
     w: common_vendor.o((...args) => $options.goAddPage && $options.goAddPage(...args))
-  } : {
+  } : common_vendor.e({
     x: common_vendor.o((...args) => $options.exitEditMode && $options.exitEditMode(...args)),
     y: common_vendor.p({
       span: 6
     }),
-    z: common_vendor.o((...args) => $options.handleBatchDone && $options.handleBatchDone(...args)),
-    A: common_vendor.p({
-      span: 6,
-      push: 12
+    z: common_vendor.t($data.selectedPlantIds.length),
+    A: $data.selectedPlantIds.length > 0 && $data.selectedPlantIds.length < $data.total
+  }, $data.selectedPlantIds.length > 0 && $data.selectedPlantIds.length < $data.total ? {
+    B: common_vendor.t($data.total),
+    C: common_vendor.o((...args) => $options.selectAllInTag && $options.selectAllInTag(...args))
+  } : {}, {
+    D: common_vendor.p({
+      span: 12
     }),
-    B: common_vendor.p({
+    E: common_vendor.o((...args) => $options.handleBatchDone && $options.handleBatchDone(...args)),
+    F: common_vendor.p({
+      span: 6
+    }),
+    G: common_vendor.p({
       gutter: 20
     })
-  }, {
-    C: !$data.isEditMode
+  }), {
+    H: !$data.isEditMode
   }, !$data.isEditMode ? {
-    D: common_vendor.f($data.tagList, (item, index, i0) => {
+    I: common_vendor.f($data.tagList, (item, index, i0) => {
       return {
         a: common_vendor.t(item.name),
         b: "tag-text-" + index,
@@ -601,16 +677,16 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         f: common_vendor.o(($event) => $options.selectTag(index, item), item.id)
       };
     }),
-    E: common_vendor.s($options.sliderStyle),
-    F: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0)
+    J: common_vendor.s($options.sliderStyle),
+    K: "tag-item-" + ($data.currentTagIndex > 1 ? $data.currentTagIndex - 1 : 0)
   } : {
-    G: common_vendor.p({
+    L: common_vendor.p({
       type: $data.isSelectAll ? "checkbox-filled" : "circle",
       size: "20",
       color: "#6B8857"
     }),
-    H: common_vendor.o((...args) => $options.toggleSelectAll && $options.toggleSelectAll(...args)),
-    I: common_vendor.f($data.careOptions, (item, k0, i0) => {
+    M: common_vendor.o((...args) => $options.toggleSelectAll && $options.toggleSelectAll(...args)),
+    N: common_vendor.f($data.careOptions, (item, k0, i0) => {
       return {
         a: common_vendor.n(item.icon),
         b: common_vendor.t(item.name),
@@ -620,11 +696,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     })
   }, {
-    J: $data.plantsList.length === 0
+    O: $data.plantsList.length === 0
   }, $data.plantsList.length === 0 ? {
-    K: common_assets._imports_0
+    P: common_assets._imports_0
   } : {
-    L: common_vendor.w(({
+    Q: common_vendor.w(({
       item
     }, s0, i0) => {
       return common_vendor.e({
@@ -632,7 +708,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         b: $data.loadedImagesMap[item.id] ? 1 : "",
         c: common_vendor.o(($event) => $options.onImgLoad(item))
       }, $data.isEditMode ? {
-        d: "045d88fd-9-" + i0 + ",045d88fd-8",
+        d: "045d88fd-10-" + i0 + ",045d88fd-9",
         e: common_vendor.p({
           type: $data.selectedPlantIds.includes(item.id) ? "checkbox-filled" : "circle",
           size: "22",
@@ -644,7 +720,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         h: common_vendor.t(item.name),
         i: item.tags
       }, item.tags ? {} : {}, $data.isEditMode ? {
-        j: "045d88fd-10-" + i0 + ",045d88fd-8",
+        j: "045d88fd-11-" + i0 + ",045d88fd-9",
         k: common_vendor.p({
           type: "trash-filled",
           size: "14",
@@ -659,18 +735,18 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     }, {
       name: "item",
-      path: "L",
-      vueId: "045d88fd-8"
+      path: "Q",
+      vueId: "045d88fd-9"
     }),
-    M: $data.isEditMode,
-    N: $data.isEditMode,
-    O: common_vendor.p({
+    R: $data.isEditMode,
+    S: $data.isEditMode,
+    T: common_vendor.p({
       list: $data.plantsList,
       idKey: "id",
       cols: "2"
     })
   }, {
-    P: common_vendor.o((...args) => $options.onScrollToLower && $options.onScrollToLower(...args))
+    U: common_vendor.o((...args) => $options.onScrollToLower && $options.onScrollToLower(...args))
   });
 }
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-045d88fd"]]);

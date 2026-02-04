@@ -8,38 +8,28 @@
 			<!-- Tabbar页面 -->
 			<view class="flex1 custom-tabbar-page" v-if="list['a'].is"
 				:style="{ display: onKey === 'a' ? '' : 'none' }">
-				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
-					<!-- 页面a -->
-					<photoAlbum />
-				</scroll-view>
+				<!-- 页面a -->
+				<photoAlbum />
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['b'].is"
 				:style="{ display: onKey === 'b' ? '' : 'none' }">
-				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
-					<!-- 页面b -->
-					<plantList />
-				</scroll-view>
+				<!-- 页面b -->
+				<plantList />
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['c'].is"
 				:style="{ display: onKey === 'c' ? '' : 'none' }">
-				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
-					<!-- 页面c -->
-					<home ref="homeComponent" />
-				</scroll-view>
+				<!-- 页面c -->
+				<home ref="homeComponent" />
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['d'].is"
 				:style="{ display: onKey === 'd' ? '' : 'none' }">
-				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
-					<!-- 页面d -->
-					<logCalendar ref="calendarComponent" />
-				</scroll-view>
+				<!-- 页面d -->
+				<logCalendar ref="calendarComponent" />
 			</view>
 			<view class="flex1 custom-tabbar-page" v-if="list['e'].is"
 				:style="{ display: onKey === 'e' ? '' : 'none' }">
-				<scroll-view class="wh_100" scroll-y enable-back-to-top @scrolltolower="tabbarPageScrollLower">
-					<!-- 页面e -->
-					<my />
-				</scroll-view>
+				<!-- 页面e -->
+				<my />
 			</view>
 
 			<view class="pan-tabbar">

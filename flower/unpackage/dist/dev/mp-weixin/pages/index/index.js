@@ -81,7 +81,7 @@ const _sfc_main = {
     tabbarPageScrollLower() {
     },
     init(e) {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:175", "Tabbar init elements:", e);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:165", "Tabbar init elements:", e);
       if (!e || e.length === 0)
         return;
       const keys = Object.keys(this.list);
@@ -97,7 +97,7 @@ const _sfc_main = {
       if (item && item.style) {
         this.onTabbar(item, this.onKey);
       } else {
-        common_vendor.index.__f__("warn", "at pages/index/index.vue:208", "初始化匹配失败，尝试使用默认值");
+        common_vendor.index.__f__("warn", "at pages/index/index.vue:198", "初始化匹配失败，尝试使用默认值");
         const defaultWidth = windowWidth / 5;
         this.ballStyleLeft = defaultWidth * 2 + defaultWidth / 2 - 22;
         this.liquidStyleLeft = defaultWidth * 2 + defaultWidth / 2 - windowWidth / 2;
@@ -106,7 +106,7 @@ const _sfc_main = {
     onTabbar(item, key) {
       this.throttle(() => {
         if (!item || !item.style) {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:218", "onTabbar error: item or item.style is undefined");
+          common_vendor.index.__f__("error", "at pages/index/index.vue:208", "onTabbar error: item or item.style is undefined");
           return;
         }
         this.switchTabbarPage(key);
@@ -230,36 +230,31 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     a: common_vendor.sr("loading", "24547230-0"),
     b: $data.list["a"].is
   }, $data.list["a"].is ? {
-    c: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    d: $data.onKey === "a" ? "" : "none"
+    c: $data.onKey === "a" ? "" : "none"
   } : {}, {
-    e: $data.list["b"].is
+    d: $data.list["b"].is
   }, $data.list["b"].is ? {
-    f: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    g: $data.onKey === "b" ? "" : "none"
+    e: $data.onKey === "b" ? "" : "none"
   } : {}, {
-    h: $data.list["c"].is
+    f: $data.list["c"].is
   }, $data.list["c"].is ? {
-    i: common_vendor.sr("homeComponent", "24547230-3"),
-    j: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    k: $data.onKey === "c" ? "" : "none"
+    g: common_vendor.sr("homeComponent", "24547230-3"),
+    h: $data.onKey === "c" ? "" : "none"
   } : {}, {
-    l: $data.list["d"].is
+    i: $data.list["d"].is
   }, $data.list["d"].is ? {
-    m: common_vendor.sr("calendarComponent", "24547230-4"),
-    n: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    o: $data.onKey === "d" ? "" : "none"
+    j: common_vendor.sr("calendarComponent", "24547230-4"),
+    k: $data.onKey === "d" ? "" : "none"
   } : {}, {
-    p: $data.list["e"].is
+    l: $data.list["e"].is
   }, $data.list["e"].is ? {
-    q: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
-    r: $data.onKey === "e" ? "" : "none"
+    m: $data.onKey === "e" ? "" : "none"
   } : {}, {
-    s: $data.animation01 ? 1 : "",
-    t: common_vendor.s($options.liquidStyle),
-    v: $data.animation02 ? 1 : "",
-    w: common_vendor.s($options.ballStyle),
-    x: common_vendor.f($data.list, (item, key, i0) => {
+    n: $data.animation01 ? 1 : "",
+    o: common_vendor.s($options.liquidStyle),
+    p: $data.animation02 ? 1 : "",
+    q: common_vendor.s($options.ballStyle),
+    r: common_vendor.f($data.list, (item, key, i0) => {
       return {
         a: item.iconOff,
         b: item.iconOn,

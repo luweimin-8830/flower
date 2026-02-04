@@ -275,8 +275,7 @@ export default {
 			this.getLogs();
 		}
 
-		uni.$off('refreshHomeList');
-        uni.$on('refreshHomeList', async (data) => {
+		uni.$on('refreshPlantDetail', async (data) => {
             await Promise.all([
 				this.getPlant(),
 				this.getCareActions()
@@ -292,7 +291,7 @@ export default {
 		// #endif
 	},
 	onUnload() {
-		uni.$off('refreshHomeList');
+		uni.$off('refreshPlantDetail');
 	},
 	methods: {
 		async getCareActions() {

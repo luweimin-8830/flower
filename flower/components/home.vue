@@ -47,7 +47,14 @@
                                     <text>取消</text>
                                 </view>
                             </uni-col>
-                            <uni-col :span="6" :push="12">
+                            <uni-col :span="12">
+                                <view class="selection-info">
+                                    <text class="count">已选 {{ selectedPlantIds.length }} 项</text>
+                                    <text v-if="selectedPlantIds.length > 0 && selectedPlantIds.length < total" 
+                                        class="select-all-tag" @click="selectAllInTag">选中全部 {{ total }} 项</text>
+                                </view>
+                            </uni-col>
+                            <uni-col :span="6">
                                 <view class="save-btn-rect" @click="handleBatchDone">
                                     <text>完成</text>
                                 </view>
@@ -201,6 +208,9 @@ export default {
             total: 0,
             isLoading: false,
             isNoMore: false,
+            searchTimer: null,
+            // 🚀 新增：防止重复初始化的锁
+            isInitializing: false,
         }
     },
     computed: {
@@ -217,8 +227,11 @@ export default {
      */
     watch: {
         searchValue() {
-            // 搜索内容变化时重置分页并重新请求
-            this.getPlantsList();
+            // 搜索内容变化时增加防抖处理
+            if (this.searchTimer) clearTimeout(this.searchTimer);
+            this.searchTimer = setTimeout(() => {
+                this.getPlantsList();
+            }, 500);
         },
         allPlantsList: {
             handler(newVal, oldVal) {
@@ -243,21 +256,19 @@ export default {
     //expose: [''],
     methods: {
         async loadFamilyData() {
+            if (this.isInitializing) return;
+            
             try {
-                // 同时获取家庭列表和当前选中的家庭ID
-                const [familyListResult, familyIdResult] = await Promise.all([
-                    new Promise((resolve, reject) => {
-                        uni.getStorage({ key: 'family', success: resolve, fail: reject })
-                    }),
-                    new Promise((resolve, reject) => {
-                        uni.getStorage({ key: 'familyId', success: resolve, fail: reject })
-                    })
-                ]);
+                this.isInitializing = true;
+                // 🚀 使用同步获取，确保校验逻辑即时执行，防止异步间隙导致的重复触发
+                const cachedFamilyId = uni.getStorageSync('familyId');
+                const familyList = uni.getStorageSync('family') || [];
 
-                const familyList = familyListResult?.data || [];
-                const cachedFamilyId = familyIdResult?.data;
-
-                console.log("loadFamilyData - 家庭列表:", familyList, "缓存的家庭ID:", cachedFamilyId);
+                // 🚀 核心拦截：如果当前已有数据且家庭 ID 没变，绝对不执行后续加载
+                if (this.value && cachedFamilyId && String(this.value) === String(cachedFamilyId) && this.plantsList.length > 0) {
+                    this.isInitializing = false;
+                    return;
+                }
 
                 if (familyList && Array.isArray(familyList) && familyList.length > 0) {
                     this.familyRange = familyList.map(item => ({
@@ -266,30 +277,34 @@ export default {
                         disable: false
                     }));
 
-                    // 使用缓存的家庭ID，如果缓存不存在则使用第一个家庭
-                    this.value = cachedFamilyId || this.familyRange[0].value;
-
-                    // 设置当前选中的家庭索引
-                    this.currentFamilyIndex = this.familyRange.findIndex(item => item.value === this.value);
-                    if (this.currentFamilyIndex === -1) {
-                        this.currentFamilyIndex = 0;
-                        this.value = this.familyRange[0].value;
+                    const targetId = cachedFamilyId || this.familyRange[0].value;
+                    
+                    // 只有在 ID 真正变化时（如切换家庭）才重置状态
+                    if (String(this.value) !== String(targetId)) {
+                        this.value = targetId;
+                        this.currentFamilyIndex = this.familyRange.findIndex(item => String(item.value) === String(targetId));
+                        if (this.currentFamilyIndex === -1) this.currentFamilyIndex = 0;
+                        
+                        // ID 变化了，需要重置分页和列表
+                        this.plantsList = [];
+                        this.page = 1;
+                        this.isNoMore = false;
+                        this.currentTagIndex = 0;
                     }
-
                 } else {
                     this.familyRange = [];
                     this.currentFamilyIndex = 0;
                     this.value = null;
                 }
 
-                // 确保 this.value 设置完成后再加载数据
+                // 只有通过了上方拦截（即 ID 变化或初始加载）才会执行到这里
                 await this.$nextTick();
-
-                // 使用正确的 familyId 加载数据
                 await this.getTagList();
                 await this.getPlantsList();
             } catch (error) {
                 console.error("加载家庭数据失败:", error);
+            } finally {
+                this.isInitializing = false;
             }
         },
         async refreshFamilyList() {
@@ -340,7 +355,7 @@ export default {
             if (!isLoadMore) {
                 this.page = 1;
                 this.isNoMore = false;
-                this.plantsList = [];
+                // 不再立即清空列表，防止页面跳动
             }
 
             this.isLoading = true;
@@ -383,7 +398,18 @@ export default {
                 if (isLoadMore) {
                     this.plantsList = [...this.plantsList, ...frozenData];
                 } else {
-                    this.plantsList = frozenData;
+                    // 🚀 优化：对比新旧数据第一条的 ID。
+                    // 如果 ID 没变且当前已经在第一页，说明内容没有实质更新，不替换引用以保持滚动位置
+                    const isSameFirstItem = this.plantsList.length > 0 && 
+                                          frozenData.length > 0 && 
+                                          String(this.plantsList[0].id) === String(frozenData[0].id);
+                    
+                    if (isSameFirstItem && this.page === 1) {
+                        console.log("首屏数据未发生导致位移的变化，保持当前滚动位置");
+                    } else {
+                        // 只有数据变了（如新增或删除），才替换列表
+                        this.plantsList = frozenData;
+                    }
                 }
 
                 this.isNoMore = this.plantsList.length >= this.total;
@@ -572,11 +598,35 @@ export default {
         toggleSelectAll() {
             if (this.isSelectAll) {
                 this.selectedPlantIds = [];
+                this.isSelectAll = false;
             } else {
                 this.selectedPlantIds = this.plantsList.map(p => p.id);
+                this.isSelectAll = true;
             }
-            this.isSelectAll = !this.isSelectAll;
             wx.vibrateShort({ type: "light" });
+        },
+        async selectAllInTag() {
+            uni.showLoading({ title: '正在获取全部 ID...' });
+            try {
+                const currentTag = this.tagList[this.currentTagIndex];
+                const res = await callContainer("/api/plant/list", {
+                    familyId: this.value,
+                    page: 1,
+                    pageSize: this.total, // 一次性获取所有 ID
+                    tagId: currentTag ? currentTag.id : 0,
+                    keyword: this.searchValue
+                });
+                
+                if (res?.data?.list) {
+                    this.selectedPlantIds = res.data.list.map(p => p.id);
+                    this.isSelectAll = true;
+                    uni.showToast({ title: `已选中全部 ${this.selectedPlantIds.length} 项`, icon: 'none' });
+                }
+            } catch (e) {
+                console.error("获取全部 ID 失败:", e);
+            } finally {
+                uni.hideLoading();
+            }
         },
         checkSelectAll() {
             this.isSelectAll = this.plantsList.length > 0 && this.selectedPlantIds.length === this.plantsList.length;
@@ -606,8 +656,27 @@ export default {
 
                 uni.showToast({ title: '操作成功', icon: 'success' });
                 this.exitEditMode();
-                // 刷新数据以更新最后操作时间等（如果有显示的话）
-                await this.getPlantsList();
+                
+                // 🚀 优化刷新逻辑：刷新当前已加载的所有数据，而不是跳回第一页
+                const currentLoadedCount = this.plantsList.length;
+                const res = await callContainer("/api/plant/list", {
+                    familyId: this.value,
+                    page: 1,
+                    pageSize: Math.max(currentLoadedCount, 20),
+                    tagId: this.tagList[this.currentTagIndex]?.id || 0,
+                    keyword: this.searchValue
+                });
+                
+                if (res?.data?.list) {
+                    this.plantsList = res.data.list.map(item => {
+                        let frozenTags = null;
+                        if (item.tags && Array.isArray(item.tags)) {
+                            frozenTags = item.tags.map(tag => Object.freeze({ ...tag }));
+                            Object.freeze(frozenTags);
+                        }
+                        return Object.freeze({ ...item, tags: frozenTags });
+                    });
+                }
             } catch (error) {
                 console.error("批量操作失败:", error);
                 uni.showToast({ title: '操作失败', icon: 'none' });
@@ -705,23 +774,33 @@ export default {
             })
         },
         onPageShow() {
-            // 首次加载时不调用 loadFamilyData，避免重复加载
+            // 首次加载时不调用，避免与 created 冲突
             if (this.isFirstLoad) {
-                
                 this.isFirstLoad = false;
                 return;
             }
-
-        
-            this.loadFamilyData();
-
-            // 确保图片显示
-            setTimeout(() => {
-                this.ensureImagesVisible();
-            }, 500);
+            
+            // 🚀 核心逻辑：不再盲目刷新。
+            // 只有当缓存中的家庭ID与当前不一致时（说明用户在设置或其他页面改了家庭）才刷新
+            const cachedFamilyId = uni.getStorageSync('familyId');
+            if (this.value && cachedFamilyId && String(this.value) !== String(cachedFamilyId)) {
+                console.log("检测到家庭 ID 变更，执行强制同步");
+                this.loadFamilyData();
+            }
         },
     },
+    beforeDestroy() {
+        // 🚀 销毁时移除监听
+        uni.$off('refreshHomeList');
+    },
     async created() {
+        // 🚀 监听全局刷新事件
+        uni.$on('refreshHomeList', () => {
+            console.log("收到全局刷新指令，正在重置列表...");
+            this.page = 1;
+            this.isNoMore = false;
+            this.getPlantsList(false);
+        });
 
         const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
         this.menuButtonInfo = menuButtonInfo
@@ -793,6 +872,27 @@ export default {
     background-color: var(--bg-color);
     /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
     /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
+}
+
+.selection-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    .count {
+        font-size: 26rpx;
+        font-weight: bold;
+        color: var(--text-color);
+    }
+
+    .select-all-tag {
+        font-size: 22rpx;
+        color: var(--primary-color);
+        text-decoration: underline;
+        margin-top: 4rpx;
+    }
 }
 
 .edit-mode-header {

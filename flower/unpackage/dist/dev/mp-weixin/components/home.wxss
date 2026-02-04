@@ -22,6 +22,24 @@
   /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
   /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
+.selection-info.data-v-045d88fd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.selection-info .count.data-v-045d88fd {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: var(--text-color);
+}
+.selection-info .select-all-tag.data-v-045d88fd {
+  font-size: 22rpx;
+  color: var(--primary-color);
+  text-decoration: underline;
+  margin-top: 4rpx;
+}
 .edit-mode-header.data-v-045d88fd {
   width: 100%;
   padding: 0 10px;
