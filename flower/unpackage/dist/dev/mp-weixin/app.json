@@ -10,7 +10,8 @@
     "pages/shareMember/shareMember",
     "pages/careEdit/careEdit",
     "pages/logEdit/logEdit",
-    "pages/shareDetail/shareDetail"
+    "pages/shareDetail/shareDetail",
+    "pages/displayRoom/displayRoom"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",

@@ -129,7 +129,9 @@ func UpdatePlantHandler(c *gin.Context) {
 		}
 		updateData["birthday"] = t
 	}
-	if req.DeathAt != "" {
+	if req.DeathAt == "null" {
+		updateData["death_at"] = nil
+	} else if req.DeathAt != "" {
 		t, err := time.Parse("2006-01-02", req.DeathAt)
 		if err != nil {
 			response.Fail(c, "死亡日期格式错误，应为 YYYY-MM-DD")

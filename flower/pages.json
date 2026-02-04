@@ -98,6 +98,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": false
 			}
+		},
+		{
+			"path": "pages/displayRoom/displayRoom",
+			"style": {
+				"navigationBarTitleText": "陈列室",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": false
+			}
 		}
 	],
 	"globalStyle": {

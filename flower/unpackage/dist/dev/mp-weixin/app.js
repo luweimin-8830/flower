@@ -13,6 +13,7 @@ if (!Math) {
   "./pages/careEdit/careEdit.js";
   "./pages/logEdit/logEdit.js";
   "./pages/shareDetail/shareDetail.js";
+  "./pages/displayRoom/displayRoom.js";
 }
 const _sfc_main = {
   globalData: {

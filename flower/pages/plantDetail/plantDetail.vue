@@ -5,18 +5,28 @@
 		<!-- 🌟 新增：右上角操作按钮 (悬浮在导航栏之上) -->
 		<!-- topBarHeight 是状态栏高度，我们需要往下一点点 -->
 		<view class="top-actions" :style="{ top: (topBarHeight + 8) + 'px' }">
-			<view class="action-btn icon-only" @click="handleNotification">
-				<uni-icons type="notification" size="20" color="var(--text-color)"></uni-icons>
-			</view>
-			<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
-				<uni-icons type="upload" size="20" color="var(--text-color)"></uni-icons>
-			</button>
-			<view class="action-btn pill-btn" @click="goEdit">
-				<text>编辑</text>
-			</view>
-			<view class="action-btn pill-btn wither-btn" @click="handleDeath">
-				<text>凋零</text>
-			</view>
+			<template v-if="!plant.deathAt">
+				<view class="action-btn icon-only" @click="handleNotification">
+					<uni-icons type="notification" size="20" color="var(--text-color)"></uni-icons>
+				</view>
+				<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
+					<uni-icons type="upload" size="20" color="var(--text-color)"></uni-icons>
+				</button>
+				<view class="action-btn pill-btn" @click="goEdit">
+					<text>编辑</text>
+				</view>
+				<view class="action-btn pill-btn wither-btn" @click="handleDeath">
+					<text>凋零</text>
+				</view>
+			</template>
+			<template v-else>
+				<view class="action-btn pill-btn revive-btn" @click="handleRevive">
+					<text>复活</text>
+				</view>
+				<view class="action-btn pill-btn dead-badge">
+					<text>已凋零</text>
+				</view>
+			</template>
 		</view>
 
 		<!-- 占位符 -->
@@ -93,7 +103,7 @@
 				<!-- 上半部分：左图右文 -->
 				<view class="card-top">
 					<!-- 左侧图片 -->
-					<image class="plant-avatar" :src="(plant.cover && plant.cover.url) ? plant.cover.url : '/static/default.svg'" mode="aspectFill" @click="previewCover"></image>
+					<image class="plant-avatar" :class="{ 'grayscale': plant.deathAt }" :src="(plant.cover && plant.cover.url) ? plant.cover.url : '/static/default.svg'" mode="aspectFill" @click="previewCover"></image>
 
 					<!-- 右侧信息 -->
 					<view class="plant-info">
@@ -137,7 +147,7 @@
 
 			<!-- ... 下面的日常护理、快捷入口、日志部分保持不变 ... -->
 			<!-- 3. 日常护理 (横向滚动) -->
-			<view class="section-container">
+			<view class="section-container" v-if="!plant.deathAt">
 				<!-- 代码省略，保持原样 -->
 				<view class="section-header">
 					<text class="section-title">日常护理</text>
@@ -400,6 +410,35 @@ export default {
 			wx.vibrateShort({ type: "light" });
 			this.witherDate = this.todayDate;
 			this.$refs.witherPopup.open();
+		},
+		async handleRevive() {
+			uni.showModal({
+				title: '提示',
+				content: '确定要复活这棵植物吗？它将重新回到花园首页。',
+				success: async (res) => {
+					if (res.confirm) {
+						uni.showLoading({ title: '正在处理...' });
+						try {
+							await callContainer('/api/plant/update', {
+								id: Number(this.plantId),
+								deathAt: 'null' // 触发后端清除死亡日期逻辑
+							});
+							
+							uni.hideLoading();
+							uni.showToast({ title: '已重获新生', icon: 'success' });
+							
+							// 触发首页刷新
+							uni.$emit('refreshHomeList');
+							
+							// 刷新当前页面数据
+							this.getPlant();
+						} catch (error) {
+							uni.hideLoading();
+							uni.showToast({ title: error.message || '操作失败', icon: 'none' });
+						}
+					}
+				}
+			});
 		},
 		async confirmWither() {
 			uni.showLoading({ title: '正在处理...' });
@@ -669,6 +708,27 @@ export default {
 			color: rgba(245, 245, 245, 0.4) !important;
 		}
 	}
+}
+
+.dead-badge {
+	background-color: rgba(139, 69, 19, 0.1);
+	border: 1px solid rgba(139, 69, 19, 0.2);
+	text {
+		color: #8B4513 !important;
+	}
+}
+
+.revive-btn {
+	background-color: var(--primary-color);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	text {
+		color: #fff !important;
+	}
+}
+
+.grayscale {
+	filter: grayscale(100%);
+	opacity: 0.8;
 }
 
 /* 🌟 植物头部卡片 */
