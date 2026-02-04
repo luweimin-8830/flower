@@ -37,5 +37,13 @@
   },
   "themeLocation": "theme.json",
   "darkmode": true,
+  "permission": {
+    "scope.userFuzzyLocation": {
+      "desc": "你的模糊位置将用于获取当地天气"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getFuzzyLocation"
+  ],
   "usingComponents": {}
 }

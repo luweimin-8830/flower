@@ -4,7 +4,6 @@
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",
-    "transformPx" : false,
     "app-plus" : {
         "usingComponents" : true,
         "nvueCompiler" : "uni-app",
@@ -12,8 +11,7 @@
         "splashscreen" : {
             "alwaysShowBeforeRender" : true,
             "waiting" : true,
-            "autoclose" : true,
-            "delay" : 0
+            "autoclose" : true
         },
         "modules" : {},
         "distribute" : {
@@ -42,8 +40,14 @@
     },
     "quickapp" : {},
     "mp-weixin" : {
-        "darkmode":true,
-        "themeLocation": "theme.json",
+        "permission" : {
+            "scope.userFuzzyLocation" : {
+                "desc" : "你的模糊位置将用于获取当地天气"
+            }
+        },
+        "requiredPrivateInfos" : [ "getFuzzyLocation" ],
+        "darkmode" : true,
+        "themeLocation" : "theme.json",
         "appid" : "wxb552b4471f232799",
         "setting" : {
             "urlCheck" : false

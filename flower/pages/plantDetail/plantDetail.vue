@@ -151,7 +151,6 @@
 				<!-- 代码省略，保持原样 -->
 				<view class="section-header">
 					<text class="section-title">日常护理</text>
-					<!-- <uni-icons type="notification" size="20" color="#6B8857"></uni-icons> -->
 				</view>
 				<scroll-view scroll-x class="care-scroll-view" :show-scrollbar="false">
 					<view class="care-list">

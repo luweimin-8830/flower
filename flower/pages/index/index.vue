@@ -249,6 +249,27 @@ export default {
 				}).exec();
 			})
 		},
+		// 测试获取模糊位置
+		async testLocation() {
+			// #ifdef MP-WEIXIN
+			try {
+				const res = await new Promise((resolve, reject) => {
+					wx.getFuzzyLocation({
+						type: 'wgs84',
+						success: resolve,
+						fail: reject
+					});
+				});
+				console.log('测试模糊位置获取成功:', res);
+				// uni.showToast({
+				// 	title: `位置: ${res.latitude}, ${res.longitude}`,
+				// 	icon: 'none'
+				// });
+			} catch (error) {
+				console.error('测试模糊位置获取失败:', error);
+			}
+			// #endif
+		},
 		// 节流函数
 		throttle(func, wait = 500, immediate = true) {
 			if (immediate) {
@@ -268,11 +289,15 @@ export default {
 					typeof func === 'function' && func()
 				}, wait)
 			}
-		}
+		},
 	},
 	async onLoad() {
 		const app = getApp()
 		await app.globalData.initPromise;
+		
+		// 仅测试使用：获取模糊位置
+		// this.testLocation();
+
 		this.$refs.loading.open();
 		setTimeout(() => {
 			this.$refs.loading.close();
