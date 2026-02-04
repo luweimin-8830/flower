@@ -220,7 +220,7 @@ export default {
 				}
 				this.switchTabbarPage(key);
 				this.onKey = key
-				
+
 				let left = item.style.left
 				this.ballStyleLeft = left - 22;
 				this.animation01 = true;
@@ -236,6 +236,7 @@ export default {
 		},
 		switchTabbarPage(key) {
 			if (this.onKey === key) return
+			wx.vibrateShort({ type: "light" });
 			const selectPageFlag = this.list[key]['is']
 			if (selectPageFlag === undefined) {
 				return
@@ -294,7 +295,7 @@ export default {
 				}
 			})
 		})
-		
+
 		uni.$on('switchTab', (key) => {
 			if (this.list[key]) {
 				const item = this.list[key];

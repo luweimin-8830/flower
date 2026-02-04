@@ -28,8 +28,6 @@
                         </view>
                     </view>
                 </view>
-                <!-- 底部垫片 -->
-                <view class="safe-area-bottom"></view>
             </scroll-view>
         </view>
     </view>
@@ -193,6 +191,8 @@ export default {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+    box-sizing: border-box;
 }
 
 .content-container {
@@ -286,9 +286,5 @@ export default {
         opacity: 0.6;
         filter: grayscale(100%) brightness(1.5);
     }
-}
-
-.safe-area-bottom {
-    height: calc(120rpx + env(safe-area-inset-bottom));
 }
 </style>

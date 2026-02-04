@@ -75,6 +75,7 @@ func main() {
 		{
 			plant.POST("/", handler.GetPlantHandler)
 			plant.POST("/list", handler.GetPlantsHandler)
+			plant.POST("/dead/list", handler.GetDeadPlantsHandler)
 			plant.POST("/add", handler.CreatePlantHandler)
 			plant.POST("/delete", handler.DeletePlantHandler)
 			plant.POST("/update", handler.UpdatePlantHandler)

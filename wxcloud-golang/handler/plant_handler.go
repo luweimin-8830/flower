@@ -34,6 +34,7 @@ type UpdatePlantRequest struct {
 	Desc     string `json:"desc"`
 	CoverID  uint   `json:"coverId"`
 	Birthday string `json:"birthday"`
+	DeathAt  string `json:"deathAt"`
 	Tags     []struct {
 		ID uint `json:"id"`
 	} `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
@@ -41,6 +42,8 @@ type UpdatePlantRequest struct {
 
 type GetPlantsRequest struct {
 	FamilyID uint `json:"familyId" binding:"required"`
+	Page     int  `json:"page"`
+	PageSize int  `json:"pageSize"`
 }
 
 type plantRequest struct {
@@ -118,6 +121,14 @@ func UpdatePlantHandler(c *gin.Context) {
 		}
 		updateData["birthday"] = t
 	}
+	if req.DeathAt != "" {
+		t, err := time.Parse("2006-01-02", req.DeathAt)
+		if err != nil {
+			response.Fail(c, "死亡日期格式错误，应为 YYYY-MM-DD")
+			return
+		}
+		updateData["death_at"] = t
+	}
 
 	var tagIDs []uint
 	if req.Tags != nil {
@@ -142,12 +153,55 @@ func GetPlantsHandler(c *gin.Context) {
 		return
 	}
 	ctx := c.Request.Context()
+
+	if req.Page > 0 {
+		if req.PageSize <= 0 {
+			req.PageSize = 20
+		}
+		plants, total, err := service.GetPlantsPaged(ctx, req.FamilyID, false, req.Page, req.PageSize)
+		if err != nil {
+			response.Fail(c, "获取失败:"+err.Error())
+			return
+		}
+		response.Success(c, gin.H{
+			"list":  plants,
+			"total": total,
+		})
+		return
+	}
+
 	plants, err := service.GetPlants(ctx, req.FamilyID)
 	if err != nil {
 		response.Fail(c, "获取失败:"+err.Error())
 		return
 	}
 	response.Success(c, plants)
+}
+
+func GetDeadPlantsHandler(c *gin.Context) {
+	var req GetPlantsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误"+err.Error())
+		return
+	}
+	ctx := c.Request.Context()
+
+	if req.PageSize <= 0 {
+		req.PageSize = 20
+	}
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+
+	plants, total, err := service.GetPlantsPaged(ctx, req.FamilyID, true, req.Page, req.PageSize)
+	if err != nil {
+		response.Fail(c, "获取失败:"+err.Error())
+		return
+	}
+	response.Success(c, gin.H{
+		"list":  plants,
+		"total": total,
+	})
 }
 
 func DeletePlantHandler(c *gin.Context) {
@@ -178,7 +232,11 @@ func GetPlantHandler(c *gin.Context) {
 	}
 	//生日计算
 	if !plant.Birthday.IsZero() {
-		duration := time.Since(plant.Birthday)
+		endTime := time.Now()
+		if plant.DeathAt != nil && !plant.DeathAt.IsZero() {
+			endTime = *plant.DeathAt
+		}
+		duration := endTime.Sub(plant.Birthday)
 		days := int64(duration.Hours() / 24)
 		if days < 0 {
 			days = 0

@@ -85,8 +85,7 @@
                                     :class="{ 'active': batchActionType === item.type }"
                                     @click="batchActionType = item.type">
                                     <view class="iconfont" :class="item.icon" 
-                                        style="font-size: 18px;"
-                                        :style="{ color: batchActionType === item.type ? '#fff' : '#666' }"></view>
+                                        style="font-size: 18px;"></view>
                                     <text class="action-name">{{ item.name }}</text>
                                 </view>
                             </view>
@@ -860,10 +859,30 @@ export default {
     transition: all 0.2s;
     flex-shrink: 0;
 
+    .iconfont {
+        color: #666;
+        @media (prefers-color-scheme: dark) {
+            color: rgba(245, 245, 245, 0.6);
+        }
+    }
+
     &.active {
         background: var(--primary-color);
         .action-name {
             color: #fff;
+        }
+        .iconfont {
+            color: #fff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            background: #FAF2CB;
+            .action-name {
+                color: #0A3323;
+            }
+            .iconfont {
+                color: #0A3323;
+            }
         }
     }
 
@@ -879,8 +898,13 @@ export default {
         -webkit-line-clamp: 2;
         line-clamp: 2;
         overflow: hidden;
+
+        @media (prefers-color-scheme: dark) {
+            color: rgba(245, 245, 245, 0.6);
+        }
     }
 }
+
 
 .checkbox-wrapper {
     position: absolute;

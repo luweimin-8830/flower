@@ -14,6 +14,9 @@
 			<view class="action-btn pill-btn" @click="goEdit">
 				<text>编辑</text>
 			</view>
+			<view class="action-btn pill-btn wither-btn" @click="handleDeath">
+				<text>凋零</text>
+			</view>
 		</view>
 
 		<!-- 占位符 -->
@@ -371,6 +374,9 @@ export default {
 		goEdit() {
 			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.id}&type=edit` })
 		},
+		handleDeath() {
+			wx.vibrateShort({ type: "light" });
+		},
 		goAddLog() {
 			uni.navigateTo({ url: `/pages/logEdit/logEdit?plantId=${this.plantId}` })
 		},
@@ -595,6 +601,24 @@ export default {
 		color: #333;
 		@media (prefers-color-scheme: dark) {
 			color: #FAF2CB;
+		}
+	}
+}
+
+.wither-btn {
+	background-color: rgba(0, 0, 0, 0.05);
+	border: 1px solid rgba(0, 0, 0, 0.03);
+
+	text {
+		color: #999 !important;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		background-color: rgba(255, 255, 255, 0.08);
+		border-color: rgba(255, 255, 255, 0.05);
+
+		text {
+			color: rgba(245, 245, 245, 0.4) !important;
 		}
 	}
 }

@@ -92,11 +92,33 @@
   transition: all 0.2s;
   flex-shrink: 0;
 }
+.action-item .iconfont.data-v-045d88fd {
+  color: #666;
+}
+@media (prefers-color-scheme: dark) {
+.action-item .iconfont.data-v-045d88fd {
+    color: rgba(245, 245, 245, 0.6);
+}
+}
 .action-item.active.data-v-045d88fd {
   background: var(--primary-color);
 }
 .action-item.active .action-name.data-v-045d88fd {
   color: #fff;
+}
+.action-item.active .iconfont.data-v-045d88fd {
+  color: #fff;
+}
+@media (prefers-color-scheme: dark) {
+.action-item.active.data-v-045d88fd {
+    background: #FAF2CB;
+}
+.action-item.active .action-name.data-v-045d88fd {
+    color: #0A3323;
+}
+.action-item.active .iconfont.data-v-045d88fd {
+    color: #0A3323;
+}
 }
 .action-item .action-name.data-v-045d88fd {
   font-size: 11px;
@@ -110,6 +132,11 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
+}
+@media (prefers-color-scheme: dark) {
+.action-item .action-name.data-v-045d88fd {
+    color: rgba(245, 245, 245, 0.6);
+}
 }
 .checkbox-wrapper.data-v-045d88fd {
   position: absolute;

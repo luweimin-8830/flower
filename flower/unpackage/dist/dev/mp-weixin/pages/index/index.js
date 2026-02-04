@@ -127,6 +127,7 @@ const _sfc_main = {
     switchTabbarPage(key) {
       if (this.onKey === key)
         return;
+      common_vendor.wx$1.vibrateShort({ type: "light" });
       const selectPageFlag = this.list[key]["is"];
       if (selectPageFlag === void 0) {
         return;
@@ -226,7 +227,7 @@ if (!Array) {
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.sr("loading", "a77b0c48-0"),
+    a: common_vendor.sr("loading", "24547230-0"),
     b: $data.list["a"].is
   }, $data.list["a"].is ? {
     c: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
@@ -239,13 +240,13 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}, {
     h: $data.list["c"].is
   }, $data.list["c"].is ? {
-    i: common_vendor.sr("homeComponent", "a77b0c48-3"),
+    i: common_vendor.sr("homeComponent", "24547230-3"),
     j: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
     k: $data.onKey === "c" ? "" : "none"
   } : {}, {
     l: $data.list["d"].is
   }, $data.list["d"].is ? {
-    m: common_vendor.sr("calendarComponent", "a77b0c48-4"),
+    m: common_vendor.sr("calendarComponent", "24547230-4"),
     n: common_vendor.o((...args) => $options.tabbarPageScrollLower && $options.tabbarPageScrollLower(...args)),
     o: $data.onKey === "d" ? "" : "none"
   } : {}, {
