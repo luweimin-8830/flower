@@ -151,21 +151,6 @@ const _sfc_main = {
         }).exec();
       });
     },
-    // 测试获取模糊位置
-    async testLocation() {
-      try {
-        const res = await new Promise((resolve, reject) => {
-          common_vendor.wx$1.getFuzzyLocation({
-            type: "wgs84",
-            success: resolve,
-            fail: reject
-          });
-        });
-        common_vendor.index.__f__("log", "at pages/index/index.vue:263", "测试模糊位置获取成功:", res);
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:269", "测试模糊位置获取失败:", error);
-      }
-    },
     // 节流函数
     throttle(func, wait = 500, immediate = true) {
       if (immediate) {

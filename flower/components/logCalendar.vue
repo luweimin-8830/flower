@@ -3,7 +3,19 @@
 		<!-- 顶部固定区域 -->
 		<view class="fixed-header-group">
 			<navBar v-if="showNav" />
-			<view :style="{ height: topBarHeight + 'px' }"></view>
+			<view :style="{ height: (menuButtonTop + menuButtonHeight + 10) + 'px' }">
+				<!-- 天气预报预留位：对齐胶囊按钮 -->
+				<view class="weather-placeholder" 
+					:style="{ 
+						top: menuButtonTop + 'px', 
+						height: menuButtonHeight + 'px'
+					}" 
+					@click="handleWeatherClick">
+					<uni-icons :type="weatherInfo.icon || 'location-filled'" size="18" color="#6B8857"></uni-icons>
+					<text class="placeholder-btn-text">{{ weatherInfo.city || '获取天气' }}</text>
+					<text class="weather-temp" v-if="weatherInfo.temp">{{ weatherInfo.temp }}°</text>
+				</view>
+			</view>
 		</view>
 		
 		<scroll-view scroll-y class="scroll-body">
@@ -110,7 +122,15 @@ export default {
 		return {
 			statusBarHeight: 0,
 			topBarHeight: 0,
+			menuButtonTop: 0,
+			menuButtonHeight: 32,
 			selectedDate: '',
+			weatherInfo: {
+				city: '',
+				temp: '',
+				icon: '',
+				adcode: ''
+			},
 			allLogs: [],
 			careActions: [],
 			familyId: 0,
@@ -171,6 +191,11 @@ export default {
 		async initData() {
 			const systemInfo = uni.getSystemInfoSync();
 			this.statusBarHeight = systemInfo.statusBarHeight || 44;
+			
+			const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
+			this.menuButtonTop = menuButtonInfo.top;
+			this.menuButtonHeight = menuButtonInfo.height;
+
 			const app = getApp();
 			if (app && app.globalData) {
 				this.topBarHeight = app.globalData.topBarHeight || this.statusBarHeight;
@@ -348,6 +373,48 @@ export default {
 			} finally {
 				uni.hideLoading();
 			}
+		},
+		handleWeatherClick() {
+			this.fetchLocationWeather();
+		},
+		// 获取模糊位置并请求后端换取天气信息
+		async fetchLocationWeather() {
+			// #ifdef MP-WEIXIN
+			try {
+				uni.showLoading({ title: '定位中...' });
+				const locRes = await new Promise((resolve, reject) => {
+					wx.getFuzzyLocation({
+						type: 'gcj02',
+						success: resolve,
+						fail: reject
+					});
+				});
+				console.log('模糊位置获取成功:', locRes);
+				
+				// 请求后端接口获取天气信息
+				const res = await callContainer('/api/weather', {
+					longitude: locRes.longitude,
+					latitude: locRes.latitude
+				});
+
+				if (res && res.data) {
+					this.weatherInfo = {
+						city: res.data.city,
+						temp: res.data.temp,
+						icon: res.data.icon,
+						adcode: res.data.adcode
+					};
+				} else {
+					throw new Error('获取天气数据失败');
+				}
+				
+				uni.hideLoading();
+			} catch (error) {
+				uni.hideLoading();
+				console.error('获取位置或天气失败:', error);
+				uni.showToast({ title: '获取失败，请重试', icon: 'none' });
+			}
+			// #endif
 		}
 	}
 };
@@ -382,6 +449,34 @@ export default {
 	background-color: var(--bg-btn-color);
 	border-radius: 16px;
 	overflow: hidden;
+	position: relative;
+}
+
+.weather-placeholder {
+	position: absolute;
+	left: 15px;
+	z-index: 10;
+	padding: 0 10px;
+	background-color: var(--bg-btn-color);
+	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	border: 1px solid var(--border-color);
+	box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+	.placeholder-btn-text {
+		font-size: 11px;
+		color: var(--text-color);
+		font-weight: 500;
+	}
+
+	.weather-temp {
+		font-size: 11px;
+		color: #6B8857;
+		margin-left: 2px;
+		font-weight: bold;
+	}
 }
 
 .safe-area-bottom {

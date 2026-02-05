@@ -60,6 +60,7 @@ func main() {
 		api.POST("/login", handler.UserLoginHandler)
 		api.POST("/user/update", handler.UpdateUserHandler)
 		api.POST("/remind/add", handler.AddRemindHandler)
+		api.POST("/weather", handler.GetWeatherHandler)
 		family := api.Group("/family")
 		{
 			family.POST("/", handler.GetFamilyHandler)

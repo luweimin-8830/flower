@@ -16,6 +16,10 @@ type User struct {
 	LastDateAT      time.Time
 	CurrentFamilyID *uint  `json:"currentFamilyId" gorm:"default:null"`
 	RemindTime      string `json:"remindTime" gorm:"type:varchar(5);default:'08:00'"`
+	Longitude       float64 `json:"longitude" gorm:"type:decimal(10,7)"`
+	Latitude        float64 `json:"latitude" gorm:"type:decimal(10,7)"`
+	City            string  `json:"city" gorm:"type:varchar(50)"`
+	Adcode          string  `json:"adcode" gorm:"type:varchar(20)"`
 }
 
 type Family struct {
