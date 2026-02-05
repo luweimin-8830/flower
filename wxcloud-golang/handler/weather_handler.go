@@ -95,12 +95,15 @@ func GetWeatherHandler(c *gin.Context) {
 	today := time.Now().Format("2006-01-02")
 	var cache model.WeatherCache
 	if err := database.Where("city = ? AND date = ?", city, today).First(&cache).Error; err == nil {
+		var casts []interface{}
+		_ = json.Unmarshal([]byte(cache.Casts), &casts)
 		response.Success(c, gin.H{
 			"city":    cache.City,
 			"adcode":  cache.Adcode,
 			"temp":    cache.Temperature,
 			"icon":    cache.Icon,
 			"weather": cache.Weather,
+			"casts":   casts,
 		})
 		return
 	}
@@ -115,31 +118,36 @@ func GetWeatherHandler(c *gin.Context) {
 	defer wResp.Body.Close()
 
 	var weatherData AmapWeatherResponse
-	if err := json.NewDecoder(wResp.Body).Decode(&weatherData); err != nil || weatherData.Status != "1" || len(weatherData.Lives) == 0 {
+	if err := json.NewDecoder(wResp.Body).Decode(&weatherData); err != nil || weatherData.Status != "1" || len(weatherData.Forecasts) == 0 || len(weatherData.Forecasts[0].Casts) == 0 {
 		response.Fail(c, "解析天气数据失败")
 		return
 	}
 
-	live := weatherData.Lives[0]
-	icon := mapWeatherToIcon(live.Weather)
+	// 取当天的预报数据 (casts[0] 是当天)
+	casts := weatherData.Forecasts[0].Casts
+	cast := casts[0]
+	icon := mapWeatherToIcon(cast.Dayweather)
+	castsJSON, _ := json.Marshal(casts)
 
 	// 存入天气缓存表
 	newCache := model.WeatherCache{
 		City:        city,
 		Adcode:      adcode,
 		Date:        today,
-		Temperature: live.Temperature,
-		Weather:     live.Weather,
+		Temperature: cast.Daytemp, // 预报模式下使用白天温度
+		Weather:     cast.Dayweather,
 		Icon:        icon,
+		Casts:       string(castsJSON),
 	}
 	database.Create(&newCache)
 
 	response.Success(c, gin.H{
 		"city":    city,
 		"adcode":  adcode,
-		"temp":    live.Temperature,
+		"temp":    cast.Daytemp,
 		"icon":    icon,
-		"weather": live.Weather,
+		"weather": cast.Dayweather,
+		"casts":   casts,
 	})
 }
 
@@ -160,14 +168,21 @@ type AmapRegeoResponse struct {
 }
 
 type AmapWeatherResponse struct {
-	Status string `json:"status"`
-	Lives  []struct {
-		Province    string `json:"province"`
-		City        string `json:"city"`
-		Adcode      string `json:"adcode"`
-		Weather     string `json:"weather"`
-		Temperature string `json:"temperature"`
-	} `json:"lives"`
+	Status    string `json:"status"`
+	Forecasts []struct {
+		City       string `json:"city"`
+		Adcode     string `json:"adcode"`
+		Province   string `json:"province"`
+		Reporttime string `json:"reporttime"`
+		Casts      []struct {
+			Date         string `json:"date"`
+			Week         string `json:"week"`
+			Dayweather   string `json:"dayweather"`
+			Nightweather string `json:"nightweather"`
+			Daytemp      string `json:"daytemp"`
+			Nighttemp    string `json:"nighttemp"`
+		} `json:"casts"`
+	} `json:"forecasts"`
 }
 
 func mapWeatherToIcon(weather string) string {

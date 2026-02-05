@@ -14,4 +14,5 @@ type WeatherCache struct {
 	Temperature string    `json:"temperature" gorm:"type:varchar(10)"`
 	Weather     string    `json:"weather" gorm:"type:varchar(20)"`
 	Icon        string    `json:"icon" gorm:"type:varchar(50)"`
+	Casts       string    `json:"casts" gorm:"type:text"` // 存储全量预报 JSON 字符串
 }
