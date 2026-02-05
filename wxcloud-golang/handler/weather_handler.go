@@ -106,7 +106,7 @@ func GetWeatherHandler(c *gin.Context) {
 	}
 
 	// 4. 如没有,则调用天气接口查询后存入天气表
-	weatherUrl := fmt.Sprintf("https://restapi.amap.com/v3/weather/weatherInfo?city=%s&key=%s", adcode, amapKey)
+	weatherUrl := fmt.Sprintf("https://restapi.amap.com/v3/weather/weatherInfo?city=%s&key=%s&extensions=all", adcode, amapKey)
 	wResp, err := http.Get(weatherUrl)
 	if err != nil {
 		response.Fail(c, "获取天气接口失败")
