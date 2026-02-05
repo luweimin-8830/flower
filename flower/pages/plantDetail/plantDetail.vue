@@ -1,31 +1,45 @@
 <template>
 	<view class="container">
-		<navBar />
+		<navBar :isHome="!isOwner" />
 
 		<!-- 🌟 新增：右上角操作按钮 (悬浮在导航栏之上) -->
 		<!-- topBarHeight 是状态栏高度，我们需要往下一点点 -->
 		<view class="top-actions" :style="{ top: (topBarHeight + 8) + 'px' }">
-			<template v-if="!plant.deathAt">
-				<view class="action-btn icon-only" @click="handleNotification">
-					<uni-icons type="notification" size="20" color="var(--text-color)"></uni-icons>
+			<template v-if="isOwner">
+				<template v-if="!plant.deathAt">
+					<view class="action-btn icon-only" @click="handleNotification">
+						<uni-icons type="notification" size="20" color="var(--text-color)"></uni-icons>
+					</view>
+					<view class="action-btn icon-only" @click="handleShareTimeline">
+						<uni-icons type="pyq" size="20" color="var(--text-color)"></uni-icons>
+					</view>
+					<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
+						<uni-icons type="upload" size="20" color="var(--text-color)"></uni-icons>
+					</button>
+					<view class="action-btn pill-btn" @click="goEdit">
+						<text>编辑</text>
+					</view>
+					<view class="action-btn pill-btn wither-btn" @click="handleDeath">
+						<text>凋零</text>
+					</view>
+				</template>
+				<template v-else>
+					<view class="action-btn pill-btn revive-btn" @click="handleRevive">
+						<text>复活</text>
+					</view>
+					<view class="action-btn pill-btn dead-badge">
+						<text>已凋零</text>
+					</view>
+				</template>
+			</template>
+			<template v-else>
+				<!-- 非主人模式，仅显示分享给朋友/朋友圈按钮 -->
+				<view class="action-btn icon-only" @click="handleShareTimeline">
+					<uni-icons type="pyq" size="20" color="var(--text-color)"></uni-icons>
 				</view>
 				<button class="action-btn icon-only share-btn" open-type="share" @tap="handleShareClick">
 					<uni-icons type="upload" size="20" color="var(--text-color)"></uni-icons>
 				</button>
-				<view class="action-btn pill-btn" @click="goEdit">
-					<text>编辑</text>
-				</view>
-				<view class="action-btn pill-btn wither-btn" @click="handleDeath">
-					<text>凋零</text>
-				</view>
-			</template>
-			<template v-else>
-				<view class="action-btn pill-btn revive-btn" @click="handleRevive">
-					<text>复活</text>
-				</view>
-				<view class="action-btn pill-btn dead-badge">
-					<text>已凋零</text>
-				</view>
 			</template>
 		</view>
 
@@ -147,7 +161,7 @@
 
 			<!-- ... 下面的日常护理、快捷入口、日志部分保持不变 ... -->
 			<!-- 3. 日常护理 (横向滚动) -->
-			<view class="section-container" v-if="!plant.deathAt">
+			<view class="section-container" v-if="isOwner && !plant.deathAt">
 				<!-- 代码省略，保持原样 -->
 				<view class="section-header">
 					<text class="section-title">日常护理</text>
@@ -191,7 +205,7 @@
 						<uni-icons type="compose" size="20" color="var(--primary-color)"></uni-icons>
 						<text class="section-title" style="margin-left: 6px;">植物日志</text>
 					</view>
-					<view class="header-right" v-if="!plant.deathAt">
+					<view class="header-right" v-if="isOwner && !plant.deathAt">
 						<text class="edit-btn" @click="isManageMode = !isManageMode">{{ isManageMode ? '完成' : '编辑' }}</text>
 						<uni-icons type="plusempty" size="24" color="var(--primary-color)" style="margin-left: 15px;" @click="goAddLog"></uni-icons>
 					</view>
@@ -263,7 +277,7 @@ export default {
 		
 		return {
 			title: '看看我养的' + name,
-			query: 'id=' + id,
+			query: `id=${id}&isShare=1`,
 			imageUrl: imageUrl
 		};
 	},
@@ -282,6 +296,7 @@ export default {
 			isManageMode: false,
 			todayDate: '',
 			witherDate: '',
+			isOwner: true,
 			remindData: {
 				date: '',
 				time: '08:00',
@@ -308,6 +323,15 @@ export default {
 
 		if (options && options.id) {
 			this.plantId = options.id
+			
+			// 如果是从朋友圈分享进入，强制设为非主人模式（只读）
+			// 注意：options 中的值通常是字符串
+			if (options && (options.isShare === '1' || options.isShare === 1 || options.isShare === 'true')) {
+				this.isOwner = false;
+			} else {
+				this.isOwner = true;
+			}
+
 			await Promise.all([
 				this.getPlant(),
 				this.getCareActions()
@@ -354,6 +378,17 @@ export default {
 				this.plant = result.data
 				this.plant.birthday = this.plant.birthday ? this.plant.birthday.split('T')[0] : '';
 				this.plant.deathAt = this.plant.deathAt ? this.plant.deathAt.split('T')[0] : '';
+
+				// 移除 openId 强校验，仅保留 isShare 标识判定
+				const userInfo = uni.getStorageSync('userInfo');
+				const userOpenId = userInfo ? (userInfo.openId || userInfo.openid || userInfo.openID) : null;
+				const plantOpenId = this.plant.openId || this.plant.openid || this.plant.openID;
+				
+				console.log('Permission Info:', {
+					userOpenId,
+					plantOpenId,
+					isOwner: this.isOwner
+				});
 			} catch (error) {
 				console.error(error)
 			}
@@ -532,6 +567,12 @@ export default {
 		},
 		handleShareClick() {
 			console.log('用户点击了分享按钮');
+		},
+		handleShareTimeline() {
+			uni.showToast({
+				title: '点击右上角“...”菜单分享至朋友圈',
+				icon: 'none'
+			});
 		},
 		handleNotification() {
 			this.requestSubscribe();

@@ -136,7 +136,7 @@ export default {
             careList: [],
             iconOptions: [
                 'plant-shequhuodong', 'plant-kongzhonghuayuan', 'plant-dianpu', 'plant-a-xiujian13',
-                'plant-chuchong1', 'plant-shifei1', 'plant-a-xiujian23', 'plant-jiaoshui1', 'plant-chuchong2', 'plant-jiaoshui2',
+                'plant-chuchong1', 'plant-shifei1', 'plant-a-xiujian23', 'plant-jiaoshui1', 'plant-chuchong2', 'plant-a-jiaoshui23',
                 'plant-a-Frame9', 'plant-a-Frame1'
             ],
             colorOptions: [

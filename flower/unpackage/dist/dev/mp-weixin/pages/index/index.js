@@ -231,6 +231,12 @@ const _sfc_main = {
       path,
       imageUrl: "/static/share.jpg"
     };
+  },
+  onShareTimeline() {
+    return {
+      title: "爱护绿植，从记录开始",
+      imageUrl: "/static/share.jpg"
+    };
   }
 };
 if (!Array) {
@@ -285,6 +291,6 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
-_sfc_main.__runtimeHooks = 2;
+_sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/index/index.js.map

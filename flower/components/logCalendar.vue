@@ -3,40 +3,47 @@
 		<!-- 顶部固定区域 -->
 		<view class="fixed-header-group">
 			<navBar v-if="showNav" />
-			<view :style="{ height: (menuButtonTop + menuButtonHeight + 10) + 'px' }">
-				<!-- 天气预报预留位：对齐胶囊按钮 -->
-				<view class="weather-placeholder" 
-					:style="{ 
-						top: menuButtonTop + 'px', 
-						height: menuButtonHeight + 'px'
-					}" 
+			<view
+				:style="{ height: (weatherInfo.city ? (menuButtonTop + 70) : (menuButtonTop + menuButtonHeight + 10)) + 'px' }"
+				style="position: relative; transition: height 0.3s;">
+				<!-- 天气小组件（长条长方形布局） -->
+				<view class="weather-widget-card" v-if="currentDayWeather" :style="{ top: menuButtonTop + 'px' }"
 					@click="handleWeatherClick">
-					<uni-icons :type="weatherInfo.icon || 'location-filled'" size="18" color="#6B8857"></uni-icons>
-					<text class="placeholder-btn-text">{{ weatherInfo.city || '获取天气' }}</text>
-					<text class="weather-temp" v-if="weatherInfo.temp">{{ weatherInfo.temp }}°</text>
+					<view class="widget-left">
+						<view class="iconfont plant-xihuan temp-icon"></view>
+					</view>
+					<view class="widget-center">
+						<view class="city-info">
+							<text class="city-name">{{ currentDayWeather.city }}</text>
+							<uni-icons type="paperplane-filled" size="10" color="#fff"></uni-icons>
+						</view>
+						<view class="status-info">
+							<uni-icons :type="currentDayWeather.icon || 'cloud-filled'" size="14" color="#fff"></uni-icons>
+							<text class="weather-status">{{ currentDayWeather.weather || '多云' }}</text>
+						</view>
+					</view>
+					<view class="widget-right">
+						<text class="week-tag">{{ currentDayWeather.week }}</text>
+						<text class="temp-range">{{ currentDayWeather.nighttemp }}°~{{ currentDayWeather.daytemp }}°</text>
+					</view>
+				</view>
+
+				<view class="weather-empty-mini" v-else
+					:style="{ top: menuButtonTop + 'px', height: menuButtonHeight + 'px' }" @click="handleWeatherClick">
+					<uni-icons type="location-filled" size="14" color="#6B8857"></uni-icons>
+					<text class="placeholder-btn-text">获取天气</text>
 				</view>
 			</view>
 		</view>
-		
+
 		<scroll-view scroll-y class="scroll-body">
 			<view class="log-calendar">
-				<uni-calendar 
-					ref="calendar"
-					:insert="true" 
-					:lunar="false" 
-					:selected="selectedDates" 
-					color="#566C44"
-					@change="onDateChange"
-				/>
+				<uni-calendar ref="calendar" :insert="true" :lunar="false" :selected="selectedDates" color="#566C44"
+					@change="onDateChange" />
 
 				<!-- 提醒时间选择弹窗 -->
-				<uni-calendar
-					ref="remindCalendar"
-					:insert="false"
-					:clear-date="true"
-					:startDate="todayDate"
-					@confirm="onRemindConfirm"
-				/>
+				<uni-calendar ref="remindCalendar" :insert="false" :clear-date="true" :startDate="todayDate"
+					@confirm="onRemindConfirm" />
 
 				<!-- 提醒事项输入弹窗 -->
 				<uni-popup ref="remindPopup" type="center">
@@ -51,18 +58,15 @@
 							</view>
 							<view class="input-group">
 								<text class="label">时间</text>
-								<picker mode="time" :value="remindData.time" @change="e => remindData.time = e.detail.value">
+								<picker mode="time" :value="remindData.time"
+									@change="e => remindData.time = e.detail.value">
 									<view class="time-picker-value">{{ remindData.time }}</view>
 								</picker>
 							</view>
 							<view class="input-group vertical">
 								<text class="label">事项内容</text>
-								<textarea 
-									class="remind-textarea" 
-									v-model="remindData.content" 
-									placeholder="输入提醒内容,如:该浇水了"
-									maxlength="20"
-								/>
+								<textarea class="remind-textarea" v-model="remindData.content"
+									placeholder="输入提醒内容,如:该浇水了" maxlength="20" />
 							</view>
 						</view>
 						<view class="modal-footer">
@@ -71,20 +75,21 @@
 						</view>
 					</view>
 				</uni-popup>
-				
+
 				<view class="day-detail">
 					<view class="detail-header">
 						<text class="detail-title">{{ selectedDate }} 记录</text>
 						<uni-icons type="notification" size="20" color="#6B8857" @click="requestSubscribe"></uni-icons>
 					</view>
-					
+
 					<view class="log-list">
 						<view v-if="currentLogs.length === 0" class="empty-box">
 							<text class="empty-text">当日无养护记录</text>
 						</view>
 						<view v-for="log in currentLogs" :key="log.id" class="log-item" @click="goEdit(log)">
 							<view class="log-icon" :style="{ backgroundColor: (log.color || '#4A6139') + '22' }">
-								<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 20px;" :style="{ color: log.color || '#4A6139' }"></view>
+								<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 20px;"
+									:style="{ color: log.color || '#4A6139' }"></view>
 							</view>
 							<view class="log-info">
 								<view class="log-top">
@@ -93,7 +98,8 @@
 								</view>
 								<text class="log-content" v-if="log.content">{{ log.content }}</text>
 								<view class="log-images" v-if="log.images && log.images.length > 0">
-									<image v-for="(img, idx) in log.images" :key="idx" :src="img.url" mode="aspectFill" class="thumb"></image>
+									<image v-for="(img, idx) in log.images" :key="idx" :src="img.url" mode="aspectFill"
+										class="thumb"></image>
 								</view>
 							</view>
 						</view>
@@ -129,7 +135,9 @@ export default {
 				city: '',
 				temp: '',
 				icon: '',
-				adcode: ''
+				adcode: '',
+				weather: '',
+				casts: []
 			},
 			allLogs: [],
 			careActions: [],
@@ -155,9 +163,9 @@ export default {
 			const groups = {};
 			filtered.forEach(log => {
 				// 精确到分钟的 key，用于判定是否是同一次批量操作
-				const timeKey = log.logTime.substring(0, 16); 
+				const timeKey = log.logTime.substring(0, 16);
 				const key = `${timeKey}_${log.actionType}_${log.content}`;
-				
+
 				if (!groups[key]) {
 					groups[key] = {
 						...log,
@@ -176,6 +184,48 @@ export default {
 					displayName: g.count > 1 ? `${g.actionName || g.name} (共 ${g.count} 棵)` : g.name
 				};
 			}).sort((a, b) => new Date(b.logTime) - new Date(a.logTime));
+		},
+		currentDayWeather() {
+			if (!this.weatherInfo.city) return null;
+
+			// 如果没有选中日期，默认显示今日
+			const targetDate = this.selectedDate || this.todayDate;
+			const weekMap = { '1': '周一', '2': '周二', '3': '周三', '4': '周四', '5': '周五', '6': '周六', '7': '周日' };
+
+			// 在 casts 中查找匹配日期的预报
+			const forecast = (this.weatherInfo.casts || []).find(c => c.date === targetDate);
+
+			if (forecast) {
+				return {
+					city: this.weatherInfo.city,
+					weather: forecast.dayweather,
+					icon: this.getWeatherIcon(forecast.dayweather),
+					daytemp: forecast.daytemp,
+					nighttemp: forecast.nighttemp,
+					week: weekMap[forecast.week] || ''
+				};
+			}
+
+			// 找不到或者是今天，显示今天的天气 (casts[0] 通常是今日)
+			const todayForecast = (this.weatherInfo.casts && this.weatherInfo.casts.length > 0) ? this.weatherInfo.casts[0] : null;
+
+			let weekStr = '';
+			if (todayForecast) {
+				weekStr = weekMap[todayForecast.week];
+			} else {
+				const dateObj = new Date(this.todayDate.replace(/-/g, '/'));
+				const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+				weekStr = weeks[dateObj.getDay()];
+			}
+
+			return {
+				city: this.weatherInfo.city,
+				weather: this.weatherInfo.weather,
+				icon: this.weatherInfo.icon,
+				daytemp: todayForecast ? todayForecast.daytemp : this.weatherInfo.temp,
+				nighttemp: todayForecast ? todayForecast.nighttemp : '',
+				week: weekStr
+			};
 		}
 	},
 	mounted() {
@@ -191,7 +241,7 @@ export default {
 		async initData() {
 			const systemInfo = uni.getSystemInfoSync();
 			this.statusBarHeight = systemInfo.statusBarHeight || 44;
-			
+
 			const menuButtonInfo = uni.getMenuButtonBoundingClientRect();
 			this.menuButtonTop = menuButtonInfo.top;
 			this.menuButtonHeight = menuButtonInfo.height;
@@ -206,13 +256,19 @@ export default {
 			const now = new Date();
 			this.todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 			this.selectedDate = this.todayDate;
-			
+
 			// 从用户信息中获取默认提醒时间
 			const userInfo = uni.getStorageSync('userInfo');
 			if (userInfo && userInfo.remindTime) {
 				this.remindData.time = userInfo.remindTime;
 			}
-			
+
+			// 优先从缓存加载天气数据
+			const cache = uni.getStorageSync('weatherCache');
+			if (cache && cache.date === this.todayDate) {
+				this.weatherInfo = cache;
+			}
+
 			// 必须先获取养护配置，因为日志列表依赖它来匹配图标
 			await this.getCareActions();
 			await this.getLogs();
@@ -230,16 +286,16 @@ export default {
 				const params = {
 					familyId: Number(this.familyId)
 				};
-				
+
 				const res = await callContainer("/api/plant/log/list", params);
 				if (res.data) {
 					this.allLogs = res.data.map(log => {
 						// 1. 尝试从养护配置中匹配
 						let action = this.careActions.find(a => a.type === log.actionType);
-						
+
 						// 2. 特殊处理成长记录 (record)
 						const isRecord = log.actionType === 'record' || log.actionType === 'Growth';
-						
+
 						// 3. 构建最终显示的日志对象
 						const finalLog = {
 							...log,
@@ -248,10 +304,10 @@ export default {
 							icon: isRecord ? 'plant-zhiwuzhiyuan-duorouzhiwuyuan' : (log.icon || (action ? action.icon : 'plant-jiaoshui1')),
 							color: isRecord ? '#A7C190' : (log.color || (action ? action.color : '#4A6139'))
 						};
-						
+
 						return finalLog;
 					});
-					
+
 					// 生成日历标记
 					const dateMap = {};
 					this.allLogs.forEach(log => {
@@ -264,7 +320,7 @@ export default {
 						}
 					});
 					this.selectedDates = Object.values(dateMap);
-					
+
 				}
 			} catch (e) { console.error(e); }
 		},
@@ -322,7 +378,7 @@ export default {
 		onRemindConfirm(e) {
 			this.remindData.date = e.fulldate;
 			this.remindData.content = ''; // 重置内容
-			
+
 			// 优先从配置中获取默认提醒时间
 			const userInfo = uni.getStorageSync('userInfo');
 			if (userInfo && userInfo.remindTime) {
@@ -330,27 +386,27 @@ export default {
 			} else {
 				this.remindData.time = '08:00';
 			}
-			
+
 			this.$refs.remindPopup.open();
 		},
 		async saveRemind() {
 			if (!this.remindData.content.trim()) {
 				return uni.showToast({ title: '请输入提醒内容', icon: 'none' });
 			}
-			
+
 			try {
 				uni.showLoading({ title: '保存预约...' });
-				
+
 				const fullRemindTime = `${this.remindData.date} ${this.remindData.time}`;
-				
+
 				await callContainer('/api/remind/add', {
 					familyId: Number(this.familyId),
-					plantId: 0, 
+					plantId: 0,
 					remindTime: fullRemindTime,
 					content: this.remindData.content,
 					actionType: 'remind'
 				});
-				
+
 				// 同时记录一条日志（可选，或者由后端自动生成）暂时不考虑
 				// await callContainer('/api/plant/log/add', {
 				// 	familyId: Number(this.familyId),
@@ -360,7 +416,7 @@ export default {
 				// 	logTime: `${this.remindData.date}T${this.remindData.time}:00Z`,
 				// 	images: []
 				// });
-				
+
 				uni.showToast({
 					title: '预约成功',
 					icon: 'success'
@@ -377,6 +433,14 @@ export default {
 		handleWeatherClick() {
 			this.fetchLocationWeather();
 		},
+		getWeatherIcon(weather) {
+			if (!weather) return 'location-filled';
+			if (weather.includes('晴')) return 'sun-filled';
+			if (weather.includes('云') || weather.includes('阴')) return 'cloud-filled';
+			if (weather.includes('雨')) return 'rain-filled';
+			if (weather.includes('雪')) return 'snow-filled';
+			return 'location-filled';
+		},
 		// 获取模糊位置并请求后端换取天气信息
 		async fetchLocationWeather() {
 			// #ifdef MP-WEIXIN
@@ -390,7 +454,21 @@ export default {
 					});
 				});
 				console.log('模糊位置获取成功:', locRes);
-				
+
+				// 检查本地缓存
+				const cache = uni.getStorageSync('weatherCache');
+				if (cache && cache.date === this.todayDate) {
+					const lonDiff = Math.abs(locRes.longitude - cache.longitude);
+					const latDiff = Math.abs(locRes.latitude - cache.latitude);
+					// 如果位置变动在 3 位小数以内，认为位置未变，直接用缓存
+					if (lonDiff < 0.001 && latDiff < 0.001) {
+						console.log('位置未变，使用本地天气缓存');
+						this.weatherInfo = cache;
+						uni.hideLoading();
+						return;
+					}
+				}
+
 				// 请求后端接口获取天气信息
 				const res = await callContainer('/api/weather', {
 					longitude: locRes.longitude,
@@ -402,12 +480,21 @@ export default {
 						city: res.data.city,
 						temp: res.data.temp,
 						icon: res.data.icon,
-						adcode: res.data.adcode
+						adcode: res.data.adcode,
+						weather: res.data.weather,
+						casts: res.data.casts || []
 					};
+					// 存入本地缓存，包含位置信息
+					uni.setStorageSync('weatherCache', {
+						...this.weatherInfo,
+						longitude: locRes.longitude,
+						latitude: locRes.latitude,
+						date: this.todayDate
+					});
 				} else {
 					throw new Error('获取天气数据失败');
 				}
-				
+
 				uni.hideLoading();
 			} catch (error) {
 				uni.hideLoading();
@@ -433,9 +520,9 @@ export default {
 
 // 固定头部
 .fixed-header-group {
-    position: sticky;
-    top: 0;
-    z-index: 998;
+	position: sticky;
+	top: 0;
+	z-index: 998;
 	background-color: var(--bg-color);
 }
 
@@ -452,31 +539,106 @@ export default {
 	position: relative;
 }
 
-.weather-placeholder {
+// 匹配长条形的天气卡片样式
+.weather-widget-card {
+	position: absolute;
+	left: 15px;
+	width: 420rpx;
+	height: 100rpx;
+	background: linear-gradient(135deg, #A7C190 0%, #566C44 100%);
+	border-radius: 20rpx;
+	padding: 0 20rpx;
+	display: flex;
+	align-items: center;
+	color: #fff;
+	box-shadow: 0 6rpx 16rpx rgba(122, 153, 173, 0.2);
+	z-index: 100;
+
+	@media (prefers-color-scheme: dark) {
+		background: linear-gradient(135deg, #6B8857 0%, #A7C190 100%);
+	}
+
+	.widget-left {
+		margin-right: 16rpx;
+
+		.temp-icon {
+			font-size: 56rpx;
+			line-height: 1;
+		}
+	}
+
+	.widget-center {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 4rpx;
+
+		.city-info {
+			display: flex;
+			align-items: center;
+			gap: 6rpx;
+
+			.city-name {
+				font-size: 26rpx;
+				font-weight: bold;
+			}
+		}
+
+		.status-info {
+			display: flex;
+			align-items: center;
+			gap: 6rpx;
+
+			.weather-status {
+				font-size: 22rpx;
+				opacity: 0.9;
+			}
+		}
+	}
+
+	.widget-right {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 6rpx;
+
+		.week-tag {
+			font-size: 20rpx;
+			opacity: 0.8;
+			font-weight: 500;
+		}
+
+		.temp-range {
+			font-size: 22rpx;
+			font-weight: 500;
+		}
+	}
+}
+
+.weather-empty-mini {
 	position: absolute;
 	left: 15px;
 	z-index: 10;
-	padding: 0 10px;
+	padding: 0 16rpx;
 	background-color: var(--bg-btn-color);
-	border-radius: 20px;
+	border-radius: 30rpx;
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 6rpx;
 	border: 1px solid var(--border-color);
-	box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
 	.placeholder-btn-text {
-		font-size: 11px;
+		font-size: 22rpx;
 		color: var(--text-color);
 		font-weight: 500;
 	}
+}
 
-	.weather-temp {
-		font-size: 11px;
-		color: #6B8857;
-		margin-left: 2px;
-		font-weight: bold;
-	}
+.weather-placeholder {
+	display: none;
 }
 
 .safe-area-bottom {
@@ -509,6 +671,7 @@ export default {
 	padding: 4px 10px;
 	border-radius: 20px;
 	border: 1px solid var(--border-color);
+
 	text {
 		font-size: 13px;
 		color: var(--text-color);
@@ -519,6 +682,7 @@ export default {
 	.empty-box {
 		padding: 30px 0;
 		text-align: center;
+
 		.empty-text {
 			font-size: 14px;
 			color: var(--text-sub);
@@ -532,8 +696,8 @@ export default {
 	background-color: var(--bg-btn-color);
 	border-radius: 12px;
 	margin-bottom: 10px;
-	box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-	
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+
 	.log-icon {
 		width: 40px;
 		height: 40px;
@@ -544,25 +708,28 @@ export default {
 		margin-right: 12px;
 		flex-shrink: 0;
 	}
-	
+
 	.log-info {
 		flex: 1;
+
 		.log-top {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			margin-bottom: 4px;
+
 			.log-name {
 				font-size: 15px;
 				font-weight: 500;
 				color: var(--text-color);
 			}
+
 			.log-time {
 				font-size: 12px;
 				color: var(--text-sub);
 			}
 		}
-		
+
 		.log-content {
 			font-size: 13px;
 			color: var(--text-color);
@@ -570,11 +737,12 @@ export default {
 			margin-bottom: 8px;
 			display: block;
 		}
-		
+
 		.log-images {
 			display: flex;
 			flex-wrap: wrap;
 			gap: 6px;
+
 			.thumb {
 				width: 60px;
 				height: 60px;
@@ -589,11 +757,13 @@ export default {
 	.uni-calendar-item__weeks-box-info {
 		display: none !important;
 	}
+
 	// 标记点保持红色
 	.uni-calendar-item__weeks-box-circle {
 		display: block !important;
 		background-color: #ff4d4f !important;
 	}
+
 	// 暗黑模式日历适配
 	.uni-calendar-item__weeks-box-text {
 		color: var(--text-color) !important;
@@ -605,41 +775,43 @@ export default {
 	background-color: var(--card-bg);
 	border-radius: 20rpx;
 	padding: 30rpx;
-	
+
 	.modal-header {
 		text-align: center;
 		margin-bottom: 30rpx;
+
 		.modal-title {
 			font-size: 18px;
 			font-weight: bold;
 			color: var(--text-color);
 		}
 	}
-	
+
 	.input-group {
 		display: flex;
 		align-items: center;
 		padding: 20rpx 0;
 		border-bottom: 1px solid var(--border-color);
-		
+
 		&.vertical {
 			flex-direction: column;
 			align-items: flex-start;
 			border-bottom: none;
 		}
-		
+
 		.label {
 			width: 140rpx;
 			font-size: 15px;
 			color: var(--text-sub);
 		}
-		
-		.value, .time-picker-value {
+
+		.value,
+		.time-picker-value {
 			font-size: 15px;
 			color: var(--text-color);
 			font-weight: 500;
 		}
-		
+
 		.remind-textarea {
 			width: 90%;
 			height: 160rpx;
@@ -651,26 +823,28 @@ export default {
 			color: var(--text-color);
 		}
 	}
-	
+
 	.modal-footer {
 		display: flex;
 		gap: 20rpx;
 		margin-top: 40rpx;
-		
+
 		.btn {
 			flex: 1;
 			height: 80rpx;
 			line-height: 80rpx;
 			border-radius: 40rpx;
 			font-size: 15px;
-			
-			&::after { border: none; }
-			
+
+			&::after {
+				border: none;
+			}
+
 			&.cancel {
 				background-color: var(--border-color);
 				color: var(--text-sub);
 			}
-			
+
 			&.confirm {
 				background-color: #4A6139;
 				color: #fff;

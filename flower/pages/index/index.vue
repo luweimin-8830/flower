@@ -334,6 +334,12 @@ export default {
 			path: path,
 			imageUrl: '/static/share.jpg'
 		}
+	},
+	onShareTimeline() {
+		return {
+			title: '爱护绿植，从记录开始',
+			imageUrl: '/static/share.jpg'
+		}
 	}
 }
 </script>
