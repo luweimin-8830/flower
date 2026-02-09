@@ -116,6 +116,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": false
 			}
+		},
+		{
+			"path": "pages/charts/charts",
+			"style": {
+				"navigationBarTitleText": "图表",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": false
+			}
 		}
 	],
 	"globalStyle": {

@@ -65,11 +65,11 @@
             </view>
             <!-- 分割线 -->
             <view class="divider"></view>
-            <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
+            <view class="menu-item" hover-class="item-hover" @click="handleNav('charts')">
                 <view class="left-content">
                     <view class="iconfont plant-tubiao-bingtu menu-icon" style="font-size: 22px; color: var(--primary-color);"></view>
                     <!-- <uni-icons type="settings" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons> -->
-                    <text class="menu-text">图标分析</text>
+                    <text class="menu-text">图表分析</text>
                 </view>
                 <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
             </view>
@@ -145,6 +145,8 @@ export default {
                 uni.navigateTo({ url: '/pages/familyDetail/familyDetail' })
             } else if (type === 'display') {
                 uni.navigateTo({ url: '/pages/displayRoom/displayRoom' })
+            } else if (type == 'charts') {
+                uni.navigateTo({ url: '/pages/charts/charts' })
             }
         }
     },

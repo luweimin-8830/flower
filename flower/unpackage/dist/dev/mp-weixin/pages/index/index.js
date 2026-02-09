@@ -250,7 +250,7 @@ if (!Array) {
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.sr("loading", "24547230-0"),
+    a: common_vendor.sr("loading", "a77b0c48-0"),
     b: $data.list["a"].is
   }, $data.list["a"].is ? {
     c: $data.onKey === "a" ? "" : "none"
@@ -261,12 +261,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}, {
     f: $data.list["c"].is
   }, $data.list["c"].is ? {
-    g: common_vendor.sr("homeComponent", "24547230-3"),
+    g: common_vendor.sr("homeComponent", "a77b0c48-3"),
     h: $data.onKey === "c" ? "" : "none"
   } : {}, {
     i: $data.list["d"].is
   }, $data.list["d"].is ? {
-    j: common_vendor.sr("calendarComponent", "24547230-4"),
+    j: common_vendor.sr("calendarComponent", "a77b0c48-4"),
     k: $data.onKey === "d" ? "" : "none"
   } : {}, {
     l: $data.list["e"].is
