@@ -1,5 +1,4 @@
 <script>
-import { callContainer } from './utils/request';
 export default {
 	globalData: {
 		topBarHeight: 0,
@@ -7,7 +6,7 @@ export default {
 		windowWidth: 0,
 		windowHeight: 0,
 	},
-	onLaunch: async function () {
+	onLaunch: function () {
 		console.log('App Launch')
 		if(!wx.cloud) {
 			console.error('请使用 2.2.3 或以上的基础库以使用云能力')
@@ -30,12 +29,6 @@ export default {
 		this.globalData.bottomSafeAreaHeight = bottomSafeAreaHeight
 		// uni.hideTabBar()
 		
-	},
-	onShow: function () {
-
-	},
-	onHide: function () {
-
 	}
 }
 </script>
@@ -76,7 +69,7 @@ page {
 page {
 	background-color: var(--bg-color);
 	color: var(--text-color);
-	transition: background-color 0.3s, color, 0.3s;
+	transition: background-color 0.3s, color 0.3s;
 }
 
 /* 全局组件暗色适配 */

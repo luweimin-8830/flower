@@ -23,10 +23,10 @@ const _sfc_main = {
     windowWidth: 0,
     windowHeight: 0
   },
-  onLaunch: async function() {
-    common_vendor.index.__f__("log", "at App.vue:11", "App Launch");
+  onLaunch: function() {
+    common_vendor.index.__f__("log", "at App.vue:10", "App Launch");
     if (!common_vendor.wx$1.cloud) {
-      common_vendor.index.__f__("error", "at App.vue:13", "请使用 2.2.3 或以上的基础库以使用云能力");
+      common_vendor.index.__f__("error", "at App.vue:12", "请使用 2.2.3 或以上的基础库以使用云能力");
     } else {
       common_vendor.wx$1.cloud.init({
         env: "prod-0gr2o3qpe533f1fb",
@@ -43,10 +43,6 @@ const _sfc_main = {
     this.globalData.topBarHeight = barHeight;
     const bottomSafeAreaHeight = systemInfo.screenHeight - systemInfo.safeArea.bottom;
     this.globalData.bottomSafeAreaHeight = bottomSafeAreaHeight;
-  },
-  onShow: function() {
-  },
-  onHide: function() {
   }
 };
 function createApp() {

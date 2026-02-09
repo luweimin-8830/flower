@@ -63,6 +63,16 @@
                 </view>
                 <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
             </view>
+            <!-- 分割线 -->
+            <view class="divider"></view>
+            <view class="menu-item" hover-class="item-hover" @click="handleNav('care')">
+                <view class="left-content">
+                    <view class="iconfont plant-tubiao-bingtu menu-icon" style="font-size: 22px; color: var(--primary-color);"></view>
+                    <!-- <uni-icons type="settings" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons> -->
+                    <text class="menu-text">图标分析</text>
+                </view>
+                <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
+            </view>
         </view>
     </view>
     <view class="section-container">
