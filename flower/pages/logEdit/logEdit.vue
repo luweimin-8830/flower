@@ -312,7 +312,8 @@ export default {
 				}
 				
 				uni.showToast({ title: '保存成功', icon: 'success' });
-				uni.$emit('refreshHomeList'); // 通知详情页刷新
+				uni.$emit('refreshHomeList');
+				uni.$emit('refreshPlantDetail');
 				setTimeout(() => uni.navigateBack(), 1500);
 			} catch (e) {
 				console.error(e);

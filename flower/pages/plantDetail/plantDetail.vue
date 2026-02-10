@@ -784,7 +784,7 @@ export default {
 /* 🌟 植物头部卡片 */
 .plant-header-card {
 	margin: 10px 16px;
-	padding: 20px;
+	padding: 20px 15px;
 	background-color: rgba(255, 255, 255, 0.55);
 	border-radius: 24px;
 	box-shadow: 0 8px 20px rgba(107, 136, 87, 0.08);
@@ -888,17 +888,18 @@ export default {
 		align-items: center;
 
 		.stat-val {
-			font-size: 18px;
+			font-size: 15px;
 			font-weight: bold;
 			color: #2F3E25;
 			margin-bottom: 4px;
 			font-family: 'DIN', sans-serif;
-
+			white-space: nowrap;
 		}
 
 		.stat-label {
-			font-size: 12px;
+			font-size: 11px;
 			color: #888;
+			white-space: nowrap;
 		}
 	}
 
