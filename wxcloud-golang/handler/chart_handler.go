@@ -91,8 +91,15 @@ func GetCareChartHandler(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	// 1. 获取该家庭在该月份的所有养护记录统计
-	// 我们按 ActionType 统计每天的次数。为了简化，我们展示该月内前 10 种最常见的操作类型
+	// 1. 获取该家庭的所有养护项映射，用于将 action_type 转为用户定义的中文名
+	var careActions []model.CareAction
+	db.DB.WithContext(ctx).Where("family_id = ?", req.FamilyID).Find(&careActions)
+	careMap := make(map[string]string)
+	for _, a := range careActions {
+		careMap[a.Type] = a.Name
+	}
+
+	// 2. 获取该家庭在该月份的所有养护记录统计
 	var results []struct {
 		ActionType string
 		Count      int64
@@ -122,7 +129,13 @@ func GetCareChartHandler(c *gin.Context) {
 	}
 
 	for _, res := range results {
-		resp.Categories = append(resp.Categories, model.GetActionName(res.ActionType))
+		name := res.ActionType
+		if n, ok := careMap[res.ActionType]; ok {
+			name = n
+		} else {
+			name = model.GetActionName(res.ActionType)
+		}
+		resp.Categories = append(resp.Categories, name)
 		resp.Series[0].Data = append(resp.Series[0].Data, res.Count)
 	}
 

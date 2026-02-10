@@ -31,8 +31,8 @@
 
             <view class="card-box">
                 <view class="charts-box">
-                    <qiun-data-charts :type="chartOptions[chartIndex].type" :opts="currentOpts" :chartData="chartData"
-                        :canvas2d="true" canvasId="nFJjIDtblJABnYwVKwdOawkzzVcyGbpf" />
+                    <qiun-data-charts :key="chartIndex" :type="chartOptions[chartIndex].type" :opts="currentOpts"
+                        :chartData="chartData" :canvas2d="true" canvasId="plantChartCanvas" />
                 </view>
             </view>
         </view>
@@ -165,8 +165,8 @@ onReady() {
         },
         handleChartChange(e) {
             this.chartIndex = e.detail.value;
-            // 🚀 同步重置数据，防止切换瞬间因数据格式不匹配导致 u-charts 内部报错
-            this.chartData = { categories: [], series: [] };
+            // 🚀 彻底重置数据，避免旧数据干扰新图表初始化
+            this.chartData = {}; 
             wx.vibrateShort({ type: 'light' });
             this.getServerData();
         },
