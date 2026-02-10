@@ -31,8 +31,9 @@
 
             <view class="card-box">
                 <view class="charts-box">
-                    <qiun-data-charts :key="chartIndex" :type="chartOptions[chartIndex].type" :opts="currentOpts"
-                        :chartData="chartData" :canvas2d="true" canvasId="plantChartCanvas" />
+                    <qiun-data-charts v-if="renderChart" :key="chartIndex" :type="chartOptions[chartIndex].type"
+                        :opts="currentOpts" :chartData="chartData" :canvas2d="true"
+                        :canvasId="'plantChartCanvas' + chartIndex" />
                 </view>
             </view>
         </view>
@@ -60,9 +61,10 @@ export default {
         return {
             familyId: 0,
             topBarHeight: 0,
-            chartData: {},
+            chartData: { categories: [], series: [] },
             chartIndex: 0,
             currentDate: '', // 格式：YYYY-MM
+            renderChart: true,
             chartOptions: [
                 { name: '植物分类统计', type: 'pie', desc: '展示当前家庭中各类标签下的植物分布比例。' },
                 { name: '养护操作统计', type: 'bar', desc: '展示所选月份内，家庭中各项养护操作的累计执行次数。' }
@@ -163,17 +165,28 @@ onReady() {
                 this.chartData = JSON.parse(JSON.stringify(this.chartData));
             }
         },
-        handleChartChange(e) {
+        async handleChartChange(e) {
+            this.renderChart = false; // 彻底销毁当前图表组件
             this.chartIndex = e.detail.value;
-            // 🚀 彻底重置数据，避免旧数据干扰新图表初始化
-            this.chartData = {}; 
+            // 🚀 重置为标准空结构
+            this.chartData = { categories: [], series: [] }; 
             wx.vibrateShort({ type: 'light' });
-            this.getServerData();
+            
+            await this.getServerData();
+            this.$nextTick(() => {
+                this.renderChart = true; // 重新挂载新类型的图表组件
+            });
         },
-        handleDateChange(e) {
+        async handleDateChange(e) {
+            this.renderChart = false;
             this.currentDate = e.detail.value;
+            this.chartData = { categories: [], series: [] }; 
             wx.vibrateShort({ type: 'light' });
-            this.getServerData();
+            
+            await this.getServerData();
+            this.$nextTick(() => {
+                this.renderChart = true;
+            });
         },
         async getServerData() {
             const currentOption = this.chartOptions[this.chartIndex];
@@ -182,12 +195,13 @@ onReady() {
                     const res = await callContainer("/api/chart/pie", { familyId: this.familyId });
                     if (res.data && res.data.length > 0) {
                         this.chartData = {
+                            categories: [],
                             series: [{
                                 data: res.data
                             }]
                         };
                     } else {
-                        this.chartData = { series: [] };
+                        this.chartData = { categories: [], series: [] };
                     }
                 } else if (currentOption.type === 'bar') {
                     const [year, month] = this.currentDate.split('-').map(Number);
