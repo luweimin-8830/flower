@@ -116,28 +116,14 @@ func GetCareChartHandler(c *gin.Context) {
 		return
 	}
 
-	// 转换展示名称的映射
-	typeNameMap := map[string]string{
-		"water":     "浇水",
-		"fertilize": "施肥",
-		"prune":     "修剪",
-		"repot":     "换盆",
-		"pest":      "虫害",
-		"record":    "记录",
-	}
-
 	resp := CareChartResponse{
 		Categories: []string{"操作次数"},
 		Series:     []Series{},
 	}
 
 	for _, res := range results {
-		name, ok := typeNameMap[res.ActionType]
-		if !ok {
-			name = res.ActionType
-		}
 		resp.Series = append(resp.Series, Series{
-			Name: name,
+			Name: model.GetActionName(res.ActionType),
 			Data: []int64{res.Count},
 		})
 	}

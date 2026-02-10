@@ -35,3 +35,23 @@ type PlantLog struct {
 	// gorm 会自动创建 plant_log_images 中间表
 	Images []Image `json:"images" gorm:"many2many:plant_log_images;"`
 }
+
+// GetActionName 获取动作类型的中文名称
+func GetActionName(actionType string) string {
+	switch actionType {
+	case LogTypeWater:
+		return "浇水"
+	case LogTypeFertilize:
+		return "施肥"
+	case LogTypePrune:
+		return "修剪"
+	case LogTypeRepot:
+		return "换盆"
+	case LogTypeRecord:
+		return "日常记录"
+	case LogTypePest:
+		return "虫害"
+	default:
+		return actionType
+	}
+}

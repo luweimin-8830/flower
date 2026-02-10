@@ -165,6 +165,8 @@ onReady() {
         },
         handleChartChange(e) {
             this.chartIndex = e.detail.value;
+            // 🚀 同步重置数据，防止切换瞬间因数据格式不匹配导致 u-charts 内部报错
+            this.chartData = { categories: [], series: [] };
             wx.vibrateShort({ type: 'light' });
             this.getServerData();
         },
