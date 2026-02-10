@@ -110,6 +110,10 @@ func main() {
 			image.POST("/check", handler.CheckImageHandler)
 			image.POST("/add", handler.SaveImageHandler)
 		}
+		chart := api.Group("/chart")
+		{
+			chart.POST("/pie", handler.GetChartDataHandler)
+		}
 	}
 	log.Fatal(r.Run(":80"))
 }

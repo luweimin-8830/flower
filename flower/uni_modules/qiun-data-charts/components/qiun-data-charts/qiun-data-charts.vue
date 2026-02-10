@@ -439,6 +439,7 @@ export default {
       this.type2d = true;
       this.pixel = systemInfo.pixelRatio;
     }
+    console.log('开始绘制', this.cWidth, this.cHeight, this.chartData);
     // #endif
     //非微信小程序端强制关闭canvas2d模式
     // #ifndef MP-WEIXIN

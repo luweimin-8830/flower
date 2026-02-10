@@ -50,7 +50,8 @@
         "themeLocation" : "theme.json",
         "appid" : "wxb552b4471f232799",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "es6": true
         },
         "usingComponents" : true
     },
