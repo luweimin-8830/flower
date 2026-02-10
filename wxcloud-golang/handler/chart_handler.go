@@ -117,15 +117,13 @@ func GetCareChartHandler(c *gin.Context) {
 	}
 
 	resp := CareChartResponse{
-		Categories: []string{"操作次数"},
-		Series:     []Series{},
+		Categories: []string{},
+		Series:     []Series{{Name: "操作次数", Data: []int64{}}},
 	}
 
 	for _, res := range results {
-		resp.Series = append(resp.Series, Series{
-			Name: model.GetActionName(res.ActionType),
-			Data: []int64{res.Count},
-		})
+		resp.Categories = append(resp.Categories, model.GetActionName(res.ActionType))
+		resp.Series[0].Data = append(resp.Series[0].Data, res.Count)
 	}
 
 	response.Success(c, resp)

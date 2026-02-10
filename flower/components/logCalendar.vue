@@ -10,7 +10,7 @@
 				<view class="weather-widget-card" v-if="currentDayWeather" :style="{ top: menuButtonTop + 'px' }"
 					@click="handleWeatherClick">
 					<view class="widget-left">
-						<view class="iconfont plant-xihuan temp-icon"></view>
+						<image class="temp-icon" :src="getWeatherIconfont(currentDayWeather.weather)" mode="aspectFit"></image>
 					</view>
 					<view class="widget-center">
 						<view class="city-info">
@@ -18,7 +18,8 @@
 							<uni-icons type="paperplane-filled" size="10" color="#fff"></uni-icons>
 						</view>
 						<view class="status-info">
-							<uni-icons :type="currentDayWeather.icon || 'cloud-filled'" size="14" color="#fff"></uni-icons>
+							<image :src="getWeatherIconfont(currentDayWeather.weather)" mode="aspectFit"
+								style="width: 14px; height: 14px; margin-right: 4px;"></image>
 							<text class="weather-status">{{ currentDayWeather.weather || '多云' }}</text>
 						</view>
 					</view>
@@ -199,7 +200,7 @@ export default {
 				return {
 					city: this.weatherInfo.city,
 					weather: forecast.dayweather,
-					icon: this.getWeatherIcon(forecast.dayweather),
+					iconfont: this.getWeatherIconfont(forecast.dayweather),
 					daytemp: forecast.daytemp,
 					nighttemp: forecast.nighttemp,
 					week: weekMap[forecast.week] || ''
@@ -221,7 +222,7 @@ export default {
 			return {
 				city: this.weatherInfo.city,
 				weather: this.weatherInfo.weather,
-				icon: this.weatherInfo.icon,
+				iconfont: this.getWeatherIconfont(this.weatherInfo.weather),
 				daytemp: todayForecast ? todayForecast.daytemp : this.weatherInfo.temp,
 				nighttemp: todayForecast ? todayForecast.nighttemp : '',
 				week: weekStr
@@ -433,13 +434,30 @@ export default {
 		handleWeatherClick() {
 			this.fetchLocationWeather();
 		},
-		getWeatherIcon(weather) {
-			if (!weather) return 'location-filled';
-			if (weather.includes('晴')) return 'sun-filled';
-			if (weather.includes('云') || weather.includes('阴')) return 'cloud-filled';
-			if (weather.includes('雨')) return 'rain-filled';
-			if (weather.includes('雪')) return 'snow-filled';
-			return 'location-filled';
+		/**
+		 * 映射天气到 iconfont 图标名称
+		 * 预留图标名称空位，待 iconfont 库更新后填入
+		 */
+		getWeatherIconfont(weather) {
+			if (!weather) return '../static/weather/sun.svg';
+			const map = {
+				'雷': '../static/weather/lei.svg',
+				'大雪': '../static/weather/daxue.svg',
+				'中雪': '../static/weather/zhongxue.svg',
+				'小雪': '../static/weather/xiaoxue.svg',
+				'大雨': '../static/weather/dayu.svg',
+				'中雨': '../static/weather/zhongyu.svg',
+				'小雨': '../static/weather/xiaoyu.svg',
+				'阴': '../static/weather/duoyun.svg',
+				'多云': '../static/weather/duoyun.svg',
+				'晴': '../static/weather/sun.svg',
+				'雨': '../static/weather/xiaoyu.svg',
+				'雪': '../static/weather/xiaoxue.svg',
+			};
+			for (let key in map) {
+				if (weather.includes(key)) return map[key];
+			}
+			return '../static/weather/sun.svg';
 		},
 		// 获取模糊位置并请求后端换取天气信息
 		async fetchLocationWeather() {
@@ -562,8 +580,8 @@ export default {
 		margin-right: 16rpx;
 
 		.temp-icon {
-			font-size: 56rpx;
-			line-height: 1;
+			width: 64rpx;
+			height: 64rpx;
 		}
 	}
 
