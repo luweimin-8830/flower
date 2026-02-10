@@ -113,6 +113,7 @@ func main() {
 		chart := api.Group("/chart")
 		{
 			chart.POST("/pie", handler.GetChartDataHandler)
+			chart.POST("/bar", handler.GetCareChartHandler)
 		}
 	}
 	log.Fatal(r.Run(":80"))

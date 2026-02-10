@@ -51,7 +51,7 @@
         "appid" : "wxb552b4471f232799",
         "setting" : {
             "urlCheck" : false,
-            "es6": true
+            "es6" : true
         },
         "usingComponents" : true
     },

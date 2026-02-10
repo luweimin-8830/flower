@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"time"
 	"wxcloud-golang/db"
 	"wxcloud-golang/db/model"
 	"wxcloud-golang/response"
@@ -63,4 +64,83 @@ func GetChartDataHandler(c *gin.Context) {
 	}
 
 	response.Success(c, tagStats)
+}
+
+type CareChartRequest struct {
+	FamilyID uint `json:"familyId" binding:"required"`
+	Year     int  `json:"year" binding:"required"`
+	Month    int  `json:"month" binding:"required"`
+}
+
+type CareChartResponse struct {
+	Categories []string `json:"categories"`
+	Series     []Series `json:"series"`
+}
+
+type Series struct {
+	Name string  `json:"name"`
+	Data []int64 `json:"data"`
+}
+
+func GetCareChartHandler(c *gin.Context) {
+	var req CareChartRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithCode(c, 401, "参数错误")
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	// 1. 获取该家庭在该月份的所有养护记录统计
+	// 我们按 ActionType 统计每天的次数。为了简化，我们展示该月内前 10 种最常见的操作类型
+	var results []struct {
+		ActionType string
+		Count      int64
+	}
+
+	// 构造月份范围
+	startDate := time.Date(req.Year, time.Month(req.Month), 1, 0, 0, 0, 0, time.Local)
+	endDate := startDate.AddDate(0, 1, 0)
+
+	err := db.DB.WithContext(ctx).Model(&model.PlantLog{}).
+		Select("action_type, COUNT(*) as count").
+		Joins("JOIN plant ON plant.id = plant_log.plant_id").
+		Where("plant.family_id = ? AND plant_log.log_time >= ? AND plant_log.log_time < ? AND plant_log.deleted_at IS NULL", req.FamilyID, startDate, endDate).
+		Group("action_type").
+		Order("count DESC").
+		Limit(10).
+		Scan(&results).Error
+
+	if err != nil {
+		response.Fail(c, "获取养护统计失败")
+		return
+	}
+
+	// 转换展示名称的映射
+	typeNameMap := map[string]string{
+		"water":     "浇水",
+		"fertilize": "施肥",
+		"prune":     "修剪",
+		"repot":     "换盆",
+		"pest":      "虫害",
+		"record":    "记录",
+	}
+
+	resp := CareChartResponse{
+		Categories: []string{"操作次数"},
+		Series:     []Series{},
+	}
+
+	for _, res := range results {
+		name, ok := typeNameMap[res.ActionType]
+		if !ok {
+			name = res.ActionType
+		}
+		resp.Series = append(resp.Series, Series{
+			Name: name,
+			Data: []int64{res.Count},
+		})
+	}
+
+	response.Success(c, resp)
 }
