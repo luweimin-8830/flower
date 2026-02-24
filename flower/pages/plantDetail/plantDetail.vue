@@ -301,7 +301,8 @@ export default {
 				date: '',
 				time: '08:00',
 				content: ''
-			}
+			},
+			allLogImages: [] // 所有日志中的图片 URL 列表
 		};
 	},
 	computed: {
@@ -408,6 +409,8 @@ export default {
 		},
 		formatLogs(rawLogs) {
 			const groups = {};
+			const allImages = []; // 收集所有图片
+			
 			rawLogs.forEach(log => {
 				const date = new Date(log.logTime);
 				const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
@@ -433,6 +436,13 @@ export default {
 					};
 				}
 				
+				// 收集当前日志的图片
+				if (log.images && log.images.length > 0) {
+					log.images.forEach(img => {
+						allImages.push(img.url);
+					});
+				}
+				
 				groups[dateStr].items.push({
 					id: log.id,
 					time,
@@ -445,7 +455,9 @@ export default {
 					color: action ? action.color : ''
 				});
 			});
+			
 			this.logList = Object.values(groups);
+			this.allLogImages = allImages; // 保存所有图片 URL
 		},
 		goEdit() {
 			uni.navigateTo({ url: `/pages/plantEdit/plantEdit?id=${this.plant.id}&type=edit` })
@@ -531,9 +543,13 @@ export default {
 			});
 		},
 		previewLogImages(images, index) {
+			// 找到当前点击图片在所有图片列表中的位置
+			const currentUrl = images[index].url;
+			const currentIndex = this.allLogImages.indexOf(currentUrl);
+			
 			uni.previewImage({
-				current: index,
-				urls: images.map(img => img.url)
+				current: currentIndex >= 0 ? currentIndex : 0,
+				urls: this.allLogImages // 使用所有日志的图片列表
 			});
 		},
 		previewCover() {

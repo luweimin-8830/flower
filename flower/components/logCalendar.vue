@@ -79,7 +79,7 @@
 
 				<view class="day-detail">
 					<view class="detail-header">
-						<text class="detail-title">{{ selectedDate }} 记录</text>
+						<text class="detail-title">{{ displayDate || selectedDate }} 记录</text>
 						<uni-icons type="notification" size="20" color="#6B8857" @click="requestSubscribe"></uni-icons>
 					</view>
 
@@ -100,8 +100,12 @@
 								<text class="log-content" v-if="log.content">{{ log.content }}</text>
 								<view class="log-images" v-if="log.images && log.images.length > 0">
 									<image v-for="(img, idx) in log.images" :key="idx" :src="img.url" mode="aspectFill"
-										class="thumb"></image>
+										class="thumb" @click.stop="previewImages(log.images, idx)"></image>
 								</view>
+							</view>
+							<!-- 🌟 所有记录都可以删除 -->
+							<view class="delete-batch-btn" @click.stop="handleDeleteBatch(log)">
+								<uni-icons type="trash" size="18" color="#dd524d"></uni-icons>
 							</view>
 						</view>
 					</view>
@@ -132,6 +136,7 @@ export default {
 			menuButtonTop: 0,
 			menuButtonHeight: 32,
 			selectedDate: '',
+			displayDate: '', // 用于显示日志的日期（可能与日历选择不同）
 			weatherInfo: {
 				city: '',
 				temp: '',
@@ -149,16 +154,31 @@ export default {
 				date: '',
 				time: '08:00',
 				content: ''
-			}
+			},
+			allLogImages: [] // 所有日志图片列表
 		};
 	},
 	computed: {
 		currentLogs() {
-			if (!this.selectedDate) return [];
+			// 使用 displayDate 来决定显示哪天的日志
+			const targetDate = this.displayDate || this.selectedDate;
+			if (!targetDate) return [];
+			
 			const filtered = this.allLogs.filter(log => {
 				const logDate = log.logTime.split('T')[0];
-				return logDate === this.selectedDate;
+				return logDate === targetDate;
 			});
+
+			// 收集当日所有图片
+			const todayImages = [];
+			filtered.forEach(log => {
+				if (log.images && log.images.length > 0) {
+					log.images.forEach(img => {
+						todayImages.push(img.url);
+					});
+				}
+			});
+			this.allLogImages = todayImages;
 
 			// 按时间、动作类型、内容进行分组合并
 			const groups = {};
@@ -171,11 +191,13 @@ export default {
 					groups[key] = {
 						...log,
 						count: 1,
-						plants: [log.name]
+						plants: [log.name],
+						logIds: [log.id] // 收集同批次的所有日志 ID
 					};
 				} else {
 					groups[key].count++;
 					if (log.name) groups[key].plants.push(log.name);
+					groups[key].logIds.push(log.id);
 				}
 			});
 
@@ -257,6 +279,7 @@ export default {
 			const now = new Date();
 			this.todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 			this.selectedDate = this.todayDate;
+			this.displayDate = this.todayDate; // 初始化显示日期为今天
 
 			// 从用户信息中获取默认提醒时间
 			const userInfo = uni.getStorageSync('userInfo');
@@ -327,6 +350,7 @@ export default {
 		},
 		onDateChange(e) {
 			this.selectedDate = e.fulldate;
+			this.displayDate = e.fulldate; // 同步更新显示日期
 		},
 		formatTime(timeStr) {
 			if (!timeStr) return '';
@@ -334,8 +358,63 @@ export default {
 			return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 		},
 		goEdit(log) {
+			// 如果是批量操作记录，不允许编辑
+			if (log.count > 1) {
+				uni.showToast({ title: '批量记录无法编辑', icon: 'none' });
+				return;
+			}
 			uni.navigateTo({
 				url: `/pages/logEdit/logEdit?id=${log.id}&plantId=${log.plantId}`
+			});
+		},
+		async handleDeleteBatch(log) {
+			const title = log.count > 1 
+				? `确定要删除这 ${log.count} 条批量操作记录吗？\n涉及植物：${log.plants.join('、')}`
+				: `确定要删除"${log.displayName}"的这条记录吗？`;
+			
+			uni.showModal({
+				title: '提示',
+				content: title,
+				confirmColor: '#dd524d',
+				success: async (res) => {
+					if (res.confirm) {
+						uni.showLoading({ title: '正在删除...' });
+						try {
+							// 删除所有相关日志（单条时 logIds 只有一个元素）
+							await Promise.all(
+								log.logIds.map(id => callContainer("/api/plant/log/delete", { id }))
+							);
+							
+							uni.showToast({ title: '已删除', icon: 'success' });
+							
+							// 刷新日志列表
+							await this.getLogs();
+							
+							// 通知首页和详情页刷新
+							uni.$emit('refreshHomeList');
+							uni.$emit('refreshPlantDetail');
+						} catch (e) {
+							console.error("删除失败:", e);
+							uni.showToast({ title: '删除失败', icon: 'none' });
+						} finally {
+							uni.hideLoading();
+						}
+					}
+				}
+			});
+		},
+		previewImages(images, index) {
+			// 找到当前点击图片在所有图片列表中的位置
+			const currentUrl = images[index].url;
+			const currentIndex = this.allLogImages.indexOf(currentUrl);
+			
+			uni.previewImage({
+				current: currentIndex >= 0 ? currentIndex : 0,
+				urls: this.allLogImages,
+				success: () => {
+					// 预览完成后，将日志显示切换回今天
+					this.displayDate = this.todayDate;
+				}
 			});
 		},
 		requestSubscribe() {
@@ -767,6 +846,14 @@ export default {
 				border-radius: 4px;
 			}
 		}
+	}
+
+	.delete-batch-btn {
+		padding: 0 12rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
 	}
 }
 
