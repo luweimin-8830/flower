@@ -125,6 +125,15 @@
 				"enablePullDownRefresh": false,
 				"disableScroll": false
 			}
+		},
+		{
+			"path": "pages/manual/manual",
+			"style": {
+				"navigationBarTitleText": "新手手册",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": false
+			}
 		}
 	],
 	"globalStyle": {

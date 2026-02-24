@@ -78,6 +78,15 @@
     <view class="section-container">
         <text class="section-title">帮助与支持</text>
         <view class="card-box">
+            <view class="menu-item" hover-class="item-hover" @click="handleNav('manual')">
+                <view class="left-content">
+                    <uni-icons type="help" size="22" color="var(--primary-color)" class="menu-icon"></uni-icons>
+                    <text class="menu-text">使用手册</text>
+                </view>
+                <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
+            </view>
+            <!-- 分割线 -->
+            <view class="divider"></view>
             <button class="contact-btn" open-type="contact" hover-class="item-hover">
                 <view class="menu-item">
                     <view class="left-content">
@@ -147,6 +156,8 @@ export default {
                 uni.navigateTo({ url: '/pages/displayRoom/displayRoom' })
             } else if (type == 'charts') {
                 uni.navigateTo({ url: '/pages/charts/charts' })
+            } else if (type == 'manual') {
+                uni.navigateTo({ url: '/pages/manual/manual' })
             }
         }
     },

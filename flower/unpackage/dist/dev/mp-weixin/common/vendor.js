@@ -6457,7 +6457,7 @@ function populateParameters(fromRes, toRes) {
   let _SDKVersion = SDKVersion;
   const hostLanguage = (language || "").replace(/_/g, "-");
   const parameters = {
-    appId: "",
+    appId: "__UNI__B5161E4",
     appName: "flower",
     appVersion: "1.0.0",
     appVersionCode: "100",
@@ -6606,7 +6606,7 @@ const getAppBaseInfo = {
       hostName: _hostName,
       hostSDKVersion: SDKVersion,
       hostTheme: theme,
-      appId: "",
+      appId: "__UNI__B5161E4",
       appName: "flower",
       appVersion: "1.0.0",
       appVersionCode: "100",
@@ -8433,6 +8433,15 @@ const pages = [
       enablePullDownRefresh: false,
       disableScroll: false
     }
+  },
+  {
+    path: "pages/manual/manual",
+    style: {
+      navigationBarTitleText: "新手手册",
+      navigationStyle: "custom",
+      enablePullDownRefresh: false,
+      disableScroll: false
+    }
   }
 ];
 const globalStyle = {
@@ -8805,7 +8814,7 @@ function T(e2) {
 const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T(""), O = T("[]") || [];
 let N = "";
 try {
-  N = "";
+  N = "__UNI__B5161E4";
 } catch (e2) {
 }
 let L = {};

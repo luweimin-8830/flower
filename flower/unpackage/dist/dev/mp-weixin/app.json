@@ -13,7 +13,8 @@
     "pages/shareDetail/shareDetail",
     "pages/displayRoom/displayRoom",
     "pages/sharePlantList/sharePlantList",
-    "pages/charts/charts"
+    "pages/charts/charts",
+    "pages/manual/manual"
   ],
   "window": {
     "navigationBarTextStyle": "@navTextStyle",
