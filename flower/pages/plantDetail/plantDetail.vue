@@ -1168,13 +1168,14 @@ export default {
 .log-images {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
+	gap: 8px;
 }
 
 .log-img {
-	width: 70px;
-	height: 70px;
-	border-radius: 8px;
+	width: 80px;
+	height: 80px;
+	border-radius: 10px;
+	overflow: hidden;
 }
 
 .delete-icon {

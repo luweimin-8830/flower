@@ -43,7 +43,7 @@
 
 			<!-- 4. 图片上传 -->
 			<view class="section">
-				<text class="section-title">记录照片 (最多3张)</text>
+				<text class="section-title">记录照片 (最多9张)</text>
 				<view class="image-grid">
 					<view class="image-item" v-for="(img, index) in uploadImages" :key="index">
 						<image :src="img.url" mode="aspectFill" @click="previewImage(index)"></image>
@@ -51,7 +51,7 @@
 							<uni-icons type="closeempty" size="12" color="#fff"></uni-icons>
 						</view>
 					</view>
-					<view class="image-item add-btn" v-if="uploadImages.length < 3" @click="chooseImage">
+					<view class="image-item add-btn" v-if="uploadImages.length < 9" @click="chooseImage">
 						<uni-icons type="plusempty" size="30" color="#999"></uni-icons>
 					</view>
 				</view>
@@ -173,14 +173,14 @@ export default {
 		},
 		async chooseImage() {
 			try {
-				const res = await new Promise((resolve, reject) => {
-					wx.chooseMedia({
-						count: 3 - this.uploadImages.length,
-						mediaType: ['image'],
-						success: resolve,
-						fail: reject
-					})
-				});
+			const res = await new Promise((resolve, reject) => {
+				wx.chooseMedia({
+					count: 9 - this.uploadImages.length,
+					mediaType: ['image'],
+					success: resolve,
+					fail: reject
+				})
+			});
 				
 				const files = res.tempFiles;
 				uni.showLoading({ title: '处理图片...' });
