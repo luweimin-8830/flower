@@ -1,5 +1,5 @@
 <template>
-	<view class="home-container">
+	<view class="home-container theme-page" :style="themeStyle">
 		<!-- 顶部固定区域 -->
 		<view class="fixed-header-group">
 			<navBar :isHome="true" />
@@ -30,9 +30,9 @@
 					<template #item="{ item }">
 						<view class="plant-card" @click="gotoDetail(item)">
 							<view class="image-wrapper"
-								:style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
-								<image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
-									:class="{ 'show': loadedImagesMap[item.id] }" @load="onImgLoad(item)"></image>
+								:style="{ paddingBottom: getCoverRatio(item.cover) + '%' }">
+								<image :src="getCoverUrl(item.cover)" mode="aspectFill" class="plant-image show" lazy-load
+									@load="onImgLoad(item)" @error="onImgError(item)"></image>
 							</view>
 							<view class="plant-info">
 								<text class="plant-name">{{ item.name }}</text>
@@ -40,7 +40,7 @@
 						</view>
 					</template>
 				</WaterfallBox>
-				<view style="height: 40px;"></view>
+				<view class="share-list-bottom-space"></view>
 			</view>
 		</scroll-view>
 	</view>
@@ -141,7 +141,19 @@ export default {
 			}
 		},
 		onImgLoad(item) {
-			this.$set(this.loadedImagesMap, item.id, true);
+			if (item.id) this.loadedImagesMap[item.id] = true;
+		},
+		onImgError(item) {
+			if (item.id) this.loadedImagesMap[item.id] = false;
+		},
+		getCoverUrl(cover) {
+			return cover && cover.url ? cover.url : '/static/default.svg';
+		},
+		getCoverRatio(cover) {
+			const width = Number(cover && cover.width);
+			const height = Number(cover && cover.height);
+			if (!width || !height) return 100;
+			return Math.min(150, Math.max(75, height / width * 100));
 		},
 		searchPlant() {
 			this.getPlantsList();
@@ -192,6 +204,8 @@ export default {
 .waterfall-wrapper {
 	padding: 10px;
 }
+
+.share-list-bottom-space { height: calc(30px + env(safe-area-inset-bottom)); }
 
 .plant-card {
 	background-color: rgba(255, 255, 255, 0.5);

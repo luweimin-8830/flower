@@ -43,43 +43,46 @@ export default {
 
 :root,
 page {
-	--bg-color: #C1D0B7;
-	--bg-btn-color: rgba(255, 255, 255, 0.55);
-	--card-bg: #f8f8f8;
-	--text-color: #333333;
-	--text-sub: #999999;
-	--border-color: #e5e5e5;
-	--primary-color: #566C44;
-}
-
-@media (prefers-color-scheme: dark) {
-
-	:root,
-	page {
-		--bg-color: #566C44;
-		--bg-btn-color: rgba(0, 0, 0, 0.3);
-		--card-bg: #2C3E26;
-		--text-color: #f5f5f5;
-		--text-sub: #a0a0a0;
-		--border-color: #4A5D3B;
-		--primary-color: #FAF2CB;
-	}
+	--page-bg: #F1F7F4;
+	--bg-color: var(--page-bg);
+	--card-bg: #FCFFFD;
+	--bg-btn-color: var(--card-bg);
+	--surface-bg: #E8F1ED;
+	--border-color: #D6E5DE;
+	--primary-color: #72A990;
+	--primary-strong: #4F8B70;
+	--primary-soft: #DCEDE4;
+	--text-color: #203029;
+	--text-sub: #6C7A73;
+	--button-text: #FFFFFF;
+	--shadow-color: rgba(49, 96, 73, 0.10);
 }
 
 page {
-	background-color: var(--bg-color);
+	background-color: var(--page-bg);
 	color: var(--text-color);
+	color-scheme: light;
 	transition: background-color 0.3s, color 0.3s;
 }
 
-/* 全局组件暗色适配 */
-@media (prefers-color-scheme: dark) {
-    .uni-popup__wrapper {
-        background-color: transparent !important;
-    }
-    input, textarea {
-        color: var(--text-color) !important;
-    }
+view, scroll-view, input, textarea, button {
+	box-sizing: border-box;
+}
+
+input, textarea {
+	color: var(--text-color) !important;
+}
+
+.theme-page {
+	min-height: 100vh;
+	background: var(--page-bg);
+	color: var(--text-color);
+}
+
+.theme-card {
+	background: var(--card-bg);
+	border: 1px solid var(--border-color);
+	box-shadow: 0 8rpx 24rpx var(--shadow-color);
 }
 
 /*

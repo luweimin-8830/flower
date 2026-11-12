@@ -3,3 +3,10 @@ unpackage/.DS_Store
 .DS_Store
 flower/unpackage/
 
+
+node_modules/
+.env
+.env.*
+!.env.example
+/wxcloud-golang/wxcloud-golang
+

@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container theme-page" :style="themeStyle">
 		<navBar :isHome="!isOwner" />
 
 		<!-- 🌟 新增：右上角操作按钮 (悬浮在导航栏之上) -->
@@ -41,6 +41,26 @@
 					<uni-icons type="upload" size="20" color="var(--text-color)"></uni-icons>
 				</button>
 			</template>
+		</view>
+
+		<!-- 日志图片查看器：支持滑动浏览和将当前图片设为植物主图 -->
+		<view v-if="imageViewerVisible" class="log-image-viewer">
+			<swiper class="viewer-swiper" :current="imageViewerIndex" @change="handleViewerChange">
+				<swiper-item v-for="(image, viewerIndex) in allLogImages" :key="`${image.id || image.url}-${viewerIndex}`" class="viewer-slide">
+					<image class="viewer-image" :src="image.url" mode="aspectFit"></image>
+				</swiper-item>
+			</swiper>
+			<view class="viewer-toolbar" :style="{ top: (topBarHeight + 8) + 'px' }">
+				<view class="viewer-close" @click="closeImageViewer">
+					<uni-icons type="closeempty" size="25" color="#ffffff"></uni-icons>
+				</view>
+				<view v-if="isOwner" class="set-cover-button" :class="{ current: isCurrentViewerImageCover }"
+					@click="setViewerImageAsCover">
+					<uni-icons :type="isCurrentViewerImageCover ? 'checkbox-filled' : 'image'" size="17" color="#ffffff"></uni-icons>
+					<text>{{ isCurrentViewerImageCover ? '当前主图' : '设为主图' }}</text>
+				</view>
+			</view>
+			<text class="viewer-count">{{ imageViewerIndex + 1 }} / {{ allLogImages.length }}</text>
 		</view>
 
 		<!-- 占位符 -->
@@ -171,7 +191,7 @@
 						<view class="care-item" v-for="(item, index) in careActions" :key="index"
 							@click="handleCare(item)">
 							<view class="care-icon-box" :style="{ backgroundColor: item.color }">
-								<view class="iconfont" :class="item.icon" style="font-size: 28px; color: #333;" v-if="item.icon"></view>
+								<careIcon v-if="item.icon" :icon="item.icon" :type="item.type" :name="item.name" :size="28" />
 								<image v-else :src="item.img" class="care-img"></image>
 							</view>
 							<text class="care-name">{{ item.name }}</text>
@@ -226,7 +246,7 @@
 								</view>
 								<view class="log-content-box">
 									<view class="log-tag pill" :style="{ backgroundColor: log.color + '33' || '#D6EAF8' }">
-										<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 16px;" :style="{ color: log.color || '#4A90E2' }"></view>
+										<careIcon :icon="log.icon" :type="log.actionType" :name="log.actionName" :size="16" />
 										<text class="log-text">{{ log.actionName }}</text>
 									</view>
 									<view class="log-content" v-if="log.content">{{ log.content }}</view>
@@ -256,6 +276,7 @@
 
 <script>
 import navBar from '@/components/navBar.vue'
+import careIcon from '@/components/careIcon.vue'
 import { callContainer } from '../../utils/request';
 
 export default {
@@ -281,7 +302,7 @@ export default {
 			imageUrl: imageUrl
 		};
 	},
-	components: { navBar },
+	components: { navBar, careIcon },
 	data() {
 		return {
 			topBarHeight: 0,
@@ -302,7 +323,10 @@ export default {
 				time: '08:00',
 				content: ''
 			},
-			allLogImages: [] // 所有日志中的图片 URL 列表
+			allLogImages: [], // 所有日志图片对象，用于全屏浏览及设置主图
+			imageViewerVisible: false,
+			imageViewerIndex: 0,
+			settingCover: false
 		};
 	},
 	computed: {
@@ -312,6 +336,15 @@ export default {
 			const end = new Date(this.plant.deathAt.replace(/-/g, '/'));
 			const diff = end.getTime() - start.getTime();
 			return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1; // 包含起始和结束当天
+		},
+		currentViewerImage() {
+			return this.allLogImages[this.imageViewerIndex] || null;
+		},
+		isCurrentViewerImageCover() {
+			const image = this.currentViewerImage;
+			if (!image || !this.plant.cover) return false;
+			return (image.id && String(image.id) === String(this.plant.cover.id || this.plant.coverId)) ||
+				(image.url && image.url === this.plant.cover.url);
 		}
 	},
 	async onLoad(options) {
@@ -431,7 +464,7 @@ export default {
 				if (!action && (log.actionType === 'record' || log.actionType === 'Growth')) {
 					action = {
 						name: '成长记录',
-						icon: 'plant-zhiwuzhiyuan-duorouzhiwuyuan',
+						icon: 'care-record',
 						color: '#A7C190'
 					};
 				}
@@ -439,7 +472,7 @@ export default {
 				// 收集当前日志的图片
 				if (log.images && log.images.length > 0) {
 					log.images.forEach(img => {
-						allImages.push(img.url);
+						allImages.push(img);
 					});
 				}
 				
@@ -543,14 +576,43 @@ export default {
 			});
 		},
 		previewLogImages(images, index) {
-			// 找到当前点击图片在所有图片列表中的位置
-			const currentUrl = images[index].url;
-			const currentIndex = this.allLogImages.indexOf(currentUrl);
-			
-			uni.previewImage({
-				current: currentIndex >= 0 ? currentIndex : 0,
-				urls: this.allLogImages // 使用所有日志的图片列表
-			});
+			const currentImage = images[index];
+			const currentIndex = this.allLogImages.findIndex(item =>
+				(currentImage.id && String(item.id) === String(currentImage.id)) || item.url === currentImage.url
+			);
+			this.imageViewerIndex = currentIndex >= 0 ? currentIndex : 0;
+			this.imageViewerVisible = true;
+		},
+		handleViewerChange(event) {
+			this.imageViewerIndex = Number(event.detail.current || 0);
+		},
+		closeImageViewer() {
+			this.imageViewerVisible = false;
+		},
+		async setViewerImageAsCover() {
+			const image = this.currentViewerImage;
+			if (this.settingCover || this.isCurrentViewerImageCover) return;
+			if (!image || !image.id) {
+				return uni.showToast({ title: '该图片暂时无法设为主图', icon: 'none' });
+			}
+
+			this.settingCover = true;
+			uni.showLoading({ title: '正在设置...' });
+			try {
+				await callContainer('/api/plant/update', {
+					id: Number(this.plantId),
+					coverId: Number(image.id)
+				});
+				await this.getPlant();
+				uni.$emit('refreshHomeList');
+				uni.showToast({ title: '已设为主图', icon: 'success' });
+			} catch (error) {
+				console.error('设置植物主图失败:', error);
+				uni.showToast({ title: error.message || '设置失败', icon: 'none' });
+			} finally {
+				this.settingCover = false;
+				uni.hideLoading();
+			}
 		},
 		previewCover() {
 			if (this.plant.cover && this.plant.cover.url) {
@@ -700,6 +762,81 @@ export default {
 	overflow: hidden;
 }
 
+.log-image-viewer {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	background: #0b0d0c;
+}
+
+.viewer-swiper,
+.viewer-slide {
+	width: 100%;
+	height: 100%;
+}
+
+.viewer-slide {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.viewer-image {
+	width: 100%;
+	height: 100%;
+}
+
+.viewer-toolbar {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.viewer-close,
+.set-cover-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 38px;
+	box-sizing: border-box;
+	color: #ffffff;
+	background: rgba(20, 24, 22, .72);
+	border: 1px solid rgba(255, 255, 255, .24);
+	backdrop-filter: blur(8px);
+}
+
+.viewer-close {
+	width: 38px;
+	border-radius: 50%;
+}
+
+.set-cover-button {
+	gap: 6px;
+	padding: 0 15px;
+	border-radius: 20px;
+	font-size: 14px;
+}
+
+.set-cover-button.current {
+	background: rgba(111, 174, 143, .78);
+}
+
+.viewer-count {
+	position: absolute;
+	left: 50%;
+	bottom: calc(26px + env(safe-area-inset-bottom));
+	transform: translateX(-50%);
+	padding: 5px 11px;
+	border-radius: 14px;
+	color: #ffffff;
+	background: rgba(20, 24, 22, .65);
+	font-size: 12px;
+}
+
 .main-content {
 	flex: 1;
 	display: flex;
@@ -752,9 +889,6 @@ export default {
 		font-size: 14px;
 		font-weight: 500;
 		color: #333;
-		@media (prefers-color-scheme: dark) {
-			color: #FAF2CB;
-		}
 	}
 }
 
@@ -766,14 +900,6 @@ export default {
 		color: #999 !important;
 	}
 
-	@media (prefers-color-scheme: dark) {
-		background-color: rgba(255, 255, 255, 0.08);
-		border-color: rgba(255, 255, 255, 0.05);
-
-		text {
-			color: rgba(245, 245, 245, 0.4) !important;
-		}
-	}
 }
 
 .dead-badge {
@@ -838,7 +964,7 @@ export default {
 .plant-name {
 	font-size: 20px;
 	font-weight: bold;
-	color: #2F3E25;
+	color: var(--text-color);
 	margin-bottom: 4px;
 }
 
@@ -863,7 +989,7 @@ export default {
 }
 
 .tag-item {
-	background-color: #566C44;
+	background-color: var(--primary-color);
 	border-radius: 100px;
 	display: inline-flex;
 	align-items: center;
@@ -886,9 +1012,6 @@ export default {
 	margin-bottom: 16px;
 	width: 100%;
 
-	@media (prefers-color-scheme: dark) {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
 }
 
 /* 下半部分：统计数据 */
@@ -906,7 +1029,7 @@ export default {
 		.stat-val {
 			font-size: 15px;
 			font-weight: bold;
-			color: #2F3E25;
+			color: var(--text-color);
 			margin-bottom: 4px;
 			font-family: 'DIN', sans-serif;
 			white-space: nowrap;
@@ -944,9 +1067,6 @@ export default {
 	color: #333;
 	margin-right: auto;
 
-	@media (prefers-color-scheme: dark) {
-		color: #f5f5f5;
-	}
 }
 
 .care-scroll-view {
@@ -981,9 +1101,6 @@ export default {
 	margin-bottom: 8px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 
-	@media (prefers-color-scheme: dark) {
-		box-shadow: none;
-	}
 }
 
 .care-name {
@@ -996,9 +1113,6 @@ export default {
 	text-overflow: ellipsis;
 	line-height: 1.2;
 
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.6);
-	}
 }
 
 /* 日志部分 */
@@ -1019,11 +1133,6 @@ export default {
 	display: flex;
 	align-items: center;
 
-	@media (prefers-color-scheme: dark) {
-		::v-deep .uni-icons {
-			color: #FAF2CB !important;
-		}
-	}
 }
 
 .header-right {
@@ -1031,20 +1140,12 @@ export default {
 	align-items: center;
 	margin-left: auto;
 
-	@media (prefers-color-scheme: dark) {
-		::v-deep .uni-icons {
-			color: #FAF2CB !important;
-		}
-	}
 }
 
 .edit-btn {
 	font-size: 14px;
 	color: #888;
 
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.6);
-	}
 }
 
 .log-list {
@@ -1062,9 +1163,6 @@ export default {
 	margin-bottom: 16px;
 	display: block;
 
-	@media (prefers-color-scheme: dark) {
-		color: #FAF2CB;
-	}
 }
 
 .log-item {
@@ -1086,9 +1184,6 @@ export default {
 	font-weight: bold;
 	color: #333;
 
-	@media (prefers-color-scheme: dark) {
-		color: #f5f5f5;
-	}
 }
 
 .log-date-mini {
@@ -1096,9 +1191,6 @@ export default {
 	color: #999;
 	margin-top: 2px;
 
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.4);
-	}
 }
 
 .log-timeline {
@@ -1117,9 +1209,6 @@ export default {
 	z-index: 1;
 	margin-top: 6px;
 
-	@media (prefers-color-scheme: dark) {
-		background-color: #FAF2CB;
-	}
 }
 
 .line {
@@ -1128,9 +1217,6 @@ export default {
 	background-color: #eee;
 	margin-top: 4px;
 
-	@media (prefers-color-scheme: dark) {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
 }
 
 .log-content-box {
@@ -1148,9 +1234,6 @@ export default {
 	gap: 6px;
 	margin-bottom: 6px;
 
-	@media (prefers-color-scheme: dark) {
-		filter: brightness(0.9);
-	}
 }
 
 .log-content {
@@ -1160,9 +1243,6 @@ export default {
 	margin-bottom: 8px;
 	word-break: break-all;
 
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.7);
-	}
 }
 
 .log-images {
@@ -1186,9 +1266,6 @@ export default {
 	font-size: 13px;
 	color: #333;
 
-	@media (prefers-color-scheme: dark) {
-		color: #f5f5f5;
-	}
 }
 
 .remind-modal {
@@ -1197,9 +1274,6 @@ export default {
 	border-radius: 20rpx;
 	padding: 30rpx;
 
-	@media (prefers-color-scheme: dark) {
-		background-color: #1a1a1a;
-	}
 	
 	.modal-header {
 		text-align: center;
@@ -1208,9 +1282,6 @@ export default {
 			font-size: 18px;
 			font-weight: bold;
 			color: #333;
-			@media (prefers-color-scheme: dark) {
-				color: #f5f5f5;
-			}
 		}
 	}
 	
@@ -1220,9 +1291,6 @@ export default {
 		padding: 20rpx 0;
 		border-bottom: 1px solid #eee;
 
-		@media (prefers-color-scheme: dark) {
-			border-bottom-color: rgba(255, 255, 255, 0.1);
-		}
 		
 		&.vertical {
 			flex-direction: column;
@@ -1234,18 +1302,12 @@ export default {
 			width: 140rpx;
 			font-size: 15px;
 			color: #666;
-			@media (prefers-color-scheme: dark) {
-				color: rgba(245, 245, 245, 0.6);
-			}
 		}
 		
 		.value, .time-picker-value {
 			font-size: 15px;
 			color: #333;
 			font-weight: 500;
-			@media (prefers-color-scheme: dark) {
-				color: #f5f5f5;
-			}
 		}
 		
 		.remind-textarea {
@@ -1258,10 +1320,6 @@ export default {
 			font-size: 14px;
 			color: #333;
 
-			@media (prefers-color-scheme: dark) {
-				background-color: rgba(255, 255, 255, 0.05);
-				color: #f5f5f5;
-			}
 		}
 	}
 	
@@ -1282,28 +1340,16 @@ export default {
 			&.cancel {
 				background-color: #f5f5f5;
 				color: #888;
-				@media (prefers-color-scheme: dark) {
-					background-color: rgba(255, 255, 255, 0.1);
-					color: rgba(245, 245, 245, 0.6);
-				}
 			}
 			
 			&.confirm {
-				background-color: #566C44;
+				background-color: var(--primary-color);
 				color: #fff;
-				@media (prefers-color-scheme: dark) {
-					background-color: #FAF2CB;
-					color: #0A3323;
-				}
 			}
 
 			&.wither-confirm {
 				background-color: #8B4513; 
 				color: #fff;
-				@media (prefers-color-scheme: dark) {
-					background-color: #4A3728;
-					color: rgba(245, 245, 245, 0.8);
-				}
 			}
 		}
 	}

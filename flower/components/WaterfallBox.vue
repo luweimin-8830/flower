@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, getCurrentInstance } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     list: {
@@ -33,92 +33,16 @@ const props = defineProps({
     }
 });
 
-// columns 是一个二维数组，例如 [[item1, item3], [item2, item4]]
-const columns = ref(Array.from({ length: props.cols }, () => []));
-const tempQueue = ref([]);
-const isRendering = ref(false);
-
-const instance = getCurrentInstance();
-
-watch(() => props.list, (newVal, oldVal) => {
-    if (!newVal || newVal.length === 0) {
-        columns.value = Array.from({ length: props.cols }, () => []);
-        tempQueue.value = [];
-        return;
-    }
-
-    // 🚀 优化：判断是“追加”还是“重置”
-    // 如果新列表的前半部分和旧列表一致，说明是加载更多
-    const isAppend = oldVal && oldVal.length > 0 && newVal.length > oldVal.length && 
-                   newVal.slice(0, oldVal.length).every((item, i) => item[props.idKey] === oldVal[i][props.idKey]);
-
-    if (isAppend) {
-        console.log("WaterfallBox - 检测到追加数据，增量渲染");
-        const newItems = newVal.slice(oldVal.length);
-        tempQueue.value.push(...newItems);
-    } else {
-        console.log("WaterfallBox - 检测到重置数据，全量重绘");
-        columns.value = Array.from({ length: props.cols }, () => []);
-        tempQueue.value = [...newVal];
-    }
-
-    if (!isRendering.value) {
-        nextTick(() => {
-            renderNext();
-        });
-    }
-}, { immediate: true, deep: false });
-
-const renderNext = async () => {
-    if (tempQueue.value.length === 0) {
-        isRendering.value = false;
-        return;
-    }
-
-    isRendering.value = true;
-    
-    // 🚀 优化：一次处理 1 个，但大幅减小延迟
-    const item = tempQueue.value.shift();
-
-    // 寻找高度最小的列
-    let minHeight = Infinity;
-    let minColIndex = 0;
-
-    try {
-        // 遍历所有列获取高度
-        for (let i = 0; i < props.cols; i++) {
-            const height = await getContainerHeight(`#waterfall-column-${i}`);
-            if (height < minHeight) {
-                minHeight = height;
-                minColIndex = i;
-            }
-        }
-
-        // 将数据加入最短的那一列
-        columns.value[minColIndex].push(item);
-
-        // 🚀 使用 nextTick 代替 setTimeout，显著提升渲染速度
-        // nextTick 保证 DOM 已更新，此时下一次 getContainerHeight 能拿到正确高度
-        await nextTick();
-        renderNext();
-    } catch (e) {
-        console.error("WaterfallBox render error:", e);
-        isRendering.value = false;
-    }
-};
-
-const getContainerHeight = (selector) => {
-    return new Promise((resolve) => {
-        if (!instance) {
-            resolve(0);
-            return;
-        }
-        const query = uni.createSelectorQuery().in(instance.proxy || instance);
-        query.select(selector).boundingClientRect((res) => {
-            resolve(res ? res.height : 0);
-        }).exec();
-    });
-};
+// 微信小程序生产包中，逐项查询节点高度可能在组件首次渲染时拿不到节点，
+// 导致队列停止且整页空白。按顺序均匀分列无需查询 DOM，分页追加也会立即更新。
+const columns = computed(() => {
+    const count = Math.max(1, Number(props.cols) || 1)
+    const result = Array.from({ length: count }, () => [])
+    ;(props.list || []).forEach((item, index) => {
+        result[index % count].push(item)
+    })
+    return result
+})
 </script>
 
 <style scoped lang="scss">

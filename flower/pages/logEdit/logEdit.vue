@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container theme-page" :style="themeStyle">
 		<navBar :title="type === 'edit' ? '编辑日志' : '添加日志'" />
 		<view :style="{ height: topBarHeight + 'px' }"></view>
 
@@ -14,9 +14,8 @@
 							<view class="care-icon-box"
 								:class="{ 'active': formData.actionType === item.type }"
 								:style="{ backgroundColor: formData.actionType === item.type ? item.color : '#f5f5f5' }">
-								<view class="iconfont" :class="item.icon" 
-									style="font-size: 24px;"
-									:style="{ color: formData.actionType === item.type ? '#fff' : '#999' }"></view>
+								<careIcon :icon="item.icon" :type="item.type" :name="item.name"
+									:active="formData.actionType === item.type" :size="24" />
 							</view>
 							<text class="care-name" :class="{ 'active-text': formData.actionType === item.type }">{{ item.name }}</text>
 						</view>
@@ -71,10 +70,11 @@
 
 <script>
 import navBar from '@/components/navBar.vue'
+import careIcon from '@/components/careIcon.vue'
 import { callContainer } from '../../utils/request';
 
 export default {
-	components: { navBar },
+	components: { navBar, careIcon },
 	data() {
 		return {
 			topBarHeight: 0,
@@ -139,7 +139,7 @@ export default {
 				const growthOption = {
 					name: '成长记录',
 					type: 'record',
-					icon: 'plant-zhiwuzhiyuan-duorouzhiwuyuan',
+					icon: 'care-record',
 					color: '#A7C190'
 				};
 				
@@ -330,7 +330,7 @@ export default {
 .container {
 	min-height: 100vh;
 	background-color: #C1D0B7;
-	padding-bottom: 50px;
+	padding-bottom: calc(50px + env(safe-area-inset-bottom));
 }
 
 .form-container {
@@ -346,7 +346,7 @@ export default {
 
 .section-title {
 	font-size: 14px;
-	color: #4A6139;
+	color: var(--primary-strong);
 	font-weight: bold;
 	margin-bottom: 12px;
 	display: block;
@@ -398,7 +398,7 @@ export default {
 		text-overflow: ellipsis;
 		
 		&.active-text {
-			color: #4A6139;
+			color: var(--primary-strong);
 			font-weight: bold;
 		}
 	}
@@ -471,7 +471,7 @@ export default {
 }
 
 .save-btn {
-	background-color: #4A6139;
+	background-color: var(--primary-color);
 	color: #fff;
 	height: 48px;
 	border-radius: 24px;

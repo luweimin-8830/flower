@@ -1,13 +1,16 @@
 <template>
 	<view class="calendar-wrapper">
-		<!-- 顶部固定区域 -->
-		<view class="fixed-header-group">
-			<navBar v-if="showNav" />
-			<view
-				:style="{ height: (weatherInfo.city ? (menuButtonTop + 70) : (menuButtonTop + menuButtonHeight + 10)) + 'px' }"
+		<!-- 独立页面使用时只固定导航栏，天气随日历内容一起滚动 -->
+		<view v-if="showNav" class="fixed-header-group">
+			<navBar />
+		</view>
+
+		<scroll-view scroll-y class="scroll-body">
+			<view class="calendar-head"
+				:style="{ height: (menuButtonTop + menuButtonHeight + 92) + 'px' }"
 				style="position: relative; transition: height 0.3s;">
 				<!-- 天气小组件（长条长方形布局） -->
-				<view class="weather-widget-card" v-if="currentDayWeather" :style="{ top: menuButtonTop + 'px' }"
+				<view class="weather-widget-card" v-if="currentDayWeather" :style="{ top: (menuButtonTop + menuButtonHeight + 8) + 'px' }"
 					@click="handleWeatherClick">
 					<view class="widget-left">
 						<image class="temp-icon" :src="getWeatherIconfont(currentDayWeather.weather)" mode="aspectFit"></image>
@@ -30,16 +33,13 @@
 				</view>
 
 				<view class="weather-empty-mini" v-else
-					:style="{ top: menuButtonTop + 'px', height: menuButtonHeight + 'px' }" @click="handleWeatherClick">
+					:style="{ top: (menuButtonTop + menuButtonHeight + 8) + 'px', height: '82px' }" @click="handleWeatherClick">
 					<uni-icons type="location-filled" size="14" color="#6B8857"></uni-icons>
 					<text class="placeholder-btn-text">获取天气</text>
 				</view>
 			</view>
-		</view>
-
-		<scroll-view scroll-y class="scroll-body">
 			<view class="log-calendar">
-				<uni-calendar ref="calendar" :insert="true" :lunar="false" :selected="selectedDates" color="#566C44"
+				<uni-calendar ref="calendar" :insert="true" :lunar="false" :selected="selectedDates" :color="activeTheme.vars['--primary-color']"
 					@change="onDateChange" />
 
 				<!-- 提醒时间选择弹窗 -->
@@ -89,8 +89,7 @@
 						</view>
 						<view v-for="log in currentLogs" :key="log.id" class="log-item" @click="goEdit(log)">
 							<view class="log-icon" :style="{ backgroundColor: (log.color || '#4A6139') + '22' }">
-								<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 20px;"
-									:style="{ color: log.color || '#4A6139' }"></view>
+								<careIcon :icon="log.icon" :type="log.actionType" :name="log.displayName" :size="20" />
 							</view>
 							<view class="log-info">
 								<view class="log-top">
@@ -119,10 +118,11 @@
 <script>
 import { callContainer } from '../utils/request';
 import navBar from './navBar.vue';
+import careIcon from './careIcon.vue';
 
 export default {
 	name: 'logCalendar',
-	components: { navBar },
+	components: { navBar, careIcon },
 	props: {
 		showNav: {
 			type: Boolean,
@@ -257,7 +257,7 @@ export default {
 			this.getLogs();
 		});
 	},
-	destroyed() {
+	beforeUnmount() {
 		uni.$off('refreshLogCalendar');
 	},
 	methods: {
@@ -325,7 +325,7 @@ export default {
 							...log,
 							name: log.name || (action ? action.name : (isRecord ? '成长记录' : log.actionType)),
 							// 如果是成长记录，强制使用指定图标，否则使用 log.icon 或 action.icon
-							icon: isRecord ? 'plant-zhiwuzhiyuan-duorouzhiwuyuan' : (log.icon || (action ? action.icon : 'plant-jiaoshui1')),
+							icon: isRecord ? 'care-record' : (log.icon || (action ? action.icon : 'care-water')),
 							color: isRecord ? '#A7C190' : (log.color || (action ? action.color : '#4A6139'))
 						};
 
@@ -612,7 +612,7 @@ export default {
 	flex-direction: column;
 	padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
-	background-color: var(--bg-color);
+	background-color: var(--page-bg);
 }
 
 // 固定头部
@@ -620,7 +620,7 @@ export default {
 	position: sticky;
 	top: 0;
 	z-index: 998;
-	background-color: var(--bg-color);
+	background-color: var(--page-bg);
 }
 
 .scroll-body {
@@ -630,7 +630,8 @@ export default {
 
 .log-calendar {
 	margin: 12px;
-	background-color: var(--bg-btn-color);
+	background-color: var(--card-bg);
+	border: 1px solid var(--border-color);
 	border-radius: 16px;
 	overflow: hidden;
 	position: relative;
@@ -640,20 +641,18 @@ export default {
 .weather-widget-card {
 	position: absolute;
 	left: 15px;
-	width: 420rpx;
-	height: 100rpx;
-	background: linear-gradient(135deg, #A7C190 0%, #566C44 100%);
-	border-radius: 20rpx;
+	right: 15px;
+	width: auto;
+	height: 82px;
+	background: var(--primary-soft);
+	border: 1px solid var(--border-color);
+	border-radius: 16px;
 	padding: 0 20rpx;
 	display: flex;
 	align-items: center;
-	color: #fff;
-	box-shadow: 0 6rpx 16rpx rgba(122, 153, 173, 0.2);
+	color: var(--text-color);
+	box-shadow: 0 6rpx 16rpx var(--shadow-color);
 	z-index: 100;
-
-	@media (prefers-color-scheme: dark) {
-		background: linear-gradient(135deg, #6B8857 0%, #A7C190 100%);
-	}
 
 	.widget-left {
 		margin-right: 16rpx;
@@ -719,7 +718,7 @@ export default {
 	left: 15px;
 	z-index: 10;
 	padding: 0 16rpx;
-	background-color: var(--bg-btn-color);
+	background-color: var(--surface-bg);
 	border-radius: 30rpx;
 	display: flex;
 	align-items: center;
@@ -739,8 +738,7 @@ export default {
 }
 
 .safe-area-bottom {
-	height: env(safe-area-inset-bottom);
-	padding-bottom: 20px;
+	height: calc(140rpx + env(safe-area-inset-bottom));
 }
 
 .day-detail {
@@ -764,7 +762,7 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 4px;
-	background-color: var(--bg-btn-color);
+	background-color: var(--surface-bg);
 	padding: 4px 10px;
 	border-radius: 20px;
 	border: 1px solid var(--border-color);
@@ -790,7 +788,7 @@ export default {
 .log-item {
 	display: flex;
 	padding: 12px;
-	background-color: var(--bg-btn-color);
+	background-color: var(--surface-bg);
 	border-radius: 12px;
 	margin-bottom: 10px;
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
@@ -875,6 +873,43 @@ export default {
 	}
 }
 
+// uni-calendar 内置样式原本固定为白色，这里统一跟随当前小程序主题。
+::v-deep .uni-calendar__content {
+	background-color: var(--card-bg) !important;
+}
+
+::v-deep .uni-calendar__header {
+	border-bottom-color: var(--border-color) !important;
+}
+
+::v-deep .uni-calendar--fixed-top {
+	border-top-color: var(--border-color) !important;
+}
+
+::v-deep .uni-calendar__backtoday {
+	color: var(--text-color) !important;
+	background-color: var(--surface-bg) !important;
+}
+
+::v-deep .uni-calendar__header-text,
+::v-deep .uni-calendar__weeks-day-text,
+::v-deep .uni-calendar-item__weeks-lunar-text {
+	color: var(--text-color) !important;
+}
+
+::v-deep .uni-calendar__header-btn {
+	border-left-color: var(--text-sub) !important;
+	border-top-color: var(--text-sub) !important;
+}
+
+::v-deep .uni-calendar__weeks-day {
+	border-bottom-color: var(--border-color) !important;
+}
+
+::v-deep .uni-calendar__box-bg-text {
+	color: var(--text-sub) !important;
+}
+
 .remind-modal {
 	width: 600rpx;
 	background-color: var(--card-bg);
@@ -920,7 +955,7 @@ export default {
 		.remind-textarea {
 			width: 90%;
 			height: 160rpx;
-			background-color: var(--bg-btn-color);
+			background-color: var(--surface-bg);
 			border-radius: 10rpx;
 			padding: 20rpx;
 			margin-top: 16rpx;
@@ -951,7 +986,7 @@ export default {
 			}
 
 			&.confirm {
-				background-color: #4A6139;
+				background-color: var(--primary-color);
 				color: #fff;
 			}
 		}

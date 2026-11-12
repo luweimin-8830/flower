@@ -1,205 +1,144 @@
 <template>
-	<view class="container">
-		<navBar title="新手手册" />
-		<view :style="{ height: topBarHeight + 'px' }"></view>
+    <view class="manual-page theme-page" :style="themeStyle">
+        <navBar title="使用手册" />
+        <view :style="{ height: topBarHeight + 'px' }"></view>
+        <view class="manual-tabs">
+            <view v-for="(tab, index) in tabs" :key="tab" class="manual-tab" :class="{ active: activeTab === index }" @click="activeTab = index">{{ tab }}</view>
+        </view>
 
-		<scroll-view scroll-y class="content-scroll">
-			<view class="manual-content">
-				<!-- 1. 欢迎介绍 -->
-				<view class="manual-section">
-					<view class="section-header">
-						<uni-icons type="heart-filled" size="24" color="#566C44"></uni-icons>
-						<text class="section-title">欢迎来到我的花园</text>
-					</view>
-					<view class="section-body">
-						<text class="p">这是一个为您和您的家人设计的植物养护日志应用。在这里，您可以记录每一株植物的成长点滴，与家人共同分享绿色的喜悦。</text>
-					</view>
-				</view>
+        <scroll-view scroll-y class="manual-scroll">
+            <view class="manual-content">
+                <template v-if="activeTab === 0">
+                    <view class="welcome-card">
+                        <text class="welcome-emoji">🌱</text>
+                        <view><text class="content-title">欢迎来到我的花园</text><text class="content-desc">记录植物成长，与家人一起照顾每一株植物</text></view>
+                    </view>
+                    <text class="group-title">三步开始</text>
+                    <view v-for="(item, index) in startSteps" :key="item.title" class="guide-card step-card">
+                        <text class="step-number">{{ index + 1 }}</text>
+                        <view class="guide-icon"><uni-icons :type="item.icon" size="25" color="var(--primary-color)"></uni-icons></view>
+                        <view class="guide-copy"><text class="guide-title">{{ item.title }}</text><text class="guide-desc">{{ item.desc }}</text></view>
+                    </view>
+                    <view class="tip-card"><uni-icons type="info-filled" size="17" color="var(--primary-color)"></uni-icons><text>上传照片时，可像微信头像一样拖动和缩放后完成方形截取</text></view>
+                </template>
 
-				<!-- 2. 植物管理 -->
-				<view class="manual-section">
-					<view class="section-header">
-						<view class="iconfont plant-zhiwuzhiyuan-duorouzhiwuyuan" style="font-size: 24px; color: #566C44; margin-right: 8px;"></view>
-						<text class="section-title">植物管理</text>
-					</view>
-					<view class="section-body">
-						<view class="step-item">
-							<text class="step-num">1</text>
-							<text class="step-text">点击首页右上角的“+”按钮，可以添加新植物。您可以上传照片、设置植物名称、到家日期，并为它打上标签。</text>
-						</view>
-						<view class="step-item">
-							<text class="step-num">2</text>
-							<text class="step-text">在植物详情页，点击右上角的“编辑”可以修改植物信息，点击“凋零”可以将已枯萎的植物移入陈列室。</text>
-						</view>
-					</view>
-				</view>
+                <template v-else-if="activeTab === 1">
+                    <text class="panel-title">🌿 管理你的植物</text>
+                    <view v-for="item in gardenGuides" :key="item.title" class="guide-card">
+                        <view class="guide-icons"><uni-icons v-for="icon in item.icons" :key="icon" :type="icon" size="25" color="var(--primary-color)"></uni-icons></view>
+                        <view class="guide-copy"><text class="guide-title">{{ item.title }}</text><text class="guide-desc">{{ item.desc }}</text></view>
+                    </view>
+                    <view class="tip-card"><uni-icons type="info-filled" size="18" color="var(--primary-color)"></uni-icons><text>右上角“+”可添加植物，分享图标可生成花园长图</text></view>
+                </template>
 
-				<!-- 3. 日常养护 -->
-				<view class="manual-section">
-					<view class="section-header">
-						<view class="iconfont plant-kongzhonghuayuan" style="font-size: 24px; color: #566C44; margin-right: 8px;"></view>
-						<text class="section-title">日常养护</text>
-					</view>
-					<view class="section-body">
-						<view class="step-item">
-							<text class="step-num">1</text>
-							<text class="step-text">在植物详情页，您可以通过“快捷记录”栏快速记录今天的浇水、施肥等操作。</text>
-						</view>
-						<view class="step-item">
-							<text class="step-num">2</text>
-							<text class="step-text">如果您想记录更多细节（如文字描述、多张照片），可以点击“植物日志”旁的“+”号进行详细记录。</text>
-						</view>
-						<view class="step-item">
-							<text class="step-num">3</text>
-							<text class="step-text">在首页长按任意植物卡片，可以进入批量操作模式，一次性为多株植物记录相同的养护操作（如集体浇水）。</text>
-						</view>
-					</view>
-				</view>
+                <template v-else-if="activeTab === 2">
+                    <text class="panel-title">🌿 记录每一次养护</text>
+                    <view class="care-icons">
+                        <view v-for="item in careTypes" :key="item.name"><view class="care-icon"><uni-icons :type="item.icon" size="24" color="var(--primary-color)"></uni-icons></view><text>{{ item.name }}</text></view>
+                    </view>
+                    <view v-for="item in careGuides" :key="item.title" class="guide-card">
+                        <view class="guide-icon"><uni-icons :type="item.icon" size="25" color="var(--primary-color)"></uni-icons></view>
+                        <view class="guide-copy"><text class="guide-title">{{ item.title }}</text><text class="guide-desc">{{ item.desc }}</text></view>
+                    </view>
+                </template>
 
-				<!-- 4. 家庭共享 -->
-				<view class="manual-section">
-					<view class="section-header">
-						<uni-icons type="staff" size="24" color="#566C44"></uni-icons>
-						<text class="section-title">家庭共享</text>
-					</view>
-					<view class="section-body">
-						<text class="p">进入“我的 → 家庭管理”，您可以生成邀请链接发送给家人。家人加入后，大家可以共同查看和记录同一个花园里的植物状态。</text>
-					</view>
-				</view>
-
-				<!-- 5. 数据分析 -->
-				<view class="manual-section">
-					<view class="section-header">
-						<view class="iconfont plant-tubiao-bingtu" style="font-size: 24px; color: #566C44; margin-right: 8px;"></view>
-						<text class="section-title">图表与分析</text>
-					</view>
-					<view class="section-body">
-						<text class="p">通过“我的 → 图表分析”，您可以直观地看到花园里植物的分类比例，以及每个月的养护操作统计，帮助您更好地掌握养护节奏。</text>
-					</view>
-				</view>
-
-				<!-- 6. 提醒设置 -->
-				<view class="manual-section">
-					<view class="section-header">
-						<uni-icons type="notification" size="24" color="#566C44"></uni-icons>
-						<text class="section-title">养护提醒</text>
-					</view>
-					<view class="section-body">
-						<text class="p">在“我的 → 提醒时间”中，您可以设置一个固定的提醒时间。当您在植物详情页预约了提醒后，系统会在指定时间通过订阅消息通知您。</text>
-					</view>
-				</view>
-
-				<view class="manual-footer">
-					<text>祝您的植物茁壮成长！🌿</text>
-				</view>
-				<view style="height: 50px;"></view>
-			</view>
-		</scroll-view>
-	</view>
+                <template v-else>
+                    <text class="panel-title">🌿 一起分享成长</text>
+                    <view v-for="item in shareGuides" :key="item.title" class="guide-card clickable" @click="handleGuideAction(item.action)">
+                        <view class="guide-icon"><uni-icons :type="item.icon" size="25" color="var(--primary-color)"></uni-icons></view>
+                        <view class="guide-copy"><text class="guide-title">{{ item.title }}</text><text class="guide-desc">{{ item.desc }}</text></view>
+                        <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
+                    </view>
+                    <button class="contact-button" open-type="contact">联系客服</button>
+                </template>
+                <view class="safe-space"></view>
+            </view>
+        </scroll-view>
+    </view>
 </template>
 
 <script>
 import navBar from '@/components/navBar.vue'
 
 export default {
-	components: { navBar },
-	data() {
-		return {
-			topBarHeight: 0
-		};
-	},
-	onLoad() {
-		const app = getApp();
-		this.topBarHeight = app.globalData.topBarHeight;
-	}
-};
+    components: { navBar },
+    data() {
+        return {
+            topBarHeight: 0,
+            activeTab: 0,
+            tabs: ['快速开始', '花园', '养护', '分享'],
+            startSteps: [
+                { title: '创建花园', desc: '设置家庭花园，邀请家人共同管理', icon: 'home-filled' },
+                { title: '添加植物', desc: '上传照片，填写名称、日期和标签', icon: 'camera-filled' },
+                { title: '开始记录', desc: '浇水、施肥、换盆都能轻松记下', icon: 'compose' }
+            ],
+            gardenGuides: [
+                { title: '两种展示方式', desc: '在卡片模式与索引模式之间自由切换', icons: ['image-filled', 'list'] },
+                { title: '搜索与标签', desc: '按名称搜索，用标签快速筛选', icons: ['search', 'flag-filled'] },
+                { title: '添加植物', desc: '选择照片后，像微信头像一样移动和缩放', icons: ['camera-filled'] },
+                { title: '批量操作', desc: '长按植物卡片，可批量记录养护', icons: ['checkbox-filled'] }
+            ],
+            careTypes: [
+                { name: '浇水', icon: 'fire-filled' }, { name: '施肥', icon: 'wallet-filled' },
+                { name: '换盆', icon: 'trash-filled' }, { name: '除虫', icon: 'settings-filled' }, { name: '修剪', icon: 'tune' }
+            ],
+            careGuides: [
+                { title: '快捷养护', desc: '在植物详情点击一次即可记录', icon: 'redo-filled' },
+                { title: '成长日志', desc: '添加文字和照片，留下变化过程', icon: 'compose' },
+                { title: '养护日历', desc: '按日期查看记录、天气和提醒', icon: 'calendar-filled' },
+                { title: '预约提醒', desc: '设置日期与时间，不错过下一次养护', icon: 'notification-filled' }
+            ],
+            shareGuides: [
+                { title: '家庭协作', desc: '邀请家人加入，共同查看和记录植物', icon: 'staff-filled', action: 'family' },
+                { title: '长图分享', desc: '选择植物和内容，生成长图保存或分享', icon: 'upload-filled', action: 'share' },
+                { title: '图表分析', desc: '查看植物分类和每月养护次数', icon: 'bars', action: 'charts' },
+                { title: '陈列室', desc: '纪念曾经陪伴过的植物', icon: 'images-filled', action: 'display' },
+                { title: '主题配色', desc: '在“我的”中选择喜欢的界面颜色', icon: 'color-filled', action: 'back' }
+            ]
+        }
+    },
+    onLoad(options) {
+        const app = getApp()
+        this.topBarHeight = app.globalData.topBarHeight || 44
+        if (options && options.tab) this.activeTab = Math.max(0, Math.min(3, Number(options.tab)))
+    },
+    methods: {
+        handleGuideAction(action) {
+            const routes = { family: '/pages/familyDetail/familyDetail', charts: '/subpackages/analytics/charts/charts', display: '/pages/displayRoom/displayRoom', share: '/pages/sharePlantList/sharePlantList' }
+            if (routes[action]) uni.navigateTo({ url: routes[action] })
+            else if (action === 'back') uni.navigateBack()
+        }
+    }
+}
 </script>
 
-<style lang="scss" scoped>
-.container {
-	min-height: 100vh;
-}
-
-.content-scroll {
-	height: calc(100vh - 100rpx);
-}
-
-.manual-content {
-	padding: 20px 16px;
-}
-
-.manual-section {
-	background-color: rgba(255,255,255,0.7);
-	border-radius: 16px;
-	padding: 20px;
-	margin-bottom: 20px;
-	box-shadow: 0 4px 12px rgba(86, 108, 68, 0.05);
-}
-
-.section-header {
-	display: flex;
-	align-items: center;
-	margin-bottom: 16px;
-	border-bottom: 1px solid #f0f0f0;
-	padding-bottom: 12px;
-}
-
-.section-title {
-	font-size: 18px;
-	font-weight: bold;
-	color: #2F3E25;
-}
-
-.section-body {
-	.p {
-		font-size: 15px;
-		color: #666;
-		line-height: 1.6;
-		display: block;
-	}
-}
-
-.step-item {
-	display: flex;
-	margin-bottom: 12px;
-	
-	&:last-child {
-		margin-bottom: 0;
-	}
-}
-
-.step-num {
-	width: 20px;
-	height: 20px;
-	background-color: #566C44;
-	color: #fff;
-	font-size: 12px;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin-right: 10px;
-	flex-shrink: 0;
-	margin-top: 2px;
-}
-
-.step-text {
-	font-size: 14px;
-	color: #666;
-	line-height: 1.5;
-	flex: 1;
-}
-
-.manual-footer {
-	text-align: center;
-	padding: 20px 0;
-	text {
-		font-size: 14px;
-		color: #566C44;
-		font-weight: 500;
-		@media (prefers-color-scheme: dark) {
-            color: #f5f5f5;
-        }
-	}
-}
+<style scoped lang="scss">
+.manual-page { min-height: 100vh; color: var(--text-color); }
+.manual-tabs { display: flex; gap: 8px; padding: 10px 16px 12px; }
+.manual-tab { flex: 1; padding: 8px 3px; border: 1px solid var(--border-color); border-radius: 19px; text-align: center; font-size: 13px; background: var(--surface-bg); }
+.manual-tab.active { color: var(--button-text); background: var(--primary-color); border-color: var(--primary-color); }
+.manual-scroll { height: calc(100vh - 115px); }
+.manual-content { padding: 4px 16px calc(30px + env(safe-area-inset-bottom)); }
+.welcome-card, .guide-card, .tip-card { border: 1px solid var(--border-color); background: var(--card-bg); box-shadow: 0 5px 16px var(--shadow-color); }
+.welcome-card { display: flex; align-items: center; gap: 18px; padding: 22px 20px; margin-bottom: 20px; border-radius: 18px; background: var(--primary-soft); }
+.welcome-emoji { font-size: 52px; }
+.content-title, .content-desc, .guide-title, .guide-desc, .panel-title, .group-title { display: block; }
+.content-title { margin-bottom: 7px; font-size: 19px; font-weight: 650; }
+.content-desc, .guide-desc { font-size: 13px; line-height: 1.55; color: var(--text-sub); }
+.group-title, .panel-title { margin: 10px 3px 13px; font-size: 17px; font-weight: 650; }
+.guide-card { display: flex; align-items: center; gap: 13px; min-height: 76px; padding: 12px 14px; margin-bottom: 11px; border-radius: 15px; }
+.step-card { position: relative; padding-left: 17px; }
+.step-number { display: flex; align-items: center; justify-content: center; position: absolute; left: -7px; top: -7px; width: 25px; height: 25px; border-radius: 50%; background: var(--primary-color); color: var(--button-text); font-size: 13px; }
+.guide-icon { display: flex; align-items: center; justify-content: center; width: 47px; height: 47px; flex-shrink: 0; border-radius: 14px; background: var(--primary-soft); }
+.guide-icons { display: flex; align-items: center; justify-content: space-evenly; width: 88px; height: 50px; flex-shrink: 0; border-radius: 14px; background: var(--primary-soft); }
+.guide-copy { flex: 1; min-width: 0; }
+.guide-title { margin-bottom: 5px; font-size: 16px; font-weight: 600; }
+.tip-card { display: flex; align-items: flex-start; gap: 9px; padding: 14px; margin-top: 16px; border-radius: 14px; background: var(--primary-soft); font-size: 12px; line-height: 1.5; color: var(--text-sub); }
+.care-icons { display: flex; justify-content: space-between; padding: 12px 8px 20px; }
+.care-icons > view { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; }
+.care-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--border-color); border-radius: 13px; background: var(--card-bg); }
+.clickable:active { opacity: .7; }
+.contact-button { width: 180px; margin: 24px auto 0; color: var(--button-text); background: var(--primary-color); border-radius: 22px; font-size: 15px; }
+.contact-button::after { border: 0; }
+.safe-space { height: env(safe-area-inset-bottom); }
 </style>

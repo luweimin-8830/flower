@@ -1,5 +1,5 @@
 <template>
-    <view class="page-wrapper">
+    <view class="page-wrapper theme-page" :style="themeStyle">
         <navBar title="养护管理" />
         <view :style="{ height: topBarHeight + 'px' }"></view>
 
@@ -20,11 +20,9 @@
                         <view class="form-item">
                             <text class="label">选择图标</text>
                             <view class="options-grid">
-                                <view v-for="icon in iconOptions" :key="icon" class="option-item icon-item"
-                                    :class="{ 'active': formData.icon === icon }" @click="formData.icon = icon">
-                                    <view class="iconfont" :class="icon"
-                                        :style="{ fontSize: '20px', color: formData.icon === icon ? '#fff' : '#666' }">
-                                    </view>
+                                <view v-for="icon in iconOptions" :key="icon.key" class="option-item icon-item"
+                                    :class="{ 'active': formData.icon === icon.key }" @click="formData.icon = icon.key">
+                                    <careIcon :icon="icon.key" :name="icon.label" :active="formData.icon === icon.key" :size="22" />
                                 </view>
                             </view>
                         </view>
@@ -67,8 +65,7 @@
                                     <view class="list-item" @click="startEdit(item)">
                                         <view class="left-info">
                                             <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                                <view class="iconfont" :class="item.icon"
-                                                    style="font-size: 20px; color: #333;"></view>
+                                                <careIcon :icon="item.icon" :type="item.type" :name="item.name" :size="21" />
                                             </view>
                                             <view class="care-text-info">
                                                 <text class="care-name">{{ item.name }}</text>
@@ -93,8 +90,7 @@
                                             <uni-icons type="bars" size="20" color="#8FA385"
                                                 class="drag-handle"></uni-icons>
                                             <view class="care-icon-preview" :style="{ backgroundColor: item.color }">
-                                                <view class="iconfont" :class="item.icon"
-                                                    style="font-size: 20px; color: #333;"></view>
+                                                <careIcon :icon="item.icon" :type="item.type" :name="item.name" :size="21" />
                                             </view>
                                             <text class="care-name">{{ item.name }}</text>
                                         </view>
@@ -115,12 +111,14 @@
 
 <script>
 import navBar from '@/components/navBar.vue'
+import careIcon from '@/components/careIcon.vue'
 import { callContainer } from '../../utils/request';
+import { CARE_ICON_OPTIONS, normalizeCareIcon } from '../../utils/careIcons';
 
 const ROW_HEIGHT = 60;
 
 export default {
-    components: { navBar },
+    components: { navBar, careIcon },
     data() {
         return {
             familyId: 0,
@@ -128,17 +126,13 @@ export default {
                 id: null,
                 name: '',
                 type: '',
-                icon: 'plant-jiaoshui1',
+                icon: 'care-water',
                 color: '#D6EAF8'
             },
             isEditing: false,
             swipeOptions: [{ text: '删除', style: { backgroundColor: '#dd524d' } }],
             careList: [],
-            iconOptions: [
-                'plant-shequhuodong', 'plant-kongzhonghuayuan', 'plant-dianpu', 'plant-a-xiujian13',
-                'plant-chuchong1', 'plant-shifei1', 'plant-a-xiujian23', 'plant-jiaoshui1', 'plant-chuchong2', 'plant-a-jiaoshui23',
-                'plant-a-Frame9', 'plant-a-Frame1'
-            ],
+            iconOptions: CARE_ICON_OPTIONS,
             colorOptions: [
                 '#D6EAF8', '#DCECC9', '#F2D7D5', '#E8E0D5',
                 '#FEF5E7', '#EBDEF0', '#E5E8E8', '#A2D9CE',
@@ -212,13 +206,13 @@ export default {
                 id: null,
                 name: '',
                 type: '',
-                icon: this.iconOptions[0],
+                icon: this.iconOptions[0].key,
                 color: this.colorOptions[0]
             };
             this.isEditing = false;
         },
         startEdit(item) {
-            this.formData = { ...item, id: item.id };
+            this.formData = { ...item, id: item.id, icon: normalizeCareIcon(item.icon, item.type, item.name) };
             this.isEditing = true;
             uni.pageScrollTo({ scrollTop: 0, duration: 300 });
         },
@@ -325,9 +319,6 @@ export default {
     margin-left: 4px;
     display: block;
 
-    @media (prefers-color-scheme: dark) {
-        color: #FAF2CB;
-    }
 }
 
 .card-box {
@@ -357,9 +348,6 @@ export default {
         padding: 0 12px;
         font-size: 14px;
 
-        @media (prefers-color-scheme: dark) {
-            background-color: rgba(0, 0, 0, 0.3);
-        }
     }
 }
 

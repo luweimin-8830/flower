@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container theme-page" :style="themeStyle">
 		<navBar />
 		<view class="page-title" :style="{ height: topBarHeight + 'px' }">
 			<text :style="{ marginTop: menuButtonInfo.top + 'px', height: menuButtonInfo.height + 'px', display: 'flex', alignItems: 'center' }">陈列室</text>
@@ -126,9 +126,6 @@ export default {
 	display: flex;
 	justify-content: center;
 
-	@media (prefers-color-scheme: dark) {
-		color: #eee;
-	}
 }
 
 .scroll-area {
@@ -136,7 +133,7 @@ export default {
 }
 
 .plant-grid {
-	padding: 20rpx;
+	padding: 20rpx 20rpx calc(60rpx + env(safe-area-inset-bottom));
 	padding-top: calc(var(--status-bar-height) + 160rpx);
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
@@ -149,10 +146,6 @@ export default {
 	border-radius: 20rpx;
 	overflow: hidden;
 	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-
-	@media (prefers-color-scheme: dark) {
-		background-color: #2c2c2c;
-	}
 
 	.cover {
 		width: 100%;
@@ -172,9 +165,6 @@ export default {
 			font-size: 28rpx;
 			font-weight: bold;
 			color: #333;
-			@media (prefers-color-scheme: dark) {
-				color: #eee;
-			}
 		}
 
 		.date-info {

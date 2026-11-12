@@ -2,25 +2,44 @@
     <!-- 🌟 1. 最外层包裹一个全屏容器 -->
     <view class="home-container">
 
-        <!-- 🌟 2. 优化后的家庭选择按钮 (毛玻璃效果 + 交互增强) - 使用微信原生 picker -->
-        <view class="family-select" :class="{ 'selecting': isSelecting }" :style="{
-            width: 'auto',
-            height: menuButtonInfo.height + 'px',
-            borderRadius: menuButtonInfo.height / 2 + 'px',
+        <view class="home-top-controls" :style="{
             top: menuButtonInfo.top + 'px',
-            left: paddingLeft + 'px'
-        }" @click="toggleFamilySelect" @touchstart="onTouchStart" @touchend="onTouchEnd">
-            <view class="family-select-icon" :class="{ 'selecting': isSelecting }">
-                <uni-icons type="home" size="18" color="var(--primary-color)"></uni-icons>
-            </view>
-            <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'"
-                @change="handleFamilyChange">
-                <view class="family-name-wrapper">
-                    <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
-                    <uni-icons type="bottom" size="14" color="var(--primary-color)"
-                        style="margin-left: 4px;"></uni-icons>
+            left: paddingLeft + 'px',
+            height: menuButtonInfo.height + 'px'
+        }">
+            <!-- 🌟 2. 家庭选择按钮 -->
+            <view class="family-select" :class="{ 'selecting': isSelecting }" :style="{
+                width: 'auto',
+                height: menuButtonInfo.height + 'px',
+                borderRadius: menuButtonInfo.height / 2 + 'px'
+            }" @click="toggleFamilySelect" @touchstart="onTouchStart" @touchend="onTouchEnd">
+                <view class="family-select-icon" :class="{ 'selecting': isSelecting }">
+                    <uni-icons type="home" size="18" color="var(--primary-color)"></uni-icons>
                 </view>
-            </picker>
+                <picker class="custom-select" :value="currentFamilyIndex" :range="familyRange" :range-key="'text'"
+                    @change="handleFamilyChange">
+                    <view class="family-name-wrapper">
+                        <text class="family-select-text">{{ familyRange[currentFamilyIndex]?.text || '选择家庭' }}</text>
+                        <uni-icons type="bottom" size="14" color="var(--primary-color)"
+                            style="margin-left: 4px;"></uni-icons>
+                    </view>
+                </picker>
+            </view>
+
+            <button class="round-action top-left-share" :style="{
+                width: menuButtonInfo.height + 'px',
+                height: menuButtonInfo.height + 'px'
+            }" @click="goSharePage">
+                <uni-icons type="upload" size="19" color="var(--text-color)"></uni-icons>
+            </button>
+            <view class="garden-filter-button top-filter-button" :class="{ active: hasGardenFilter }" :style="{
+                width: menuButtonInfo.height + 'px',
+                height: menuButtonInfo.height + 'px'
+            }" @click="openGardenFilter">
+                <uni-icons type="tune" size="18"
+                    :color="hasGardenFilter ? 'var(--button-text)' : 'var(--text-sub)'"></uni-icons>
+                <view v-if="hasGardenFilter" class="garden-filter-dot"></view>
+            </view>
         </view>
 
         <!-- 🌟 3. 顶部固定区域 (包含占位符、搜索框、标签栏) -->
@@ -37,8 +56,13 @@
                             cancelButton="none">
                         </uni-search-bar>
                     </view>
-                    <view class="add-btn" @click="goAddPage">
-                        <uni-icons type="plusempty" size="22" color="#333"></uni-icons>
+                    <view class="display-switch" aria-label="花园展示方式">
+                        <view class="display-option" :class="{ active: displayMode === 'card' }" @click="setDisplayMode('card')">
+                            <uni-icons type="image" size="18" :color="displayMode === 'card' ? 'var(--button-text)' : 'var(--text-sub)'"></uni-icons>
+                        </view>
+                        <view class="display-option" :class="{ active: displayMode === 'index' }" @click="setDisplayMode('index')">
+                            <uni-icons type="list" size="18" :color="displayMode === 'index' ? 'var(--button-text)' : 'var(--text-sub)'"></uni-icons>
+                        </view>
                     </view>
                 </template>
                 <template v-else>
@@ -94,7 +118,8 @@
                                 <view v-for="item in careOptions" :key="item.type" class="action-item"
                                     :class="{ 'active': batchActionType === item.type }"
                                     @click="batchActionType = item.type">
-                                    <view class="iconfont" :class="item.icon" style="font-size: 18px;"></view>
+                                    <careIcon :icon="item.icon" :type="item.type" :name="item.name"
+                                        :active="batchActionType === item.type" :size="19" />
                                     <text class="action-name">{{ item.name }}</text>
                                 </view>
                             </view>
@@ -106,22 +131,22 @@
 
         <!-- 🌟 4. 中间独立滚动区域 -->
         <!-- flex:1 让它自动填满剩余空间，height:0 防止被内容撑大 -->
-        <scroll-view scroll-y class="content-scroll-view" @scrolltolower="onScrollToLower">
+        <scroll-view scroll-y class="content-scroll-view" :scroll-into-view="indexScrollIntoView" scroll-with-animation @scrolltolower="onScrollToLower">
             <!-- 空状态 -->
-            <view v-if="plantsList.length === 0" class="empty-wrapper">
+            <view v-if="visiblePlantsList.length === 0" class="empty-wrapper">
                 <image src="/static/icon/c2m.svg" class="empty-icon" mode="aspectFit"></image>
-                <text class="empty-text">点击右上方添加第一颗植物吧</text>
+                <text class="empty-text">{{ hasGardenFilter ? '没有符合条件的植物' : '点击底部加号添加第一颗植物吧' }}</text>
             </view>
 
-            <!-- 瀑布流列表 -->
-            <view v-else class="waterfall-wrapper">
-                <WaterfallBox :list="plantsList" idKey="id" cols="2">
+            <!-- 卡片模式 -->
+            <view v-else-if="displayMode === 'card'" class="waterfall-wrapper">
+                <WaterfallBox :list="visiblePlantsList" idKey="id" cols="2">
                     <template #item="{ item }">
                         <view class="plant-card" @click="handleCardClick(item)" @longpress="enterEditMode(item)">
                             <view class="image-wrapper"
-                                :style="{ paddingBottom: (item.cover.height / item.cover.width * 100) + '%' }">
-                                <image :src="item.cover.url" mode="aspectFill" class="plant-image" lazy-load
-                                    :class="{ 'show': loadedImagesMap[item.id] }" @load="onImgLoad(item)"></image>
+                                :style="{ paddingBottom: getCoverRatio(item.cover) + '%' }">
+                                <image :src="getCoverUrl(item.cover)" mode="aspectFill" class="plant-image show" lazy-load
+                                    @load="onImgLoad(item)" @error="onImgError(item)"></image>
                                 <!-- 选择框 -->
                                 <view v-if="isEditMode" class="checkbox-wrapper" @click.stop="toggleSelect(item.id)">
                                     <uni-icons :type="selectedPlantIds.includes(item.id) ? 'checkbox-filled' : 'circle'"
@@ -144,7 +169,67 @@
                 <!-- 底部垫片：防止内容被 TabBar 遮挡 -->
                 <view style="height: 20px;"></view>
             </view>
+
+            <!-- 索引模式（与卡片模式共享家庭、搜索和标签筛选） -->
+            <view v-else class="index-mode-wrapper">
+                <view v-for="group in indexedPlantGroups" :key="group.key" :id="'garden-index-' + group.key" class="index-group">
+                    <text class="index-title">{{ group.key }}</text>
+                    <view v-for="item in group.items" :key="item.id" class="index-card" @click="handleCardClick(item)">
+                        <image class="index-cover" :src="item.cover && item.cover.url ? item.cover.url : '/static/default.svg'" mode="aspectFill"></image>
+                        <view class="index-info">
+                            <text class="index-name">{{ item.name }}</text>
+                            <text class="index-desc">{{ item.desc || ((item.tags || []).map(tag => tag.name).join(' · ')) || '暂无描述' }}</text>
+                        </view>
+                        <uni-icons type="right" size="16" color="var(--text-sub)"></uni-icons>
+                    </view>
+                </view>
+                <view class="index-rail">
+                    <text v-for="group in indexedPlantGroups" :key="group.key" @click="scrollToIndex(group.key)">{{ group.key }}</text>
+                </view>
+                <view style="height: 30px;"></view>
+            </view>
         </scroll-view>
+
+        <uni-popup ref="gardenFilterPopup" type="bottom">
+            <view class="garden-filter-sheet">
+                <view class="garden-sheet-handle"></view>
+                <view class="garden-filter-head">
+                    <view>
+                        <text class="garden-filter-title">筛选植物</text>
+                        <text class="garden-filter-subtitle">按到家日期和排列方式筛选</text>
+                    </view>
+                    <view class="garden-filter-reset" :class="{ disabled: !hasGardenFilter }" @click="resetGardenFilter">重置</view>
+                </view>
+
+                <text class="garden-filter-label">排序方式</text>
+                <view class="garden-sort-options">
+                    <view v-for="option in gardenSortOptions" :key="option.value" class="garden-sort-option"
+                        :class="{ active: gardenSort === option.value }" @click="gardenSort = option.value">
+                        {{ option.label }}
+                    </view>
+                </view>
+
+                <text class="garden-filter-label date-label">到家日期</text>
+                <view class="garden-date-row">
+                    <picker class="garden-date-picker" mode="date" :value="gardenStartDate"
+                        :end="gardenEndDate || todayDate" @change="gardenStartDate = $event.detail.value">
+                        <view class="garden-date-value" :class="{ placeholder: !gardenStartDate }">
+                            {{ gardenStartDate || '开始日期' }}
+                        </view>
+                    </picker>
+                    <text class="garden-date-separator">至</text>
+                    <picker class="garden-date-picker" mode="date" :value="gardenEndDate"
+                        :start="gardenStartDate" :end="todayDate" @change="gardenEndDate = $event.detail.value">
+                        <view class="garden-date-value" :class="{ placeholder: !gardenEndDate }">
+                            {{ gardenEndDate || '结束日期' }}
+                        </view>
+                    </picker>
+                </view>
+
+                <view class="garden-filter-result">当前显示 {{ visiblePlantsList.length }} 株植物</view>
+                <button class="garden-filter-done" @click="closeGardenFilter">完成</button>
+            </view>
+        </uni-popup>
 
     </view>
 </template>
@@ -153,10 +238,12 @@
 <script>
 import { callContainer } from '../utils/request';
 import WaterfallBox from './WaterfallBox.vue';
+import careIcon from './careIcon.vue';
 
 export default {
     components: {
         WaterfallBox,
+        careIcon,
     },
     /**
      * 组件名称，也就是开发者使用的标签
@@ -188,6 +275,18 @@ export default {
             familyRange: [],
             value: null,
             searchValue: "",
+            gardenStartDate: '',
+            gardenEndDate: '',
+            gardenSort: 'default',
+            todayDate: '',
+            gardenSortOptions: [
+                { label: '默认排序', value: 'default' },
+                { label: '最近到家', value: 'newest' },
+                { label: '最早到家', value: 'oldest' },
+                { label: '名称顺序', value: 'name' }
+            ],
+            displayMode: uni.getStorageSync('gardenDisplayMode') || 'card',
+            indexScrollIntoView: '',
             tagList: [],
             currentTagIndex: 0,
             sliderLeft: 0,
@@ -217,12 +316,50 @@ export default {
         }
     },
     computed: {
+        hasGardenFilter() {
+            return Boolean(this.gardenStartDate || this.gardenEndDate || this.gardenSort !== 'default')
+        },
+        visiblePlantsList() {
+            const list = (this.plantsList || []).filter(item => {
+                const birthday = String(item.birthday || '').split('T')[0]
+                if (this.gardenStartDate && (!birthday || birthday < this.gardenStartDate)) return false
+                if (this.gardenEndDate && (!birthday || birthday > this.gardenEndDate)) return false
+                return true
+            }).slice()
+
+            if (this.gardenSort === 'newest') {
+                list.sort((a, b) => String(b.birthday || '').localeCompare(String(a.birthday || '')))
+            } else if (this.gardenSort === 'oldest') {
+                list.sort((a, b) => String(a.birthday || '').localeCompare(String(b.birthday || '')))
+            } else if (this.gardenSort === 'name') {
+                list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-CN'))
+            }
+            return list
+        },
         // 动态生成滑块样式
         sliderStyle() {
             return {
                 transform: `translateX(${this.sliderLeft}px)`,
                 width: `${this.sliderWidth}px`
             }
+        },
+        indexedPlantGroups() {
+            const grouped = {}
+            ;(this.visiblePlantsList || []).forEach(item => {
+                const key = this.getPlantInitial(item.name)
+                if (!grouped[key]) grouped[key] = []
+                grouped[key].push(item)
+            })
+            return Object.keys(grouped)
+                .sort((a, b) => {
+                    if (a === '#') return 1
+                    if (b === '#') return -1
+                    return a.localeCompare(b)
+                })
+                .map(key => ({
+                    key,
+                    items: grouped[key].slice().sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-CN'))
+                }))
         }
     },
     /**
@@ -258,6 +395,44 @@ export default {
      */
     //expose: [''],
     methods: {
+        openGardenFilter() {
+            wx.vibrateShort({ type: 'light' })
+            this.$refs.gardenFilterPopup.open()
+        },
+        closeGardenFilter() {
+            this.$refs.gardenFilterPopup.close()
+        },
+        resetGardenFilter() {
+            if (!this.hasGardenFilter) return
+            this.gardenStartDate = ''
+            this.gardenEndDate = ''
+            this.gardenSort = 'default'
+            wx.vibrateShort({ type: 'light' })
+        },
+        setDisplayMode(mode) {
+            this.displayMode = mode
+            uni.setStorageSync('gardenDisplayMode', mode)
+        },
+        getPlantInitial(name = '') {
+            const firstChar = String(name || '').trim().charAt(0)
+            if (!firstChar) return '#'
+
+            const latin = firstChar.toUpperCase()
+            if (/^[A-Z]$/.test(latin)) return latin
+
+            // 按中文拼音排序边界推算首字母，覆盖常见中文植物名称。
+            const pinyinBoundaries = '阿芭擦搭蛾发噶哈击喀垃妈拿哦啪期然撒塌挖昔压匝'
+            const pinyinInitials = 'ABCDEFGHJKLMNOPQRSTWXYZ'
+            for (let index = pinyinBoundaries.length - 1; index >= 0; index--) {
+                if (firstChar.localeCompare(pinyinBoundaries[index], 'zh-CN') >= 0) {
+                    return pinyinInitials[index]
+                }
+            }
+            return '#'
+        },
+        scrollToIndex(key) {
+            this.indexScrollIntoView = 'garden-index-' + key
+        },
         async loadFamilyData() {
             if (this.isInitializing) return;
 
@@ -750,11 +925,21 @@ export default {
             });
         },
         onImgLoad(item) {
-            // 使用独立的映射对象来追踪加载状态，避免修改冻结对象
             if (item.id && !this.loadedImagesMap[item.id]) {
-                this.$set(this.loadedImagesMap, item.id, true);
+                this.loadedImagesMap[item.id] = true;
             }
-
+        },
+        onImgError(item) {
+            if (item.id) this.loadedImagesMap[item.id] = false;
+        },
+        getCoverUrl(cover) {
+            return cover && cover.url ? cover.url : '/static/default.svg';
+        },
+        getCoverRatio(cover) {
+            const width = Number(cover && cover.width);
+            const height = Number(cover && cover.height);
+            if (!width || !height) return 100;
+            return Math.min(150, Math.max(75, height / width * 100));
         },
         // 确保图片显示的方法（用于页面返回时恢复图片状态）
         ensureImagesVisible() {
@@ -763,7 +948,7 @@ export default {
                     this.plantsList.forEach(plant => {
                         if (!this.loadedImagesMap[plant.id]) {
                             // 重置状态，触发重新加载
-                            this.$set(this.loadedImagesMap, plant.id, false);
+                            this.loadedImagesMap[plant.id] = false;
                         }
                     });
                 }
@@ -773,6 +958,13 @@ export default {
             wx.vibrateShort({ type: "medium" })
             // 传入当前家庭ID
             uni.navigateTo({ url: `/pages/plantEdit/plantEdit?type=add` });
+        },
+        goSharePage() {
+            wx.vibrateShort({ type: 'light' })
+            const currentTag = this.tagList[this.currentTagIndex] || { id: 0, name: '全部' }
+            uni.navigateTo({
+                url: `/pages/shareGarden/shareGarden?familyId=${this.value || ''}&tagId=${currentTag.id || 0}&tagName=${encodeURIComponent(currentTag.name || '全部')}`
+            })
         },
         gotoDetail(item) {
             uni.navigateTo({
@@ -795,11 +987,13 @@ export default {
             }
         },
     },
-    beforeDestroy() {
+    beforeUnmount() {
         // 🚀 销毁时移除监听
         uni.$off('refreshHomeList');
     },
     async created() {
+        const now = new Date()
+        this.todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
         // 🚀 监听全局刷新事件
         uni.$on('refreshHomeList', () => {
             console.log("收到全局刷新指令，正在重置列表...");
@@ -866,7 +1060,7 @@ export default {
     overflow: hidden;
     /* 禁止整个页面拖动 */
     box-sizing: border-box;
-    background-color: var(--bg-color);
+    background-color: var(--page-bg);
     /* 建议加个背景色，防止列表滚动到底部露白 */
 }
 
@@ -875,7 +1069,7 @@ export default {
     flex-shrink: 0;
     /* 禁止压缩 */
     z-index: 10;
-    background-color: var(--bg-color);
+    background-color: var(--page-bg);
     /* 必须给背景色，否则列表滚动时会透过文字看到下面 */
     /* 如果你的设计是背景图通铺，这里可以用 transparent，但要注意视觉重叠 */
 }
@@ -982,9 +1176,6 @@ export default {
     .iconfont {
         color: #666;
 
-        @media (prefers-color-scheme: dark) {
-            color: rgba(245, 245, 245, 0.6);
-        }
     }
 
     &.active {
@@ -998,17 +1189,6 @@ export default {
             color: #fff;
         }
 
-        @media (prefers-color-scheme: dark) {
-            background: #FAF2CB;
-
-            .action-name {
-                color: #0A3323;
-            }
-
-            .iconfont {
-                color: #0A3323;
-            }
-        }
     }
 
     .action-name {
@@ -1024,9 +1204,6 @@ export default {
         line-clamp: 2;
         overflow: hidden;
 
-        @media (prefers-color-scheme: dark) {
-            color: rgba(245, 245, 245, 0.6);
-        }
     }
 }
 
@@ -1056,8 +1233,133 @@ export default {
 }
 
 .waterfall-wrapper {
-    padding-bottom: env(safe-area-inset-bottom);
+	padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
     /* 适配 iPhone 底部安全区 */
+}
+
+.top-right-actions {
+    position: fixed;
+    right: 24rpx;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+}
+
+.home-top-controls {
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.home-top-controls .family-select,
+.home-top-controls .top-left-share {
+    position: relative;
+    top: auto;
+    left: auto;
+}
+
+.top-left-share { z-index: 1000; }
+
+.round-action {
+    width: 64rpx;
+    height: 64rpx;
+    min-width: 64rpx;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5rpx 16rpx var(--shadow-color);
+
+    &::after { border: none; }
+    &.primary { background: var(--primary-color); border-color: var(--primary-color); }
+}
+
+.display-switch {
+    height: 64rpx;
+    flex-shrink: 0;
+    padding: 4rpx;
+    display: flex;
+    gap: 4rpx;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 32rpx;
+}
+
+.display-option {
+    width: 54rpx;
+    height: 54rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active { background: var(--primary-color); }
+}
+
+.index-mode-wrapper {
+    position: relative;
+    padding: 8rpx 48rpx calc(140rpx + env(safe-area-inset-bottom)) 24rpx;
+}
+
+.index-group { margin-bottom: 28rpx; }
+.index-title {
+    display: block;
+    margin: 0 0 12rpx 8rpx;
+    font-size: 34rpx;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.index-card {
+    min-height: 132rpx;
+    margin-bottom: 14rpx;
+    padding: 12rpx;
+    display: flex;
+    align-items: center;
+    gap: 18rpx;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 22rpx;
+    box-shadow: 0 6rpx 20rpx var(--shadow-color);
+}
+
+.index-cover { width: 108rpx; height: 108rpx; border-radius: 18rpx; flex-shrink: 0; }
+.index-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10rpx; }
+.index-name { font-size: 30rpx; font-weight: 600; color: var(--text-color); }
+.index-desc { font-size: 23rpx; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.index-rail {
+    position: fixed;
+    right: 12rpx;
+    top: 42%;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rpx;
+    color: var(--primary-strong);
+    font-size: 20rpx;
+}
+
+.plant-card,
+.family-select,
+.tag-item,
+.search-box-wrapper :deep(.uni-searchbar__box) {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tag-item.active,
+.add-btn,
+.save-btn-rect {
+    background: var(--primary-color) !important;
+    color: var(--button-text) !important;
 }
 
 .family-select {
@@ -1135,18 +1437,6 @@ export default {
     font-weight: 500;
 }
 
-@media (prefers-color-scheme: dark) {
-    .family-select-text {
-        color: var(--primary-color);
-    }
-
-    .family-select-icon ::v-deep .uni-icons {
-        color: var(--primary-color) !important;
-    }
-}
-
-
-
 .header-action-container {
     display: flex;
     align-items: center;
@@ -1159,8 +1449,40 @@ export default {
 }
 
 .search-box-wrapper {
-    /* 核心：搜索框占 82% (稍微多一点看起来更协调，留 18% 给按钮) */
-    width: 86%;
+    flex: 1;
+    min-width: 0;
+}
+
+.garden-filter-button {
+    position: relative;
+    width: 64rpx;
+    height: 64rpx;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--card-bg);
+    box-shadow: 0 5rpx 16rpx var(--shadow-color);
+
+    &.active { background: var(--primary-color); border-color: var(--primary-color); }
+}
+
+.top-filter-button {
+    width: auto;
+    flex-shrink: 0;
+}
+
+.garden-filter-dot {
+    position: absolute;
+    top: -3rpx;
+    right: -3rpx;
+    width: 14rpx;
+    height: 14rpx;
+    border: 3rpx solid var(--page-bg);
+    border-radius: 50%;
+    background: #ff5a5f;
 }
 
 .add-btn {
@@ -1195,15 +1517,6 @@ export default {
     padding: 10px 0 !important;
     /* 去掉左右默认 padding */
 
-    @media (prefers-color-scheme: dark) {
-        .uni-searchbar__box-search-input {
-            color: #f5f5f5 !important;
-        }
-
-        .uni-searchbar__text-placeholder {
-            color: rgba(245, 245, 245, 0.7) !important;
-        }
-    }
 }
 
 /* 这是一个深度选择器，用于去除 uni-data-select 自带的边框，使其融入毛玻璃按钮 */
@@ -1230,7 +1543,7 @@ export default {
 .tag-scroll-container {
     width: 100%;
     background-color: transparent;
-    padding: 5px 0;
+    padding: 7px 0 9px;
 }
 
 .tag-scroll-view {
@@ -1242,62 +1555,42 @@ export default {
 .tag-flex-box {
     display: flex;
     align-items: center;
-    padding: 0 40rpx 0 20rpx;
+    padding: 0 36rpx 0 24rpx;
     position: relative;
 }
 
 .tag-item {
     position: relative;
-    /* 为了定位下划线 */
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px;
-    margin-right: 10px;
-    font-size: 16px;
-    color: #666;
-    transition: all 0.3s;
-
-    @media (prefers-color-scheme: dark) {
-        color: #f5f5f5;
-    }
+    flex-shrink: 0;
+    min-width: 100rpx;
+    height: 64rpx;
+    box-sizing: border-box;
+    padding: 0 26rpx;
+    margin-right: 18rpx;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 999rpx;
+    background: var(--surface-bg) !important;
+    color: var(--text-color);
+    font-size: 27rpx;
+    font-weight: 400;
+    line-height: 64rpx;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
 
     &.active {
-        // color:#BC3823;
-        color: #6B8857;
-        /* 选中颜色 */
-        font-weight: bold;
-        font-size: 20px;
-        /* 选中稍微变大 */
-
-        @media (prefers-color-scheme: dark) {
-            color: #FAF2CB;
-        }
+        border-color: var(--primary-color) !important;
+        background: var(--primary-color) !important;
+        color: var(--button-text) !important;
+        font-size: 27rpx;
+        font-weight: 600;
     }
 }
 
-/* 下划线动画样式 */
+/* 胶囊按钮不再使用旧版下划线指示器 */
 .slider-bar {
-    position: absolute;
-    bottom: 8px;
-    /* 距离底部的位置 */
-    left: 0;
-    /* 初始位置，由 JS 控制 translateX */
-    height: 3px;
-    // background-color: #BC3823;
-    background-color: #6B8857;
-    /* 下划线颜色 */
-
-    @media (prefers-color-scheme: dark) {
-        background-color: #FAF2CB;
-    }
-
-    border-radius: 2px;
-
-    /* 动画配置 */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    /* width 和 transform 都会平滑过渡 */
+    display: none;
 
     z-index: 1;
     /* 确保在文字下方或上方 */
@@ -1396,6 +1689,37 @@ export default {
     opacity: 0.4;
     filter: grayscale(100%);
 }
+
+.garden-filter-sheet {
+    width: 100%;
+    margin-bottom: 124rpx;
+    padding: 8px 16px 16px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    background: var(--surface-bg);
+    border-radius: 26px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, .16);
+}
+
+.garden-sheet-handle { width: 38px; height: 5px; margin: 0 auto 16px; border-radius: 3px; background: var(--border-color); }
+.garden-filter-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+.garden-filter-title { display: block; font-size: 21px; line-height: 29px; font-weight: 700; color: var(--text-color); }
+.garden-filter-subtitle { display: block; margin-top: 2px; font-size: 13px; color: var(--text-sub); }
+.garden-filter-reset { padding: 5px 2px 5px 12px; font-size: 15px; color: var(--primary-color); }
+.garden-filter-reset.disabled { opacity: .35; }
+.garden-filter-label { display: block; margin: 0 4px 8px; font-size: 13px; color: var(--text-sub); }
+.garden-filter-label.date-label { margin-top: 20px; }
+.garden-sort-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.garden-sort-option { height: 44px; line-height: 44px; text-align: center; font-size: 14px; color: var(--text-color); background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 13px; }
+.garden-sort-option.active { color: var(--button-text); background: var(--primary-color); border-color: var(--primary-color); font-weight: 600; }
+.garden-date-row { display: flex; align-items: center; gap: 9px; }
+.garden-date-picker { flex: 1; }
+.garden-date-value { height: 48px; line-height: 48px; text-align: center; font-size: 15px; color: var(--text-color); background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; }
+.garden-date-value.placeholder { color: var(--text-sub); }
+.garden-date-separator { flex-shrink: 0; font-size: 13px; color: var(--text-sub); }
+.garden-filter-result { padding: 15px 2px 11px; font-size: 13px; color: var(--text-sub); }
+.garden-filter-done { height: 50px; padding: 0; margin: 0; line-height: 50px; font-size: 17px; font-weight: 600; color: var(--button-text); background: var(--primary-color); border: 0; border-radius: 15px; }
+.garden-filter-done::after { border: 0; }
 
 .empty-text {
     font-size: 14px;

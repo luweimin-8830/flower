@@ -46,12 +46,14 @@
             }
         },
         "requiredPrivateInfos" : [ "getFuzzyLocation" ],
-        "darkmode" : true,
-        "themeLocation" : "theme.json",
         "appid" : "wxb552b4471f232799",
         "setting" : {
             "urlCheck" : false,
-            "es6" : true
+            "es6" : true,
+            "minified" : true
+        },
+        "optimization" : {
+            "subPackages" : true
         },
         "usingComponents" : true
     },

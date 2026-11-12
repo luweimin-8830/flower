@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container theme-page" :style="themeStyle">
 		<navBar :isHome="!isFromList" />
 
 		<!-- 占位符 - 减小高度让卡片上移 -->
@@ -73,7 +73,7 @@
 							</view>
 							<view class="log-content-box">
 								<view class="log-tag pill" :style="{ backgroundColor: log.color + '33' || '#D6EAF8' }">
-									<view class="iconfont" :class="log.icon || 'plant-jiaoshui1'" style="font-size: 16px;" :style="{ color: log.color || '#4A90E2' }"></view>
+									<careIcon :icon="log.icon" :type="log.actionType" :name="log.actionName" :size="16" />
 									<text class="log-text">{{ log.actionName }}</text>
 								</view>
 								<view class="log-content" v-if="log.content">{{ log.content }}</view>
@@ -100,10 +100,11 @@
 
 <script>
 import navBar from '@/components/navBar.vue'
+import careIcon from '@/components/careIcon.vue'
 import { callContainer } from '../../utils/request';
 
 export default {
-	components: { navBar },
+	components: { navBar, careIcon },
 	data() {
 		return {
 			topBarHeight: 0,
@@ -193,7 +194,7 @@ export default {
 				if (!action && (log.actionType === 'record' || log.actionType === 'Growth')) {
 					action = {
 						name: '成长记录',
-						icon: 'plant-zhiwuzhiyuan-duorouzhiwuyuan',
+						icon: 'care-record',
 						color: '#A7C190'
 					};
 				}
@@ -367,19 +368,11 @@ export default {
 	font-size: 18px;
 	font-weight: bold;
 	color: #333;
-	@media (prefers-color-scheme: dark) {
-		color: #f5f5f5;
-	}
 }
 
 .header-left {
 	display: flex;
 	align-items: center;
-	@media (prefers-color-scheme: dark) {
-		::v-deep .uni-icons {
-			color: #f5f5f5 !important;
-		}
-	}
 }
 
 .log-list {
@@ -396,9 +389,6 @@ export default {
 	color: #333;
 	margin-bottom: 16px;
 	display: block;
-	@media (prefers-color-scheme: dark) {
-		color: #FAF2CB;
-	}
 }
 
 .log-item {
@@ -419,18 +409,12 @@ export default {
 	font-size: 16px;
 	font-weight: bold;
 	color: #333;
-	@media (prefers-color-scheme: dark) {
-		color: #f5f5f5;
-	}
 }
 
 .log-date-mini {
 	font-size: 12px;
 	color: #999;
 	margin-top: 2px;
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.4);
-	}
 }
 
 .log-timeline {
@@ -448,9 +432,6 @@ export default {
 	border-radius: 50%;
 	z-index: 1;
 	margin-top: 6px;
-	@media (prefers-color-scheme: dark) {
-		background-color: #FAF2CB;
-	}
 }
 
 .line {
@@ -458,9 +439,6 @@ export default {
 	width: 1px;
 	background-color: #ddd;
 	margin-top: 4px;
-	@media (prefers-color-scheme: dark) {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
 }
 
 .log-content-box {
@@ -477,10 +455,6 @@ export default {
 	border-radius: 20px;
 	gap: 6px;
 	margin-bottom: 6px;
-	@media (prefers-color-scheme: dark) {
-		// 保持原色背景但降低亮度或保持透明度
-		filter: brightness(0.9);
-	}
 }
 
 .log-content {
@@ -489,9 +463,6 @@ export default {
 	line-height: 1.5;
 	margin-bottom: 8px;
 	word-break: break-all;
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.7);
-	}
 }
 
 .log-images {
@@ -509,9 +480,6 @@ export default {
 .log-text {
 	font-size: 13px;
 	color: #333;
-	@media (prefers-color-scheme: dark) {
-		color: #f5f5f5;
-	}
 }
 
 .empty-logs {
@@ -519,8 +487,5 @@ export default {
 	padding: 40px 0;
 	color: #999;
 	font-size: 14px;
-	@media (prefers-color-scheme: dark) {
-		color: rgba(245, 245, 245, 0.4);
-	}
 }
 </style>

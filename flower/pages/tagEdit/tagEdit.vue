@@ -1,5 +1,5 @@
 <template>
-    <view class="page-wrapper">
+    <view class="page-wrapper theme-page" :style="themeStyle">
         <navBar />
         <view :style="{ height: topBarHeight + 'px' }"></view>
 
@@ -330,9 +330,6 @@ export default {
     margin-left: 4px;
     display: block;
 
-    @media (prefers-color-scheme: dark) {
-        color: #FAF2CB;
-    }
 }
 
 .card-box {

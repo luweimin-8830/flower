@@ -10,24 +10,6 @@
 			}
 		},
 		{
-			"path": "pages/my/my",
-			"style": {
-				"navigationBarTitleText": "",
-				"navigationStyle": "custom",
-				"enablePullDownRefresh": false,
-				"disableScroll": true
-			}
-		},
-		{
-			"path": "pages/system/system",
-			"style": {
-				"navigationBarTitleText": "",
-				"navigationStyle": "custom",
-				"enablePullDownRefresh": false,
-				"disableScroll": true
-			}
-		},
-		{
 			"path": "pages/plantEdit/plantEdit",
 			"style": {
 				"navigationBarTitleText": "",
@@ -118,12 +100,12 @@
 			}
 		},
 		{
-			"path": "pages/charts/charts",
+			"path": "pages/shareGarden/shareGarden",
 			"style": {
-				"navigationBarTitleText": "图表",
+				"navigationBarTitleText": "分享花园",
 				"navigationStyle": "custom",
 				"enablePullDownRefresh": false,
-				"disableScroll": false
+				"disableScroll": true
 			}
 		},
 		{
@@ -136,26 +118,29 @@
 			}
 		}
 	],
+	"subPackages": [
+		{
+			"root": "subpackages/analytics",
+			"name": "analytics",
+			"pages": [
+				{
+					"path": "charts/charts",
+					"style": {
+						"navigationBarTitleText": "图表",
+						"navigationStyle": "custom",
+						"enablePullDownRefresh": false,
+						"disableScroll": false
+					}
+				}
+			]
+		}
+	],
 	"globalStyle": {
-		"navigationBarTextStyle": "@navTextStyle",
+		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "我的花园",
-		"navigationBarBackgroundColor": "@navBackgroundColor",
-		"backgroundColor": "@backgroundColor"
-	},
-	"tabBar": {
-		"custom": true,
-		"display": "none",
-		"color": "white",
-		"selectedColor": "black",
-		"backgroundColor": "#1F2125",
-		"list": [
-			{
-				"pagePath": "pages/index/index"
-			},
-			{
-				"pagePath": "pages/my/my"
-			}
-		]
+		"navigationBarBackgroundColor": "#F1F7F4",
+		"backgroundColor": "#F1F7F4",
+		"backgroundTextStyle": "dark"
 	},
 	"lazyCodeLoading": "requiredComponents",
 	"renderer": "skyline",

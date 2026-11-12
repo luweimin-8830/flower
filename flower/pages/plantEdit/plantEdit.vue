@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container theme-page" :style="themeStyle">
 		<loadingPage ref="loading" />
 		<!-- 头部 -->
 		<navBar />
@@ -25,7 +25,8 @@
 		<view class="upload-section">
 			<view class="avatar-wrapper">
 				<!-- 图片：如果没有src显示背景色，有src显示图片  :src="'cloud://prod-0gr2o3qpe533f1fb.7072-prod-0gr2o3qpe533f1fb-1352691102/020-plant.png'"-->
-				<image class="plant-img" v-if="cover" :src="cover" mode="aspectFill" />
+				<image class="plant-img" :class="{ 'default-plant-img': cover === '/static/images/default-monstera-leaf.png' }"
+					v-if="cover" :src="cover" mode="aspectFill" />
 				<!-- 相机图标：绝对定位到右下角 -->
 				<view class="camera-badge" @click="uploadImages">
 					<uni-icons type="camera-filled" size="18" color="#fff"></uni-icons>
@@ -41,13 +42,13 @@
 					@blur="nameFocus = false"></uni-easyinput>
 				<!-- 右侧刷新图标 -->
 				<view class="icon-right" @click="rollName">
-					<uni-icons type="loop" size="24" color="#566C44"></uni-icons>
+					<uni-icons type="loop" size="24" color="var(--primary-color)"></uni-icons>
 				</view>
 			</view>
 
 			<!-- 2. 描述 (带标题 + 圆角文本域) -->
 			<view class="section-label">
-				<uni-icons type="compose" size="18" color="#566C44"></uni-icons>
+				<uni-icons type="compose" size="18" color="var(--primary-color)"></uni-icons>
 				<text class="label-text">描述</text>
 			</view>
 
@@ -63,7 +64,7 @@
 					@change="onDateChange" @maskClick="dateClear">
 					<!-- 自定义显示样式的插槽 -->
 					<view class="date-pill" @click.stop="openCalendar">
-						<uni-icons type="calendar-filled" size="18" color="#566C44"
+						<uni-icons type="calendar-filled" size="18" color="var(--primary-color)"
 							style="margin-left: 8px;"></uni-icons>
 						<text>{{ plant.birthday || '选择日期' }}</text>
 					</view>
@@ -72,7 +73,7 @@
 		</view>
 		<!-- 标签 -->
 		<view class="section-label" style="margin-top: 40rpx;">
-			<uni-icons type="tag" size="18" color="#566C44"></uni-icons>
+			<uni-icons type="flag" size="18" color="var(--primary-color)"></uni-icons>
 			<text class="label-text">标签</text>
 		</view>
 
@@ -85,8 +86,30 @@
 
 			<!-- 添加按钮 -->
 			<view class="tag-add-btn" @click="addTag">
-				<uni-icons type="plusempty" size="16" color="#566C44"></uni-icons>
+				<uni-icons type="plusempty" size="16" color="var(--primary-color)"></uni-icons>
 				<text>添加</text>
+			</view>
+		</view>
+
+		<!-- 与页面主题一致的自定义标签弹窗 -->
+		<view v-if="isTagModalOpen" class="tag-modal-mask" @click="closeTagModal">
+			<view class="tag-modal-card" @click.stop>
+				<view class="tag-modal-icon">
+					<uni-icons type="flag-filled" size="22" color="var(--primary-color)"></uni-icons>
+				</view>
+				<text class="tag-modal-title">添加标签</text>
+				<text class="tag-modal-subtitle">给植物添加一个便于查找的标签</text>
+				<view class="tag-modal-input-wrap">
+					<input v-model="newTagName" class="tag-modal-input" :focus="isTagModalOpen" maxlength="12"
+						confirm-type="done" placeholder="例如：房间、喜阳、品种..."
+						placeholder-class="tag-modal-placeholder" @confirm="confirmAddTag" />
+				</view>
+				<view class="tag-modal-actions">
+					<view class="tag-modal-btn cancel" @click="closeTagModal">取消</view>
+					<view class="tag-modal-btn confirm" :class="{ disabled: isTagSubmitting }" @click="confirmAddTag">
+						{{ isTagSubmitting ? '添加中...' : '确定' }}
+					</view>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -128,10 +151,13 @@ export default {
 			tags: [],
 			isCD: false,
 			isCalendarOpen: false,
+			isTagModalOpen: false,
+			isTagSubmitting: false,
+			newTagName: '',
 			isSave: true,
 			option: 'add',
 			plantId: 0,
-			cover: '/static/default.svg',
+			cover: '/static/images/default-monstera-leaf.png',
 		}
 	},
 	methods: {
@@ -161,26 +187,38 @@ export default {
 			this.plant.birthday = e
 			this.isCalendarOpen = false;
 		},
-		async addTag() {
-			const tag = await new Promise((resolve, reject) => {
-				uni.showModal({
-					title: '添加标签',
-					editable: true,
-					placeholderText: '例如：房间、喜阳、品种...',
-					success: resolve,
-					fail: reject
-				})
-			})
-			console.log("tag", tag)
-			if (tag.confirm) {
-				const result = await callContainer("/api/tag/add", {
-					name: tag.content,
+		addTag() {
+			this.newTagName = ''
+			this.isTagModalOpen = true
+		},
+		closeTagModal() {
+			if (this.isTagSubmitting) return
+			this.isTagModalOpen = false
+			this.newTagName = ''
+		},
+		async confirmAddTag() {
+			const name = this.newTagName.trim()
+			if (!name) {
+				uni.showToast({ title: '请输入标签名称', icon: 'none' })
+				return
+			}
+			if (this.isTagSubmitting) return
+			this.isTagSubmitting = true
+			try {
+				await callContainer("/api/tag/add", {
+					name,
 					familyId: this.familyId
 				})
-				console.log("add tag", result)
-				this.getTagsList()
+				this.isTagModalOpen = false
+				this.newTagName = ''
+				await this.getTagsList()
+				uni.showToast({ title: '标签已添加', icon: 'success' })
+			} catch (error) {
+				console.error('添加标签失败:', error)
+				uni.showToast({ title: '添加失败，请稍后重试', icon: 'none' })
+			} finally {
+				this.isTagSubmitting = false
 			}
-
 		},
 		// 切换标签选中状态
 		toggleTag(index) {
@@ -332,10 +370,23 @@ export default {
 					})
 				})
 				const file = result.tempFiles[0]
-				this.uploadImage.url = file.tempFilePath;
-				this.uploadImage.size = file.size;
+				// 微信原生图片裁剪：交互方式与头像裁剪一致，固定为 1:1。
+				let finalPath = file.tempFilePath
+				if (wx.cropImage) {
+					const cropResult = await new Promise((resolve, reject) => {
+						wx.cropImage({ src: file.tempFilePath, cropScale: '1:1', success: resolve, fail: reject })
+					})
+					finalPath = cropResult.tempFilePath
+				}
+				let finalSize = file.size
+				try {
+					const stat = await new Promise((resolve, reject) => wx.getFileSystemManager().stat({ path: finalPath, success: resolve, fail: reject }))
+					finalSize = stat.stats.size
+				} catch (e) { console.warn('读取裁剪图片大小失败:', e) }
+				this.uploadImage.url = finalPath;
+				this.uploadImage.size = finalSize;
 				const MAX_SIZE = 2 * 1024 * 1024 // 2MB
-				if (file.size > MAX_SIZE) {
+				if (finalSize > MAX_SIZE) {
 					wx.showToast({
 						title: '不能超过2MB',
 						icon: 'error',
@@ -343,11 +394,11 @@ export default {
 					})
 					return
 				}
-				this.cover = file.tempFilePath;
-				this.plant.cover.url = file.tempFilePath;
+				this.cover = finalPath;
+				this.plant.cover.url = finalPath;
 				const imageInfo = await new Promise((resolve, reject) => {
 					wx.getImageInfo({
-						src: file.tempFilePath,
+						src: finalPath,
 						success: resolve,
 						fail: reject
 					})
@@ -356,7 +407,7 @@ export default {
 				this.uploadImage.height = imageInfo.height
 				const sha256 = await new Promise((resolve, reject) => {
 					wx.getFileSystemManager().getFileInfo({
-						filePath: file.tempFilePath,
+						filePath: finalPath,
 						digestAlgorithm: "sha256",
 						success: resolve,
 						fail: reject
@@ -414,12 +465,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
-$focus-border-color: #566C44;
+$focus-border-color: var(--primary-color);
 $bg-color: #E8F0E8;
-$text-color: #566C44;
+$text-color: var(--text-color);
 
 .container {
 	font-size: 1rem;
+	padding-bottom: calc(30px + env(safe-area-inset-bottom));
 }
 
 .plant-title {
@@ -477,13 +529,19 @@ $text-color: #566C44;
 	border-radius: 50rpx;
 }
 
+.plant-img.default-plant-img {
+	opacity: 0.7;
+	transform: rotate(18deg) scale(0.9);
+	transform-origin: center;
+}
+
 .camera-badge {
 	position: absolute;
 	bottom: 10rpx;
 	right: 10rpx;
 	width: 64rpx;
 	height: 64rpx;
-	background-color: #566C44;
+	background-color: var(--primary-color);
 	/* 绿色背景 */
 	border-radius: 50%;
 	display: flex;
@@ -508,9 +566,6 @@ $text-color: #566C44;
 	/* 过渡效果 */
 	transition: all 0.3s ease;
 
-	@media (prefers-color-scheme: dark) {
-		background-color: rgba(0, 0, 0, 0.2);
-	}
 }
 
 /* 聚焦状态：当添加了 focused 类名时 */
@@ -521,9 +576,6 @@ $text-color: #566C44;
 	box-shadow: 0 4rpx 12rpx rgba(86, 108, 68, 0.15);
 
 	/* 加一点阴影 */
-	@media (prefers-color-scheme: dark) {
-		background-color: rgba(0, 0, 0, 0.5);
-	}
 }
 
 /* 1. 名称输入框 */
@@ -610,13 +662,9 @@ $text-color: #566C44;
 
 	/* 选中状态：深色背景，浅色字 (互换颜色) */
 	&.active {
-		background-color: #566C44;
+		background-color: var(--primary-color);
 		/* #566C44 */
 		box-shadow: 0 4rpx 10rpx rgba(86, 108, 68, 0.3);
-
-		@media (prefers-color-scheme: dark) {
-			background-color: #6B8857;
-		}
 
 		text {
 			color: #fff;
@@ -642,6 +690,118 @@ $text-color: #566C44;
 
 	&:active {
 		background-color: rgba(86, 108, 68, 0.1);
+	}
+}
+
+.tag-modal-mask {
+	position: fixed;
+	inset: 0;
+	z-index: 3000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40rpx;
+	box-sizing: border-box;
+	background: rgba(24, 33, 29, 0.48);
+	backdrop-filter: blur(8rpx);
+}
+
+.tag-modal-card {
+	width: 100%;
+	max-width: 620rpx;
+	padding: 42rpx 36rpx 34rpx;
+	box-sizing: border-box;
+	background: var(--card-bg);
+	border: 2rpx solid var(--border-color);
+	border-radius: 40rpx;
+	box-shadow: 0 24rpx 70rpx rgba(24, 33, 29, 0.2);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.tag-modal-icon {
+	width: 72rpx;
+	height: 72rpx;
+	border-radius: 50%;
+	background: var(--bg-btn-color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 18rpx;
+}
+
+.tag-modal-title {
+	font-size: 34rpx;
+	font-weight: 700;
+	color: var(--text-color);
+}
+
+.tag-modal-subtitle {
+	margin-top: 10rpx;
+	font-size: 24rpx;
+	color: var(--text-sub);
+}
+
+.tag-modal-input-wrap {
+	width: 100%;
+	height: 92rpx;
+	margin-top: 32rpx;
+	padding: 0 30rpx;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	background: var(--bg-btn-color);
+	border: 2rpx solid var(--border-color);
+	border-radius: 46rpx;
+}
+
+.tag-modal-input {
+	width: 100%;
+	font-size: 28rpx;
+	color: var(--text-color);
+}
+
+.tag-modal-placeholder {
+	color: var(--text-sub);
+}
+
+.tag-modal-actions {
+	width: 100%;
+	display: flex;
+	gap: 20rpx;
+	margin-top: 32rpx;
+}
+
+.tag-modal-btn {
+	flex: 1;
+	height: 82rpx;
+	border-radius: 41rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28rpx;
+	font-weight: 600;
+	transition: transform 0.15s ease, opacity 0.15s ease;
+
+	&:active {
+		transform: scale(0.96);
+	}
+
+	&.cancel {
+		color: var(--text-color);
+		background: var(--bg-btn-color);
+		border: 2rpx solid var(--border-color);
+	}
+
+	&.confirm {
+		color: var(--button-text);
+		background: var(--primary-color);
+		border: 2rpx solid var(--primary-color);
+	}
+
+	&.disabled {
+		opacity: 0.55;
 	}
 }
 

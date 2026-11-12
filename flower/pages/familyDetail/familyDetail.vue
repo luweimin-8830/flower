@@ -1,4 +1,5 @@
 <template>
+  <view class="theme-page" :style="themeStyle">
     <navBar title="家庭管理" />
     <view :style="{ height: topBarHeight + 'px' }"></view>
 
@@ -34,7 +35,7 @@
                         <button class="icon-btn-reset" v-if="item.role === 'owner' || item.role === 'admin'"
                             open-type="share" :data-id="item.id" :data-name="item.name">
                             <view class="icon-btn">
-                                <uni-icons type="personadd" size="18" color="#4A6139"></uni-icons>
+                                <uni-icons type="personadd" size="18" color="var(--primary-strong)"></uni-icons>
                             </view>
                         </button>
 
@@ -91,6 +92,7 @@
         </view>
 
     </view>
+  </view>
 </template>
 
 <script>
@@ -335,13 +337,13 @@ export default {
             return {
                 title: `邀请你加入家庭 "${name}"`,
                 path: `/pages/shareMember/shareMember?familyId=${id}&familyName=${name}`,
-                imageUrl: '/static/share.jpg'
+                imageUrl: '/static/images/share-garden-decorated.jpg'
             }
         }
         return {
             title: '我的家庭',
             path: '/pages/index/index',
-            imageUrl: '/static/share.jpg'
+            imageUrl: '/static/images/share-garden-decorated.jpg'
         }
     },
     onLoad() {
@@ -355,7 +357,7 @@ export default {
 <style scoped lang="scss">
 .page-container {
     min-height: 100vh;
-    padding: 20px 16px;
+    padding: 20px 16px calc(50px + env(safe-area-inset-bottom));
     box-sizing: border-box;
 }
 
@@ -370,10 +372,7 @@ export default {
 .page-title {
     font-size: 15px;
     font-weight: bold;
-    color: #4A6139;
-    @media (prefers-color-scheme: dark) {
-        color: #FAF2CB;
-    }
+    color: var(--primary-strong);
 }
 
 .sort-btn {
@@ -488,8 +487,8 @@ export default {
 }
 
 .role-tag.member {
-    color: #6B8857;
-    background-color: rgba(107, 136, 87, 0.15);
+    color: var(--primary-strong);
+    background-color: var(--primary-soft);
 }
 
 /* 数量徽标 */
@@ -539,16 +538,18 @@ export default {
     right: 20px;
     width: 50px;
     height: 50px;
-    background-color: #6B8857;
+    background-color: var(--primary-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(107, 136, 87, 0.4);
+    border: 1px solid var(--primary-strong);
+    box-shadow: 0 4px 14px var(--shadow-color);
     z-index: 100;
 }
 
 .fab-add-btn:active {
     transform: scale(0.95);
+    background-color: var(--primary-strong);
 }
 </style>

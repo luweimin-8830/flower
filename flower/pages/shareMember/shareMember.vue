@@ -1,4 +1,5 @@
 <template>
+  <view class="theme-page" :style="themeStyle">
     <navBar :isHome="true" title="加入家庭" />
     <view :style="{ height: topBarHeight + 'px' }"></view>
 
@@ -21,6 +22,7 @@
             <text class="tip">加入后，您可以与家人一起管理植物</text>
         </view>
     </view>
+  </view>
 </template>
 
 
@@ -103,7 +105,7 @@ export default {
 .container {
     min-height: 100vh;
     background-color: #C1D0B7;
-    padding: 40px 20px;
+    padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
     display: flex;
     justify-content: center;
     align-items: flex-start;

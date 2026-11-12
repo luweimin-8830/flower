@@ -424,9 +424,6 @@
 	.uni-calendar__content {
 		background-color: #fff;
 		/* #ifndef APP-NVUE */
-		@media (prefers-color-scheme: dark) {
-			background-color: #6B8857;
-		}
 		/* #endif */
 	}
 
@@ -443,9 +440,6 @@
 		border-bottom-style: solid;
 		border-bottom-width: 1px;
 
-		@media (prefers-color-scheme: dark) {
-			border-bottom-color: rgba(255, 255, 255, 0.1);
-		}
 	}
 
 	.uni-calendar--fixed-top {
@@ -458,9 +452,6 @@
 		border-top-style: solid;
 		border-top-width: 1px;
 
-		@media (prefers-color-scheme: dark) {
-			border-top-color: rgba(255, 255, 255, 0.1);
-		}
 	}
 
 	.uni-calendar--fixed-width {
@@ -481,10 +472,6 @@
 		color: $uni-text-color;
 		background-color: $uni-bg-color-hover;
 
-		@media (prefers-color-scheme: dark) {
-			background-color: rgba(255, 255, 255, 0.15);
-			color: #f5f5f5;
-		}
 	}
 
 	.uni-calendar__header-text {
@@ -493,9 +480,6 @@
 		font-size: $uni-font-size-base;
 		color: $uni-text-color;
 
-		@media (prefers-color-scheme: dark) {
-			color: #f5f5f5;
-		}
 	}
 
 	.uni-calendar__header-btn-box {
@@ -519,10 +503,6 @@
 		border-top-style: solid;
 		border-top-width: 2px;
 
-		@media (prefers-color-scheme: dark) {
-			border-left-color: #f5f5f5;
-			border-top-color: #f5f5f5;
-		}
 	}
 
 	.uni-calendar--left {
@@ -559,17 +539,11 @@
 		border-bottom-style: solid;
 		border-bottom-width: 1px;
 
-		@media (prefers-color-scheme: dark) {
-			border-bottom-color: rgba(255, 255, 255, 0.05);
-		}
 	}
 
 	.uni-calendar__weeks-day-text {
 		font-size: 14px;
 
-		@media (prefers-color-scheme: dark) {
-			color: #f5f5f5;
-		}
 	}
 
 	.uni-calendar__box {
@@ -598,5 +572,41 @@
 		/* #ifndef APP-NVUE */
 		line-height: 1;
 		/* #endif */
+	}
+
+	/* 使用小程序主题变量，避免深色主题下仍显示组件默认白底。 */
+	.uni-calendar__content {
+		background-color: var(--card-bg, #fff) !important;
+	}
+
+	.uni-calendar__header {
+		border-bottom-color: var(--border-color, #ededed) !important;
+	}
+
+	.uni-calendar--fixed-top {
+		border-top-color: var(--border-color, #ededed) !important;
+	}
+
+	.uni-calendar__backtoday {
+		color: var(--text-color, #333) !important;
+		background-color: var(--surface-bg, #f1f1f1) !important;
+	}
+
+	.uni-calendar__header-text,
+	.uni-calendar__weeks-day-text {
+		color: var(--text-color, #333) !important;
+	}
+
+	.uni-calendar__header-btn {
+		border-left-color: var(--text-sub, #808080) !important;
+		border-top-color: var(--text-sub, #808080) !important;
+	}
+
+	.uni-calendar__weeks-day {
+		border-bottom-color: var(--border-color, #f5f5f5) !important;
+	}
+
+	.uni-calendar__box-bg-text {
+		color: var(--text-sub, #999) !important;
 	}
 </style>

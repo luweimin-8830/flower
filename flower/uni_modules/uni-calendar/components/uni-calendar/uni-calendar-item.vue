@@ -116,19 +116,12 @@
 		font-size: $uni-font-size-base;
 		color: $uni-text-color;
 
-		@media (prefers-color-scheme: dark) {
-			color: #f5f5f5;
-		}
 	}
 
 	.uni-calendar-item__weeks-lunar-text {
 		font-size: $uni-font-size-sm;
 		color: $uni-text-color;
 
-		@media (prefers-color-scheme: dark) {
-			color: #f5f5f5;
-			opacity: 0.8;
-		}
 	}
 
 	.uni-calendar-item__weeks-box-item {
@@ -158,17 +151,10 @@
 		background-color: rgba(249, 249, 249, $uni-opacity-disabled);
 		color: $uni-text-color-disable;
 
-		@media (prefers-color-scheme: dark) {
-			background-color: transparent;
-			color: rgba(255, 255, 255, 0.2);
-		}
 	}
 
 	.uni-calendar-item--isDay-text {
 		color: #566C44;
-		@media (prefers-color-scheme: dark) {
-			color: #FAF2CB;
-		}
 	}
 
 	.uni-calendar-item--isDay {
@@ -176,18 +162,11 @@
 		opacity: 0.8;
 		color: #fff;
 
-		@media (prefers-color-scheme: dark) {
-			background-color: #FAF2CB;
-			color: #566C44;
-		}
 	}
 
 	.uni-calendar-item--extra {
 		color: $uni-color-error;
 		opacity: 0.8;
-		@media (prefers-color-scheme: dark) {
-			color: #ffbcbc;
-		}
 	}
 
 	.uni-calendar-item--checked {
@@ -195,10 +174,6 @@
 		color: #fff;
 		opacity: 0.8;
 
-		@media (prefers-color-scheme: dark) {
-			background-color: #FAF2CB;
-			color: #566C44;
-		}
 	}
 
 	.uni-calendar-item--multiple {
@@ -206,10 +181,6 @@
 		color: #fff;
 		opacity: 0.8;
 
-		@media (prefers-color-scheme: dark) {
-			background-color: #FAF2CB;
-			color: #566C44;
-		}
 	}
 	.uni-calendar-item--before-checked {
 		background-color: #ff5a5f;
@@ -218,5 +189,57 @@
 	.uni-calendar-item--after-checked {
 		background-color: #ff5a5f;
 		color: #fff;
+	}
+
+	/* 单选日期使用固定正方形内层绘制，确保选中背景始终为圆形而不是方块。 */
+	.uni-calendar-item__weeks-box.uni-calendar-item--isDay,
+	.uni-calendar-item__weeks-box.uni-calendar-item--checked {
+		background-color: transparent;
+		opacity: 1;
+
+		> .uni-calendar-item__weeks-box-item {
+			width: 76rpx;
+			height: 76rpx;
+			border-radius: 50%;
+			background-color: var(--primary-color, #566C44);
+			overflow: hidden;
+		}
+
+		.uni-calendar-item--isDay,
+		.uni-calendar-item--checked {
+			background-color: transparent;
+			color: #fff;
+			opacity: 1;
+		}
+	}
+
+	/* 日期文字跟随当前主题；微信小程序组件隔离下需在组件内部声明。 */
+	.uni-calendar-item__weeks-box-text,
+	.uni-calendar-item__weeks-lunar-text {
+		color: var(--text-color, #333) !important;
+	}
+
+	.uni-calendar-item--disable {
+		background-color: transparent !important;
+		color: var(--text-sub, #c0c0c0) !important;
+		opacity: .36;
+	}
+
+	.uni-calendar-item--isDay-text {
+		color: var(--primary-color, #566c44) !important;
+	}
+
+	.uni-calendar-item__weeks-box.uni-calendar-item--isDay,
+	.uni-calendar-item__weeks-box.uni-calendar-item--checked {
+		> .uni-calendar-item__weeks-box-item {
+			background-color: var(--primary-color, #566c44) !important;
+		}
+
+		.uni-calendar-item__weeks-box-text,
+		.uni-calendar-item__weeks-lunar-text,
+		.uni-calendar-item--isDay,
+		.uni-calendar-item--checked {
+			color: var(--button-text, #fff) !important;
+		}
 	}
 </style>

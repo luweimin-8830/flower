@@ -268,9 +268,6 @@
 		justify-content: center;
 		align-items: center;
 		color: #B3B3B3;
-		@media (prefers-color-scheme: dark) {
-			color: #333;
-		}
 	}
 
 	.uni-searchbar__box-search-input {
@@ -298,9 +295,6 @@
 		color: #333;
 		margin-left: 5px;
 		text-align: left;
-		@media (prefers-color-scheme: dark) {
-			color: #333;
-		}
 	}
 
 	.uni-searchbar__cancel {
