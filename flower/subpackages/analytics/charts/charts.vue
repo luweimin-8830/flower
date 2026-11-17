@@ -29,7 +29,37 @@
                 </view>
             </view>
 
-            <view class="card-box">
+            <template v-if="isPriceChart">
+                <view class="date-range">
+                    <picker mode="date" :value="priceStartDate" :end="priceEndDate" @change="handlePriceDateChange('start', $event)">
+                        <view class="chart-selector date-selector"><text>{{ priceStartDate }}</text><uni-icons type="calendar" size="16" color="var(--primary-color)" /></view>
+                    </picker>
+                    <text class="range-separator">至</text>
+                    <picker mode="date" :value="priceEndDate" :start="priceStartDate" @change="handlePriceDateChange('end', $event)">
+                        <view class="chart-selector date-selector"><text>{{ priceEndDate }}</text><uni-icons type="calendar" size="16" color="var(--primary-color)" /></view>
+                    </picker>
+                </view>
+                <view v-if="priceLoading" class="card-box price-status">正在统计花费…</view>
+                <view v-else-if="priceError" class="card-box price-status" @click="getServerData">
+                    <text>{{ priceError }}</text><text class="retry-text">点击重试</text>
+                </view>
+                <template v-else-if="priceStats">
+                    <view class="card-box price-summary">
+                        <view class="price-heading"><uni-icons type="wallet" size="20" color="var(--primary-color)" /><text>期间花费总价</text></view>
+                        <view class="price-total"><text class="currency">¥</text>{{ (priceStats.totalCents / 100).toFixed(2) }}</view>
+                        <view class="price-counts"><text>已填价格 {{ priceStats.pricedCount }} 株</text><text>未填价格 {{ priceStats.unpricedCount }} 株</text></view>
+                    </view>
+                    <view class="card-box price-distribution">
+                        <text class="section-title">价格区间分布</text>
+                        <text v-if="!priceStats.pricedCount" class="price-empty">{{ priceStats.unpricedCount ? '这段时间的植物还没有填写价格' : '这段时间暂无植物到家记录' }}</text>
+                        <view v-for="(bucket, index) in priceStats.buckets" :key="bucket.name" class="price-bucket">
+                            <view class="bucket-heading"><text>{{ bucket.name }}</text><text class="bucket-count">{{ bucket.value }} 株</text></view>
+                            <view class="bucket-track"><view class="bucket-fill" :style="{ width: (bucket.value / maxPriceBucket * 100) + '%', backgroundColor: priceColors[index] }"></view></view>
+                        </view>
+                    </view>
+                </template>
+            </template>
+            <view v-else class="card-box">
                 <view class="charts-box">
                     <qiun-data-charts v-if="renderChart" :key="chartIndex" :type="chartOptions[chartIndex].type"
                         :opts="currentOpts" :chartData="chartData" :canvas2d="true"
@@ -90,12 +120,20 @@ export default {
             familyId: 0,
             topBarHeight: 0,
             chartData: { categories: [], series: [] },
-            chartIndex: 0,
+            chartIndex: 2,
             currentDate: '', // 格式：YYYY-MM
+            priceStartDate: '',
+            priceEndDate: '',
+            priceStats: null,
+            priceLoading: false,
+            priceError: '',
+            requestVersion: 0,
+            priceColors: DISTINCT_CHART_COLORS.slice(0, 6),
             renderChart: true,
             chartOptions: [
                 { name: '植物分类统计', type: 'pie', desc: '展示当前家庭中各类标签下的植物分布比例。' },
-                { name: '养护操作统计', type: 'bar', desc: '展示所选月份内，家庭中各项养护操作的累计执行次数。' }
+                { name: '养护操作统计', type: 'bar', desc: '展示所选月份内，家庭中各项养护操作的累计执行次数。' },
+                { name: '价格分析', type: 'price', desc: '按当前家庭植物的到家日期统计，包含起止日期当天。花费以当前填写的价格为准，包含已归档植物，不包含已删除植物。未填价格不计入总价和价格区间；0元计入。各区间含下限、不含上限，例如50元归入50～100元。' }
             ],
             opts: {
                 color: DISTINCT_CHART_COLORS,
@@ -142,6 +180,8 @@ export default {
         };
     },
     computed: {
+        isPriceChart() { return this.chartOptions[this.chartIndex].type === 'price'; },
+        maxPriceBucket() { return Math.max(1, ...(this.priceStats?.buckets || []).map(item => item.value)); },
         currentOpts() {
             const isPie = this.chartOptions[this.chartIndex].type === 'pie';
             return isPie ? this.opts : this.barOpts;
@@ -155,6 +195,8 @@ export default {
         const now = new Date();
         this.currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
+        this.priceStartDate = this.currentDate + '-01';
+        this.priceEndDate = this.currentDate + '-' + String(now.getDate()).padStart(2, '0');
         this.updateThemeStyle();
 
         try {
@@ -186,7 +228,7 @@ onReady() {
         },
         async handleChartChange(e) {
             this.renderChart = false; // 彻底销毁当前图表组件
-            this.chartIndex = e.detail.value;
+            this.chartIndex = Number(e.detail.value);
             // 🚀 重置为标准空结构
             this.chartData = { categories: [], series: [] }; 
             wx.vibrateShort({ type: 'light' });
@@ -207,11 +249,38 @@ onReady() {
                 this.renderChart = true;
             });
         },
+        async handlePriceDateChange(which, e) {
+            const date = e.detail.value;
+            const start = which === 'start' ? date : this.priceStartDate;
+            const end = which === 'end' ? date : this.priceEndDate;
+            if (start > end) {
+                uni.showToast({ title: '开始日期不能晚于结束日期', icon: 'none' });
+                return;
+            }
+            this.priceStartDate = start;
+            this.priceEndDate = end;
+            await this.getServerData();
+        },
         async getServerData() {
+            if (!this.familyId) return;
+            const version = ++this.requestVersion;
             const currentOption = this.chartOptions[this.chartIndex];
+            this.priceLoading = currentOption.type === 'price';
+            this.priceError = '';
             try {
-                if (currentOption.type === 'pie') {
+                if (currentOption.type === 'price') {
+                    this.priceStats = null;
+                    const res = await callContainer('/api/chart/price', {
+                        familyId: this.familyId, startDate: this.priceStartDate, endDate: this.priceEndDate
+                    });
+                    if (version !== this.requestVersion) return;
+                    if (res.code !== 0 || !res.data || !Array.isArray(res.data.buckets)) {
+                        throw new Error(res.msg || '获取价格统计失败');
+                    }
+                    this.priceStats = res.data;
+                } else if (currentOption.type === 'pie') {
                     const res = await callContainer("/api/chart/pie", { familyId: this.familyId });
+                    if (version !== this.requestVersion) return;
                     if (res.data && res.data.length > 0) {
                         this.chartData = {
                             categories: [],
@@ -232,6 +301,7 @@ onReady() {
                         year: year,
                         month: month
                     });
+                    if (version !== this.requestVersion) return;
                     if (res.data && res.data.series) {
                         this.chartData = res.data;
                     } else {
@@ -239,8 +309,12 @@ onReady() {
                     }
                 }
             } catch (error) {
+                if (version !== this.requestVersion) return;
+                if (currentOption.type === 'price') this.priceError = '价格统计加载失败，请稍后重试';
                 console.error('获取统计数据失败:', error);
                 uni.showToast({ title: '加载失败', icon: 'none' });
+            } finally {
+                if (version === this.requestVersion) this.priceLoading = false;
             }
         },
     }
@@ -319,4 +393,22 @@ onReady() {
     color: var(--text-sub);
     line-height: 1.6;
 }
+.date-range { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 16px; }
+.date-range picker { flex: 1; min-width: 0; }
+.date-selector { display: flex; justify-content: space-between; padding: 10px; gap: 5px; font-size: 12px; color: var(--text-color); }
+.range-separator { color: var(--text-sub); font-size: 12px; }
+.price-heading { display: flex; align-items: center; gap: 8px; color: var(--text-sub); font-size: 14px; }
+.price-total { margin: 16px 0; font-size: 36px; font-weight: 600; color: var(--primary-color); overflow-wrap: anywhere; }
+.currency { font-size: 22px; margin-right: 6px; }
+.price-counts { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-sub); }
+.price-distribution { margin-top: 16px; }
+.price-distribution .section-title { margin-left: 0; }
+.price-bucket { margin-top: 18px; }
+.bucket-heading { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-color); }
+.bucket-count { color: var(--text-sub); }
+.bucket-track { margin-top: 8px; height: 8px; border-radius: 8px; background: var(--border-color); overflow: hidden; }
+.bucket-fill { height: 100%; border-radius: 8px; transition: width .25s; }
+.price-status { text-align: center; padding: 36px 16px; color: var(--text-sub); font-size: 14px; }
+.retry-text { display: block; margin-top: 12px; color: var(--primary-color); }
+.price-empty { display: block; margin-top: 16px; font-size: 13px; color: var(--text-sub); }
 </style>

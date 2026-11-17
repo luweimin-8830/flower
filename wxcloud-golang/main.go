@@ -114,6 +114,7 @@ func main() {
 		{
 			chart.POST("/pie", handler.GetChartDataHandler)
 			chart.POST("/bar", handler.GetCareChartHandler)
+			chart.POST("/price", handler.GetPriceChartHandler)
 		}
 	}
 	log.Fatal(r.Run(":80"))
