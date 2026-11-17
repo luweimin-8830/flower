@@ -26,20 +26,20 @@
 
 			<!-- 瀑布流列表 -->
 			<view v-else class="waterfall-wrapper">
-				<WaterfallBox :list="plantsList" idKey="id" cols="2">
-					<template #item="{ item }">
-						<view class="plant-card" @click="gotoDetail(item)">
+				<view class="plant-columns">
+                    <view v-for="(column, columnIndex) in plantColumns" :key="columnIndex" class="plant-column">
+					<view v-for="item in column" :key="String(item.id) + '-' + getCoverUrl(item.cover)" class="plant-column-item">
+						<view class="plant-card" :data-plant-id="item.id" :data-cover="getCoverUrl(item.cover)" @click="gotoDetail(item)">
 							<view class="image-wrapper"
 								:style="{ paddingBottom: getCoverRatio(item.cover) + '%' }">
-								<image :src="getCoverUrl(item.cover)" mode="aspectFill" class="plant-image show" lazy-load
-									@load="onImgLoad(item)" @error="onImgError(item)"></image>
+								<view class="plant-image"><LazyPlantImage :key="String(item.id) + '-' + getCoverUrl(item.cover)" :src="getCoverUrl(item.cover)" :original-width="item.cover && item.cover.width" :original-height="item.cover && item.cover.height" /></view>
 							</view>
 							<view class="plant-info">
 								<text class="plant-name">{{ item.name }}</text>
 							</view>
 						</view>
-					</template>
-				</WaterfallBox>
+					</view>
+				</view></view>
 				<view class="share-list-bottom-space"></view>
 			</view>
 		</scroll-view>
@@ -47,13 +47,14 @@
 </template>
 
 <script>
+import LazyPlantImage from '../../components/LazyPlantImage.vue';
 import { callContainer } from '../../utils/request';
-import WaterfallBox from '../../components/WaterfallBox.vue';
 import navBar from '../../components/navBar.vue';
 
 export default {
 	components: {
-		WaterfallBox,
+        LazyPlantImage,
+
 		navBar
 	},
 	data() {
@@ -65,7 +66,6 @@ export default {
 			searchValue: '',
 			searchTimer: null,
 			plantsList: [],
-			loadedImagesMap: {},
 			page: 1,
 			pageSize: 20,
 			total: 0,
@@ -73,6 +73,14 @@ export default {
 			isNoMore: false
 		}
 	},
+    computed: {
+        // Keep images in the same native keyed loop as their plant data.
+        plantColumns() {
+            const columns = [[], []];
+            this.plantsList.forEach((item, index) => columns[index % 2].push(item));
+            return columns;
+        },
+    },
 	watch: {
 		searchValue() {
 			if (this.searchTimer) clearTimeout(this.searchTimer);
@@ -95,7 +103,9 @@ export default {
 	},
 	methods: {
 		async getPlantsList(isLoadMore = false) {
-			if (this.isLoading || (isLoadMore && this.isNoMore)) return;
+			if (isLoadMore && (this.isLoading || this.isNoMore)) return;
+            const requestId = (this._plantRequestId || 0) + 1;
+            this._plantRequestId = requestId;
 
 			if (!isLoadMore) {
 				this.page = 1;
@@ -111,6 +121,7 @@ export default {
 					tagId: this.tagId,
 					keyword: this.searchValue
 				});
+                if (requestId !== this._plantRequestId) return;
 
 				let rawData = [];
 				if (res?.data?.list) {
@@ -131,7 +142,7 @@ export default {
 			} catch (error) {
 				console.error("获取植物列表失败:", error);
 			} finally {
-				this.isLoading = false;
+				if (requestId === this._plantRequestId) this.isLoading = false;
 			}
 		},
 		onScrollToLower() {
@@ -139,12 +150,6 @@ export default {
 				this.page++;
 				this.getPlantsList(true);
 			}
-		},
-		onImgLoad(item) {
-			if (item.id) this.loadedImagesMap[item.id] = true;
-		},
-		onImgError(item) {
-			if (item.id) this.loadedImagesMap[item.id] = false;
 		},
 		getCoverUrl(cover) {
 			return cover && cover.url ? cover.url : '/static/default.svg';
@@ -168,6 +173,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.plant-columns { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; padding: 10px; box-sizing: border-box; }
+.plant-column { width: 49%; flex: 0 0 49%; max-width: 49%; margin: 0 0.5%; }
+.plant-column-item { width: 100%; margin-bottom: 10px; border-radius: 8px; overflow: hidden; box-sizing: border-box; }
+
 .home-container {
 	height: 100vh;
 	display: flex;

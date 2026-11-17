@@ -117,3 +117,12 @@ curl -X POST -H 'content-type: application/json' -d '{"action": "inc"}' https://
 ## License
 
 [MIT](./LICENSE)
+
+### 植物价格字段（2026-11-17）
+
+新增、编辑和查询接口使用 `priceCents`（人民币分，整数，0–99999999）。
+`null` 表示未填写；更新时省略该字段保留原值，显式传 `null` 清空，`0` 表示零元。
+数据库字段为 `plant.price_cents BIGINT NULL`，历史记录保持 NULL。
+现有启动流程的 AutoMigrate 会添加该列，部署前应确认数据库迁移权限。
+先部署新版 Go 服务并确认该列创建成功，再发布带价格表单的小程序；旧后端会忽略价格字段。
+普通列表不展示价格，报表可使用 `SUM(price_cents)` 汇总后除以 100，未填记录应与零元区分。

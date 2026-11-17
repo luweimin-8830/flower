@@ -2,8 +2,9 @@
 	<view class="container theme-page" :style="themeStyle">
 		<loadingPage ref="loading" />
 		<!-- 头部 -->
+        <view class="fixed-form-header">
 		<navBar />
-		<view class="plant-title" :style="{ top: menuButtonInfo.top + 'px' }">添加植物</view>
+		<view class="plant-title" :style="{ top: menuButtonInfo.top + 'px' }">{{ option === 'edit' ? '编辑植物' : '添加植物' }}</view>
 
 		<view :style="{ height: topBarHeight + 20 + 'px' }"></view>
 		<!-- 双按钮 -->
@@ -21,6 +22,9 @@
 				</uni-col>
 			</uni-row>
 		</view>
+        </view>
+        <scroll-view class="form-scroll" :scroll-y="!isTagModalOpen && !isCalendarOpen">
+        <view class="form-scroll-content">
 		<!-- 图片上传 -->
 		<view class="upload-section">
 			<view class="avatar-wrapper">
@@ -58,6 +62,16 @@
 					@focus="descFocus = true" @blur="descFocus = false"></uni-easyinput>
 			</view>
 
+            <view class="section-label">
+                <uni-icons type="wallet" size="18" color="var(--primary-color)"></uni-icons>
+                <text class="label-text">价格</text>
+            </view>
+            <view class="form-item input-pill" :class="{ 'focused': priceFocus }">
+                <uni-easyinput v-model="priceInput" type="digit" :inputBorder="false"
+                    placeholder="单位元，保留两位小数" placeholderStyle="color:#8BA989; font-size:15px;" :maxlength="9"
+                    @focus="priceFocus = true" @blur="priceFocus = false" />
+            </view>
+
 			<!-- 3. 日期 (居中胶囊按钮) -->
 			<view class="date-section">
 				<uni-datetime-picker type="date" ref="datePicker" v-model="plant.birthday" :border="false"
@@ -91,6 +105,8 @@
 			</view>
 		</view>
 
+        </view>
+        </scroll-view>
 		<!-- 与页面主题一致的自定义标签弹窗 -->
 		<view v-if="isTagModalOpen" class="tag-modal-mask" @click="closeTagModal">
 			<view class="tag-modal-card" @click.stop>
@@ -116,6 +132,7 @@
 </template>
 
 <script>
+import { parsePlantPrice, formatPlantPrice } from '../../utils/plantPrice';
 import navBar from '@/components/navBar.vue'
 import { callContainer } from '../../utils/request';
 import loadingPage from '@/components/loading.vue';
@@ -148,6 +165,7 @@ export default {
 			},
 			nameFocus: false,
 			descFocus: false,
+            priceFocus: false,
 			tags: [],
 			isCD: false,
 			isCalendarOpen: false,
@@ -157,6 +175,7 @@ export default {
 			isSave: true,
 			option: 'add',
 			plantId: 0,
+            priceInput: '',
 			cover: '/static/images/default-monstera-leaf.png',
 		}
 	},
@@ -254,6 +273,12 @@ export default {
 		},
 		async save() {
 			if (!this.isSave) return;
+            let priceCents;
+            try { priceCents = parsePlantPrice(this.priceInput); }
+            catch (error) { uni.showToast({ title: error.message, icon: 'none' }); return; }
+            if (!this.plant.name.trim()) {
+                uni.showToast({ title: '请输入植物名称', icon: 'none' }); return;
+            }
 			this.isSave = false;
 			this.$refs.loading.open();
 
@@ -304,33 +329,38 @@ export default {
 				try {
 					const plant = await callContainer("/api/plant/update", {
 						"name": this.plant.name,
+                        "priceCents": priceCents,
 						"id": Number(this.plantId),
 						"coverId": this.plant.coverId,
 						"desc": this.plant.desc,
 						"birthday": this.plant.birthday,
 						"tags": this.plant.tags
 					})
-					console.log("call container plant update", plant)
+					if (plant.code !== 0) throw new Error(plant.msg || '保存失败');
+                    console.log("call container plant update", plant)
 					uni.$emit('refreshHomeList');
 					uni.$emit('refreshPlantDetail');
+                    uni.navigateBack();
 				} catch (error) {
 					console.error(error)
+                    uni.showToast({ title: error.message || '保存失败，请重试', icon: 'none' });
 				} finally {
 					this.isSave = true;
 					this.$refs.loading.close();
-					uni.navigateBack()
 				}
 			} else {
 				try {
 					const plantRes = await callContainer("/api/plant/add", {
 						"name": this.plant.name,
+                        "priceCents": priceCents,
 						"familyId": Number(this.familyId),
 						"coverId": this.plant.coverId,
 						"desc": this.plant.desc,
 						"birthday": this.plant.birthday,
 						"tags": this.plant.tags
 					})
-					console.log("call container plant add", plantRes)
+					if (plantRes.code !== 0) throw new Error(plantRes.msg || '保存失败');
+                    console.log("call container plant add", plantRes)
 
 					// 新增植物后，同步插入一条成长记录
 					if (plantRes.data && plantRes.data.id) {
@@ -349,12 +379,13 @@ export default {
 					}
 
 					uni.$emit('refreshHomeList');
+                    uni.navigateBack();
 				} catch (error) {
 					console.error(error)
+                    uni.showToast({ title: error.message || '保存失败，请重试', icon: 'none' });
 				} finally {
 					this.isSave = true;
 					this.$refs.loading.close();
-					uni.navigateBack()
 				}
 			}
 
@@ -435,6 +466,7 @@ export default {
 				})
 				console.log("call container get plant", result)
 				this.plant = result.data
+                this.priceInput = formatPlantPrice(result.data.priceCents)
 				this.cover = (result.data.cover && result.data.cover.url) ? result.data.cover.url : '/static/default.svg'
 				this.plant.birthday = this.plant.birthday ? this.plant.birthday.split('T')[0] : '';
 			} catch (error) {
@@ -471,8 +503,21 @@ $text-color: var(--text-color);
 
 .container {
 	font-size: 1rem;
-	padding-bottom: calc(30px + env(safe-area-inset-bottom));
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
+
+.fixed-form-header {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    background: var(--page-bg);
+    padding-bottom: 12px;
+}
+.form-scroll { flex: 1; height: 0; min-height: 0; }
+.form-scroll-content { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
 
 .plant-title {
 	width: 100%;

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"wxcloud-golang/db/model"
 	"wxcloud-golang/response"
 	"wxcloud-golang/service"
@@ -11,9 +12,10 @@ import (
 )
 
 type CreatePlantRequest struct {
-	Name     string `json:"name" binding:"required"`
-	FamilyID uint   `json:"familyId" binding:"required"`
-	Tags     []struct {
+	PriceCents json.RawMessage `json:"priceCents"`
+	Name       string          `json:"name" binding:"required"`
+	FamilyID   uint            `json:"familyId" binding:"required"`
+	Tags       []struct {
 		ID uint `json:"id"`
 	} `json:"tags"`
 	CoverID  uint   `json:"coverId"`
@@ -29,13 +31,14 @@ type CreatePlantRequest struct {
 //   }
 
 type UpdatePlantRequest struct {
-	ID       uint   `json:"id" binding:"required"`
-	Name     string `json:"name"`
-	Desc     string `json:"desc"`
-	CoverID  uint   `json:"coverId"`
-	Birthday string `json:"birthday"`
-	DeathAt  string `json:"deathAt"`
-	Tags     []struct {
+	PriceCents json.RawMessage `json:"priceCents"`
+	ID         uint            `json:"id" binding:"required"`
+	Name       string          `json:"name"`
+	Desc       string          `json:"desc"`
+	CoverID    uint            `json:"coverId"`
+	Birthday   string          `json:"birthday"`
+	DeathAt    string          `json:"deathAt"`
+	Tags       []struct {
 		ID uint `json:"id"`
 	} `json:"tags"` // 如果不传 nil，传空数组 [] 代表清空标签
 }
@@ -57,6 +60,11 @@ func CreatePlantHandler(c *gin.Context) {
 	OPENID := c.GetHeader("X-WX-OPENID")
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.FailWithCode(c, 401, "参数错误"+err.Error())
+		return
+	}
+	price, err := parsePlantPrice(req.PriceCents)
+	if err != nil {
+		response.Fail(c, err.Error())
 		return
 	}
 	var birthday time.Time
@@ -84,12 +92,13 @@ func CreatePlantHandler(c *gin.Context) {
 	}
 
 	plant := &model.Plant{
-		Name:     req.Name,
-		FamilyID: req.FamilyID,
-		CoverID:  coverID,
-		Desc:     req.Desc,
-		Birthday: birthday,
-		OpenId:   OPENID,
+		PriceCents: price,
+		Name:       req.Name,
+		FamilyID:   req.FamilyID,
+		CoverID:    coverID,
+		Desc:       req.Desc,
+		Birthday:   birthday,
+		OpenId:     OPENID,
 	}
 	ctx := c.Request.Context()
 	if err := service.AddPlant(ctx, plant, tagIDs); err != nil {
@@ -112,6 +121,18 @@ func UpdatePlantHandler(c *gin.Context) {
 		return
 	}
 	updateData := make(map[string]any)
+	if len(req.PriceCents) > 0 {
+		price, err := parsePlantPrice(req.PriceCents)
+		if err != nil {
+			response.Fail(c, err.Error())
+			return
+		}
+		if price == nil {
+			updateData["price_cents"] = nil
+		} else {
+			updateData["price_cents"] = *price
+		}
+	}
 	if req.Name != "" {
 		updateData["name"] = req.Name
 	}

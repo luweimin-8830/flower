@@ -140,13 +140,13 @@
 
             <!-- 卡片模式 -->
             <view v-else-if="displayMode === 'card'" class="waterfall-wrapper">
-                <WaterfallBox :list="visiblePlantsList" idKey="id" cols="2">
-                    <template #item="{ item }">
-                        <view class="plant-card" @click="handleCardClick(item)" @longpress="enterEditMode(item)">
+                <view class="plant-columns">
+                    <view v-for="(column, columnIndex) in plantColumns" :key="columnIndex" class="plant-column">
+                    <view v-for="item in column" :key="String(item.id) + '-' + getCoverUrl(item.cover)" class="plant-column-item">
+                        <view class="plant-card" :data-plant-id="item.id" :data-cover="getCoverUrl(item.cover)" @click="handleCardClick(item)" @longpress="enterEditMode(item)">
                             <view class="image-wrapper"
                                 :style="{ paddingBottom: getCoverRatio(item.cover) + '%' }">
-                                <image :src="getCoverUrl(item.cover)" mode="aspectFill" class="plant-image show" lazy-load
-                                    @load="onImgLoad(item)" @error="onImgError(item)"></image>
+                                <view class="plant-image"><LazyPlantImage :key="String(item.id) + '-' + getCoverUrl(item.cover)" :src="getCoverUrl(item.cover)" :original-width="item.cover && item.cover.width" :original-height="item.cover && item.cover.height" /></view>
                                 <!-- 选择框 -->
                                 <view v-if="isEditMode" class="checkbox-wrapper" @click.stop="toggleSelect(item.id)">
                                     <uni-icons :type="selectedPlantIds.includes(item.id) ? 'checkbox-filled' : 'circle'"
@@ -163,8 +163,8 @@
                                 <uni-icons type="trash-filled" size="14" color="#dd524d"></uni-icons>
                             </view>
                         </view>
-                    </template>
-                </WaterfallBox>
+                    </view>
+                </view></view>
 
                 <!-- 底部垫片：防止内容被 TabBar 遮挡 -->
                 <view style="height: 20px;"></view>
@@ -175,7 +175,7 @@
                 <view v-for="group in indexedPlantGroups" :key="group.key" :id="'garden-index-' + group.key" class="index-group">
                     <text class="index-title">{{ group.key }}</text>
                     <view v-for="item in group.items" :key="item.id" class="index-card" @click="handleCardClick(item)">
-                        <image class="index-cover" :src="item.cover && item.cover.url ? item.cover.url : '/static/default.svg'" mode="aspectFill"></image>
+                        <view class="index-cover"><LazyPlantImage :key="String(item.id) + '-' + getCoverUrl(item.cover)" :src="getCoverUrl(item.cover)" :original-width="item.cover && item.cover.width" :original-height="item.cover && item.cover.height" /></view>
                         <view class="index-info">
                             <text class="index-name">{{ item.name }}</text>
                             <text class="index-desc">{{ item.desc || ((item.tags || []).map(tag => tag.name).join(' · ')) || '暂无描述' }}</text>
@@ -236,13 +236,14 @@
 
 
 <script>
+import LazyPlantImage from './LazyPlantImage.vue';
 import { callContainer } from '../utils/request';
-import WaterfallBox from './WaterfallBox.vue';
 import careIcon from './careIcon.vue';
 
 export default {
     components: {
-        WaterfallBox,
+        LazyPlantImage,
+
         careIcon,
     },
     /**
@@ -294,7 +295,6 @@ export default {
             sliderTimer: null,
             plantsList: [],
             allPlantsList: [],
-            loadedImagesMap: {}, // 用于追踪图片加载状态
             isFirstLoad: true,
             isSelecting: false,
             currentFamilyIndex: 0,
@@ -316,6 +316,13 @@ export default {
         }
     },
     computed: {
+        // Keep images in the same native keyed loop as their plant data.
+        plantColumns() {
+            const columns = [[], []];
+            this.visiblePlantsList.forEach((item, index) => columns[index % 2].push(item));
+            return columns;
+        },
+
         hasGardenFilter() {
             return Boolean(this.gardenStartDate || this.gardenEndDate || this.gardenSort !== 'default')
         },
@@ -528,7 +535,9 @@ export default {
             }
         },
         async getPlantsList(isLoadMore = false) {
-            if (this.isLoading || (isLoadMore && this.isNoMore)) return;
+            if (isLoadMore && (this.isLoading || this.isNoMore)) return;
+            const requestId = (this._plantRequestId || 0) + 1;
+            this._plantRequestId = requestId;
 
             if (!isLoadMore) {
                 this.page = 1;
@@ -548,6 +557,7 @@ export default {
                     tagId: currentTag ? currentTag.id : 0,
                     keyword: this.searchValue
                 });
+                if (requestId !== this._plantRequestId) return;
 
                 console.log("plants list res:", res);
 
@@ -576,25 +586,15 @@ export default {
                 if (isLoadMore) {
                     this.plantsList = [...this.plantsList, ...frozenData];
                 } else {
-                    // 🚀 优化：对比新旧数据第一条的 ID。
-                    // 如果 ID 没变且当前已经在第一页，说明内容没有实质更新，不替换引用以保持滚动位置
-                    const isSameFirstItem = this.plantsList.length > 0 &&
-                        frozenData.length > 0 &&
-                        String(this.plantsList[0].id) === String(frozenData[0].id);
-
-                    if (isSameFirstItem && this.page === 1) {
-                        console.log("首屏数据未发生导致位移的变化，保持当前滚动位置");
-                    } else {
-                        // 只有数据变了（如新增或删除），才替换列表
-                        this.plantsList = frozenData;
-                    }
+                    // 相同植物 ID 的封面、标签和排序也可能变化，始终接收最新响应。
+                    this.plantsList = frozenData;
                 }
 
                 this.isNoMore = this.plantsList.length >= this.total;
             } catch (error) {
                 console.error("获取植物列表失败:", error);
             } finally {
-                this.isLoading = false;
+                if (requestId === this._plantRequestId) this.isLoading = false;
             }
         },
         onScrollToLower() {
@@ -651,7 +651,6 @@ export default {
             this.tagList = [];
             this.allPlantsList = [];
             this.plantsList = [];
-            this.loadedImagesMap = {}; // 清空图片加载状态
 
             // 等待 DOM 更新
             await this.$nextTick();
@@ -924,14 +923,6 @@ export default {
                 }
             });
         },
-        onImgLoad(item) {
-            if (item.id && !this.loadedImagesMap[item.id]) {
-                this.loadedImagesMap[item.id] = true;
-            }
-        },
-        onImgError(item) {
-            if (item.id) this.loadedImagesMap[item.id] = false;
-        },
         getCoverUrl(cover) {
             return cover && cover.url ? cover.url : '/static/default.svg';
         },
@@ -940,19 +931,6 @@ export default {
             const height = Number(cover && cover.height);
             if (!width || !height) return 100;
             return Math.min(150, Math.max(75, height / width * 100));
-        },
-        // 确保图片显示的方法（用于页面返回时恢复图片状态）
-        ensureImagesVisible() {
-            this.$nextTick(() => {
-                if (this.plantsList && this.plantsList.length > 0) {
-                    this.plantsList.forEach(plant => {
-                        if (!this.loadedImagesMap[plant.id]) {
-                            // 重置状态，触发重新加载
-                            this.loadedImagesMap[plant.id] = false;
-                        }
-                    });
-                }
-            });
         },
         goAddPage() {
             wx.vibrateShort({ type: "medium" })
@@ -1051,6 +1029,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.plant-columns { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; padding: 10px; box-sizing: border-box; }
+.plant-column { width: 49%; flex: 0 0 49%; max-width: 49%; margin: 0 0.5%; }
+.plant-column-item { width: 100%; margin-bottom: 10px; border-radius: 8px; overflow: hidden; box-sizing: border-box; }
+
 /* 1. 页面容器：占满全屏，垂直排列 */
 .home-container {
     height: 100vh;
